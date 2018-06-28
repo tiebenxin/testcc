@@ -1,0 +1,25 @@
+<resources>
+
+    <!--
+        Base application theme for API 14+. This theme completely replaces
+        AppBaseTheme from BOTH res/values/styles.xml and
+        res/values-v11/styles.xml on API 14+ devices.
+    -->
+    <style name="AppBaseTheme" parent="Lens.Theme.Apptheme">
+        <!-- API 14 theme customizations can go here. -->
+        <item name="android:windowTranslucentNavigation">false</item>
+    </style>
+    <style name="OverflowButtonStyle" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:src">@drawable/title_add</item>
+        <item name="android:minHeight">10dp</item>
+        <item name="android:minWidth">10dp</item>
+    </style>
+    <!--<style name="OverflowButtonStyle" parent="Base.Widget.AppCompat.ActionButton.Overflow">-->
+    <!--<item name="srcCompat">@drawable/title_add</item>-->
+    <!--<item name="android:minHeight">10dp</item>-->
+    <!--<item name="android:minWidth">10dp</item>-->
+    <!--</style>-->
+    <style name="OverflowStyle" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+    </style>
+</resources>

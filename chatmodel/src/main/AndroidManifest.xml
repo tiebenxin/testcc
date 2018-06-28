@@ -1,0 +1,30 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.lens.chatmodel">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <application>
+
+        <meta-data
+            android:name="com.lens.chatmodel.utils.OriginGlideModule"
+            android:value="GlideModule"
+            tools:remove="true"/>
+
+        <service android:name=".im_service.FingerIMService"/>
+
+        <activity android:name=".ui.search.SearchActivity"/>
+        <activity android:name=".ui.contacts.GroupsActivity"/>
+        <activity android:name=".ui.contacts.ActivityNewFriends"/>
+        <activity android:name=".ui.contacts.GroupsDetailActivity"/>
+        <activity android:name=".ui.message.TextPreviewActivity"/>
+        <activity android:name=".ui.contacts.ActivityUserSetting"/>
+        <activity android:name=".ui.search.MoreRecordActivity"/>
+        <activity
+            android:label="视频录制"
+            android:name=".ui.video.CameraActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.message.AttachMessageActivity"/>
+    </application>
+</manifest>

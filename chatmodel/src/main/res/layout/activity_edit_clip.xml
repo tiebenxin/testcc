@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:orientation="vertical">
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/viewTitleBar"
+        style="@style/FGToolbarStyle"/>
+
+    <com.edmodo.cropper.CropImageView
+        android:id="@+id/mCropImageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"/>
+</LinearLayout>

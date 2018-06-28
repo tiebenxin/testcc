@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="1dp"
+        android:paddingBottom="0.5dp"
+        android:paddingLeft="10dp"
+        android:background="@color/work_title_bg"
+        android:textColor="#8a99ac"
+        android:textSize="14sp"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dimen_60"
+        android:background="@drawable/selector_item_bg"
+        android:minHeight="@dimen/dimen_60"
+        android:orientation="horizontal">
+
+
+        <ImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="@dimen/dimen_43"
+            android:layout_height="@dimen/dimen_43"
+            android:layout_marginLeft="@dimen/dimen_10"
+            android:layout_gravity="center_vertical"
+            android:scaleType="centerCrop"
+            android:src="@drawable/default_avatar"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/dimen_10"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="@dimen/dimen_5"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_name"
+                    style="@style/contacts_text_style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="姓名"/>
+
+                <LinearLayout
+                    android:id="@+id/ll_identify"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/dimen_5"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/iv_identify"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_authenticated"/>
+
+                    <!--<TextView-->
+                        <!--android:id="@+id/tv_identify"-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:layout_marginLeft="@dimen/dimen_5"-->
+                        <!--android:text="@string/identified"-->
+                        <!--android:textColor="@color/green"-->
+                        <!--android:textSize="@dimen/dimen_12_sp"-->
+                        <!--android:visibility="gone"/>-->
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/tv_company"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="公司名"
+                    android:textColor="@color/common_travel_color"
+                    android:textSize="@dimen/dimen_14_sp"/>
+
+                <TextView
+                    android:id="@+id/tv_department"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/dimen_5"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="公司名"
+                    android:textColor="@color/common_travel_color"
+                    android:textSize="@dimen/dimen_14_sp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:background="@color/custom_divider_color"
+        android:clickable="true"
+        android:gravity="center"
+        android:textColor="@color/color_474747"
+        android:textSize="16sp"
+        android:visibility="gone"/>
+
+</LinearLayout>

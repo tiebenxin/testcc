@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/white"
+  android:orientation="vertical">
+
+  <!--<include-->
+    <!--android:id="@+id/viewTitleBar"-->
+    <!--layout="@layfg_toolbarlbar" />-->
+
+
+
+    <include
+      android:id="@+id/viewInputAccout"
+      layout="@layout/controller_login_item" />
+
+
+    <include layout="@layout/layout_divider"/>
+
+    <include
+      android:id="@+id/viewInputPsw"
+      layout="@layout/controller_login_item" />
+
+    <include layout="@layout/layout_divider"/>
+
+
+    <include
+      android:id="@+id/viewLoginBtn"
+      layout="@layout/controller_login_btn" />
+
+
+</LinearLayout>

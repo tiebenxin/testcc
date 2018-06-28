@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <SwitchPreference
+        android:defaultValue="@bool/chats_voice_outer_default"
+        android:key="@string/chats_voice_outer_key"
+        android:title="@string/chats_voice_outer"
+        android:layout="@layout/custom_preferens_layout_normal"/>
+    <SwitchPreference
+        android:defaultValue="@bool/chats_send_by_enter_default"
+        android:key="@string/chats_send_by_enter_key"
+        android:title="@string/chats_send_by_enter"
+        android:layout="@layout/custom_preferens_layout"/>
+    <SwitchPreference
+        android:defaultValue="@bool/chats_attention_default"
+        android:key="@string/chats_attention_key"
+        android:title="@string/chats_attention"
+        android:layout="@layout/custom_preferens_layout_normal"/>
+    <!--<CheckBoxPreference-->
+        <!--android:defaultValue="@bool/chats_attention_default"-->
+        <!--android:key="@string/chats_attention_key"-->
+        <!--android:title="@string/chats_attention"-->
+        <!--android:layout="@layout/custom_preferens_layout"-->
+        <!--/>-->
+    <RingtonePreference
+        android:defaultValue="@string/chats_attention_sound_default"
+        android:dependency="@string/chats_attention_key"
+        android:key="@string/chats_attention_sound_key"
+        android:ringtoneType="ringtone"
+        android:showDefault="true"
+        android:showSilent="true"
+        android:title="@string/chats_attention_sound"
+        android:layout="@layout/custom_preferens_layout_normal"/>
+</PreferenceScreen>

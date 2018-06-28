@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mPreViewRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+        <TextView
+            android:id="@+id/mPreviewText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingTop="20dp"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:textColor="@color/black"
+            android:textSize="34sp"
+            />
+    </ScrollView>
+
+    <com.zhy.android.percent.support.PercentFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextureView
+            android:id="@+id/mPreViewVideo"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:layout_gravity="center"
+            app:layout_heightPercent="66%w"
+            />
+
+    </com.zhy.android.percent.support.PercentFrameLayout>
+
+</FrameLayout>

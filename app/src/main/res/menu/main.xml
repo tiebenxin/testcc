@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_muc"
+        android:icon="@drawable/ofm_group_chat_icon"
+        android:title="@string/action_muc"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_addfriends"
+        android:icon="@drawable/ofm_add_icon"
+        android:title="@string/add_friends"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_scan"
+        android:icon="@drawable/ofm_qrcode_icon"
+        android:title="@string/action_scan"
+        app:showAsAction="never"/>
+</menu>

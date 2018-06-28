@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_search_note"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
+
+        <com.lensim.fingerchat.commons.toolbar.FGToolbar
+            android:id="@+id/collection_toolbar"
+            style="@style/FGToolbarStyleWithNoOverflow">
+
+        </com.lensim.fingerchat.commons.toolbar.FGToolbar>
+
+        <com.lensim.fingerchat.components.springview.widget.SpringView
+            android:id="@+id/springview_collect"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerView_collect"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/work_title_bg"/>
+        </com.lensim.fingerchat.components.springview.widget.SpringView>
+
+    </LinearLayout>
+
+</layout>

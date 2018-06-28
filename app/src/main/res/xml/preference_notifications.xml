@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:title="@string/events_notify"
+        android:key="@string/events_notify_key"
+        android:defaultValue="@bool/events_notify_default"
+        android:layout="@layout/custom_preferens_layout"/>
+
+    <RingtonePreference
+        android:title="@string/events_sound"
+        android:key="@string/events_sound_key"
+        android:defaultValue="@string/events_sound_default"
+        android:ringtoneType="notification"
+        android:showSilent="true"
+        android:showDefault="true"
+        android:layout="@layout/custom_preferens_layout"/>
+
+    <SwitchPreference
+        android:title="@string/events_vibro"
+        android:key="@string/events_vibro_key"
+        android:defaultValue="@bool/events_vibro_default"
+        android:layout="@layout/custom_preferens_layout" />
+    <SwitchPreference
+        android:title="@string/events_show_text"
+        android:key="@string/events_show_text_key"
+        android:defaultValue="@bool/events_show_text_default"
+        android:layout="@layout/custom_preferens_layout"/>
+
+
+    <SwitchPreference
+        android:title="@string/events_first_only"
+        android:key="@string/events_first_only_key"
+        android:defaultValue="@bool/events_first_only_default"
+        android:layout="@layout/custom_preferens_layout"/>
+
+</PreferenceScreen>

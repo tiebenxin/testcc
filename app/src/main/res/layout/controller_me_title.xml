@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dimen_180"
+    android:background="@drawable/ic_me_bg"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/ll_left"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/dimen_22"
+        android:layout_marginLeft="@dimen/dimen_16"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <com.lensim.fingerchat.components.widget.CircleImageView
+            android:id="@+id/iv_head"
+            android:layout_width="@dimen/dimen_54"
+            android:layout_height="@dimen/dimen_54"
+            android:layout_gravity="bottom"
+            android:src="@drawable/ic_me_head_default"
+            app:civ_border_color="@color/border_color"
+            app:civ_border_width="1dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="@dimen/dimen_12"
+            android:gravity="bottom"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="name"
+                android:textColor="@color/white"
+                android:textSize="@dimen/dimen_18_sp" />
+
+            <LinearLayout
+                android:id="@+id/ll_identify"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dimen_10"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/iv_identify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_authentication" />
+
+                <TextView
+                    android:id="@+id/tv_identify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dimen_5"
+                    android:text="@string/identified"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/dimen_12_sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="@dimen/dimen_54"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:id="@+id/rl_code"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dimen_36"
+            android:layout_marginBottom="@dimen/dimen_96"
+            android:layout_marginTop="@dimen/dimen_48"
+            android:background="@drawable/ic_code_bg">
+
+            <ImageView
+                android:id="@+id/iv_code"
+                android:layout_width="@dimen/dimen_18"
+                android:layout_height="@dimen/dimen_18"
+                android:layout_centerInParent="true"
+                android:src="@drawable/ic_code" />
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

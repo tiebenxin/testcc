@@ -1,0 +1,87 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/conversation_toolbar_top_layout"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:layout_marginTop="-5dp"
+    android:layout_alignParentTop="true"
+    android:background="#66000000">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <com.lensim.fingerchat.hexmeet.widget.LongPressButton
+            android:id="@+id/call_statistics_btn"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/image_signal3"/>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/call_title"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#ffffff"
+            android:textSize="15sp"/>
+
+        <Chronometer
+            android:id="@+id/timer_chrono"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#ffffff"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/participants_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="15dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="21dp"
+            android:layout_height="21dp"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/icon_participants"/>
+
+        <TextView
+            android:id="@+id/participant_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:text="1"
+            android:textColor="#62d5ff"
+            android:textSize="15sp"/>
+
+        <ImageView
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginTop="3dp"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_dropdown"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+</RelativeLayout>

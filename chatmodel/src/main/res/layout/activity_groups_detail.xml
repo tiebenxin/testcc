@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <com.lensim.fingerchat.commons.toolbar.FGToolbar
+            android:id="@+id/toolbar"
+            style="@style/FGToolbarStyle"/>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tvGroupName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="10dp"
+                    android:background="@color/custom_divider_color"
+                    android:text="@string/groups_name"
+                    android:textSize="12sp"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:paddingTop="10dp"
+                    android:background="@drawable/edittext_bg">
+                    <EditText
+                        android:id="@+id/edit_group_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:background="@null"
+                        android:gravity="center_vertical"
+                        android:hint="@string/groups_name"
+                        android:textColor="@color/primary_text"
+                        android:textColorHint="@color/text_color_hint"
+                        android:textSize="14sp"
+                        />
+                </FrameLayout>
+                <TextView
+                    android:id="@+id/tvMember"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="10dp"
+                    android:background="@color/custom_divider_color"
+                    android:text="@string/groups_members"
+                    android:textSize="12sp"/>
+
+                <com.lensim.fingerchat.components.widget.NoScrollGridView
+                    android:id="@+id/group_memberlist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@color/white"
+                    android:horizontalSpacing="10dp"
+                    android:numColumns="5"
+                    android:verticalSpacing="5dp"/>
+
+
+                <Button
+                    android:id="@+id/bt_delete_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:layout_gravity="center_horizontal"
+                    android:padding="5dp"
+                    android:background="@drawable/bt_logout_selector"
+                    android:gravity="center"
+                    android:text="@string/delete_group"
+                    />
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+</layout>

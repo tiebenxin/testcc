@@ -1,0 +1,86 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <com.lensim.fingerchat.commons.toolbar.FGToolbar
+            android:id="@+id/toolbar_share_location"
+            style="@style/FGToolbarStyleWithNoOverflow"/>
+
+        <RelativeLayout
+            android:id="@+id/mapholder"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_below="@id/toolbar_share_location">
+
+            <com.baidu.mapapi.map.MapView
+                android:id="@+id/bmap_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"/>
+
+            <ImageButton
+                android:id="@+id/define_my_location"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="false"
+                android:scaleType="center"
+                android:src="@drawable/map_location"/>
+            <!--<ImageView-->
+            <!--android:id="@+id/bmap_center_icon"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerInParent="true"-->
+            <!--android:paddingBottom="45dp"-->
+            <!--android:src="@drawable/map_location" />-->
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/list_nearby_holder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@+id/mapholder"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ProgressBar
+                    android:id="@+id/loading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:textColor="@color/picker_status_color"
+                    android:textSize="24sp"
+                    android:visibility="gone"/>
+
+                <ListView
+                    android:id="@+id/list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:dividerHeight="1px"/>
+            </RelativeLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+</FrameLayout>

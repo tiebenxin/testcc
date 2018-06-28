@@ -1,0 +1,62 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/conversation_toolbar_layout"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginBottom="20dp"
+    android:layout_alignParentBottom="true"
+    android:background="#00000000"
+    android:gravity="center_horizontal">
+
+    <RelativeLayout
+        android:id="@+id/local_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:padding="2dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.lensim.fingerchat.hexmeet.widget.MLRoundedImageView
+            android:id="@+id/local_btn_img"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:alpha="0.6"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/icon_contact"/>
+
+        <ImageView
+            android:layout_width="19dp"
+            android:layout_height="19dp"
+            android:layout_alignEnd="@id/local_btn_img"
+            android:layout_alignTop="@id/local_btn_img"
+            android:src="@drawable/icon_max"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/remote_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:padding="2dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.lensim.fingerchat.hexmeet.widget.MLRoundedImageView
+            android:id="@+id/remote_btn_img"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:alpha="0.6"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/icon_group_blue"/>
+
+        <ImageView
+            android:layout_width="19dp"
+            android:layout_height="19dp"
+            android:layout_alignEnd="@id/remote_btn_img"
+            android:layout_alignTop="@id/remote_btn_img"
+            android:src="@drawable/icon_max"/>
+    </RelativeLayout>
+
+</LinearLayout>

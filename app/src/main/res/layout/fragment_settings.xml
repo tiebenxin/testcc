@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="Click"
+            type="com.lensim.fingerchat.fingerchat.component.databind.ClickHandle"/>
+    </data>
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_10"
+                android:background="@color/activity_bg"/>
+
+            <!-- 消息提醒 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_message_remind"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_setting_message_reminder"
+                app:title="@string/message_remind"
+                app:title_size="14"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <!-- 聊天设置 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_chat"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_chat"
+                app:title="@string/chat"
+                app:title_size="14"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <!-- 通用 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_general"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_setting_currency"
+                app:title="@string/general"
+                app:title_size="14"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <!-- 通用 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_identify"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_identify"
+                app:title="@string/identify"
+                app:title_size="14"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <!-- 账号和安全 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_account_safe"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_setting_security"
+                app:title="@string/account_and_safe"
+                app:title_size="14"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <!-- 关于飞鸽 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_about_fg"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_setting_info"
+                app:title="@string/about_fg"
+                app:title_size="14"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <!-- 帮组和反馈 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_help_feedback"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_setting_help"
+                app:title="@string/help_and_feedback"
+                app:title_size="14"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_10"
+                android:background="@color/activity_bg"/>
+
+            <!-- 清除数据 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_clear_cache"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_setting_clear_cache"
+                app:title="@string/clear_cache"
+                app:title_size="14"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <!-- 数据刷新 -->
+            <com.lensim.fingerchat.fingerchat.view.UserMenuView
+                android:id="@+id/menu_refresh_data"
+                style="@style/RippleTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_50"
+                android:onClick="@{Click.onClick}"
+                app:left_icon="@drawable/ic_setting_data_refresh"
+                app:title="@string/refresh_data"
+                app:title_size="14"/>
+
+            <!-- 退出登录 -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/dimen_58"
+                android:paddingBottom="@dimen/dimen_46"
+                android:paddingLeft="@dimen/dimen_24"
+                android:paddingRight="@dimen/dimen_24"
+                android:background="@color/activity_bg">
+
+                <Button
+                    android:id="@+id/btn_login_out"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dimen_50"
+                    android:background="@drawable/selector_login_out_bg"
+                    android:gravity="center"
+                    android:onClick="@{Click.onClick}"
+                    android:text="@string/login_out"
+                    android:textColor="@color/red_53"
+                    android:textSize="@dimen/dimen_18_sp"/>
+            </FrameLayout>
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+</layout>

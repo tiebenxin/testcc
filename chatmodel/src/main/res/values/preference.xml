@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="default_sound">com.fingerchat.android.DEFAULT_SOUND</string>
+
+    <string name="chats_attention_sound_default">@string/default_sound</string>
+    <string name="chats_send_by_enter_key">chats_send_by_enter</string>
+    <string name="chats_attention_key">chats_attention</string>
+    <string name="events_sound">选择新消息提示音</string>
+    <string name="events_sound_key">events_sound</string>
+    <string name="events_sound_default">@string/default_sound</string>
+    <string name="events_vibro">振动提示</string>
+    <string name="events_vibro_key">events_vibro</string>
+    <string name="events_show_text">显示消息内容</string>
+    <string name="events_show_text_key">events_show_text</string>
+    <string name="events_visible_chat">在当前聊天中显示通知</string>
+    <string name="events_first_only">仅第一条消息发出通知</string>
+    <string name="events_visible_chat_key">events_visible_chat</string>
+    <string name="events_first_only_key">events_first_only</string>
+    <string name="preference_commom">字体大小</string>
+    <string name="preference_aboat">关于</string>
+    <string name="chats_voice_outer">使用扬声器播放语音</string>
+    <string name="chats_voice_outer_key">chats_voice_outer</string>
+    <string name="events_notify">接收新消息通知</string>
+    <string name="chats_font_size">字体大小</string>
+    <string name="events_notify_key">events_notify</string>
+    <string name="preference_account_security">账号与安全</string>
+    <string name="events_auto_enter_muc">自动入群</string>
+    <string name="security_check_certificate_key">check_certificate_key</string>
+    <string name="preference_delete_cache">清除缓存</string>
+    <bool name="chats_send_by_enter_default">false</bool>
+    <bool name="chats_attention_default">true</bool>
+    <bool name="events_vibro_default">true</bool>
+    <bool name="events_show_text_default">true</bool>
+    <bool name="events_visible_chat_default">false</bool>
+    <bool name="events_first_only_default">false</bool>
+    <bool name="chats_voice_outer_default">true</bool>
+    <bool name="events_notify_default">true</bool>
+    <bool name="events_auto_enter_muc_default">true</bool>
+    <bool name="security_check_certificate_default">true</bool>
+</resources>

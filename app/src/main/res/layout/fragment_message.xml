@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/viewSearch"
+        layout="@layout/layout_search"/>
+
+    <include
+        android:id="@+id/viewNetError"
+        layout="@layout/layout_net_error"
+        android:visibility="gone"/>
+
+    <com.lensim.fingerchat.components.pulltorefresh.refresh_listview.RefreshListView
+        android:id="@+id/lv_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:drawSelectorOnTop="true"
+        android:listSelector="@drawable/selector_list_item_bg"
+        android:scrollbars="none"/>
+
+
+</LinearLayout>

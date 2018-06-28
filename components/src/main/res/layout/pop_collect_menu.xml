@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <LinearLayout
+        android:id="@+id/ll_pop_collect_silent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ease_mm_listitem"
+        android:clickable="true"
+        android:minHeight="50dp"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/pop_menu_video_silent"
+            android:textColor="@color/work_item_text_color"
+            android:textSize="@dimen/normal_text_size"
+            />
+    </LinearLayout>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2px"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:background="@color/custom_divider_color"
+        />
+
+
+    <LinearLayout
+        android:id="@+id/ll_pop_trans"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ease_mm_listitem"
+        android:clickable="true"
+        android:visibility="gone"
+        android:minHeight="50dp"
+        >
+
+        <TextView
+            android:id="@+id/dialog_menu_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/pop_menu_trans"
+            android:textColor="@color/work_item_text_color"
+            android:textSize="@dimen/normal_text_size"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_pop_collect1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ease_mm_listitem"
+        android:clickable="true"
+        android:minHeight="50dp"
+        >
+
+        <TextView
+            android:id="@+id/dialog_menu_bottom1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/pop_menu_collect"
+            android:textColor="@color/work_item_text_color"
+            android:textSize="@dimen/normal_text_size"
+            />
+    </LinearLayout>
+
+</LinearLayout>

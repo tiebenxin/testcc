@@ -1,0 +1,15 @@
+*.iml
+.gradle
+.idea/
+local.properties
+build/
+
+/captures
+.externalNativeBuild
+
+#Log Files
+*.log
+
+#keystore
+*.jks
+

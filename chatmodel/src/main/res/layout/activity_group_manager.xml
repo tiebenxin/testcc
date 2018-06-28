@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/viewTitleBar"
+        style="@style/FGToolbarStyleWithNoOverflow" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:nestedScrollingEnabled="false" />
+
+            <TextView
+                android:id="@+id/group_o_show_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:gravity="center_horizontal"
+                android:paddingBottom="10dp"
+                android:text="查看全部群成员"
+                android:textColor="@color/color_474747"
+                android:textSize="17sp"
+                android:visibility="gone" />
+
+            <include layout="@layout/layout_divider" />
+
+            <TextView
+                android:id="@+id/group_o_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dimen_11"
+                android:paddingBottom="9dp"
+                android:paddingTop="9dp"
+                android:text="全部群成员(总数：0)"
+                android:textColor="@color/black_operation"
+                android:textSize="17sp" />
+
+            <include layout="@layout/layout_divider" />
+
+            <RelativeLayout
+                android:id="@+id/group_o_name_rl"
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="群聊名称"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/group_o_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dimen_11"
+                    android:drawableRight="@drawable/next_page"
+                    android:textColor="@color/color_474747"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <include layout="@layout/layout_divider" />
+
+
+            <RelativeLayout
+                android:id="@+id/group_o_name_erweima"
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="群二维码"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <ImageView
+                    android:id="@+id/group_o_erweima"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dimen_11"
+                    android:src="@drawable/qr_code_icon" />
+            </RelativeLayout>
+
+            <include layout="@layout/layout_divider" />
+
+            <RelativeLayout
+                android:id="@+id/group_o_manage_rl"
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="群管理"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/group_o_manage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dimen_11"
+                    android:drawableRight="@drawable/next_page"
+                    android:textColor="@color/color_474747"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <include layout="@layout/layout_divider" />
+
+            <RelativeLayout
+                android:id="@+id/group_o_admin_gaonggao_rl"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="群公告"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/group_o_admin_gaonggao_manage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dimen_11"
+                    android:drawableRight="@drawable/right_arrow"
+                    android:textColor="@color/color_474747"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/group_o_user_gonggao_rl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+
+                <TextView
+                    android:id="@+id/group_o_user_gonggao_left"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:layout_marginTop="15dp"
+                    android:text="群公告"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/group_user_o_gonggao"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/group_o_user_gonggao_left"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="12dp"
+                    android:ellipsize="end"
+                    android:maxEms="50"
+                    android:maxLines="5"
+                    android:textColor="@color/color_474747"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:background="@color/custom_divider_color" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="消息免打扰"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <CheckBox
+                    android:id="@+id/group_o_darao"
+                    style="@style/Msg_CustomCheckboxTheme"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:checked="false"
+                    android:clickable="true"
+                    android:enabled="true"
+                    android:padding="@dimen/dimen_11" />
+            </RelativeLayout>
+
+
+            <include layout="@layout/layout_divider" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="置顶聊天"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <CheckBox
+                    android:id="@+id/group_o_zhiding"
+                    style="@style/Msg_CustomCheckboxTheme"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:clickable="true"
+                    android:enabled="true"
+                    android:padding="@dimen/dimen_11" />
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:background="@color/custom_divider_color" />
+
+            <RelativeLayout
+                android:id="@+id/group_o_bchat_ll"
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="设置当前聊天背景"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dimen_11"
+                    android:drawableRight="@drawable/next_page"
+                    android:textColor="@color/color_474747"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <include layout="@layout/layout_divider" />
+
+            <RelativeLayout
+                android:id="@+id/group_o_nicheng_ll"
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dimen_11"
+                    android:text="我在本群的昵称"
+                    android:textColor="@color/black_operation"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/group_o_nicheng"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dimen_11"
+                    android:drawableRight="@drawable/next_page"
+                    android:textColor="@color/color_474747"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:background="@color/custom_divider_color" />
+
+            <TextView
+                android:id="@+id/group_o_clear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dimen_11"
+                android:paddingBottom="9dp"
+                android:paddingTop="9dp"
+                android:text="清除聊天记录"
+                android:textColor="@color/black_operation"
+                android:textSize="17sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:background="@color/custom_divider_color" />
+
+            <LinearLayout
+                android:id="@+id/group_botton_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/custom_divider_color">
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    app:cardBackgroundColor="@color/red_53"
+                    app:cardCornerRadius="7dp"
+                    app:cardElevation="0dp"
+                    app:cardMaxElevation="0dp"
+                    app:cardPreventCornerOverlap="true"
+                    app:cardUseCompatPadding="true">
+
+                    <Button
+                        android:id="@+id/item_ip_avatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:background="@color/red_53"
+                        android:textColor="@color/white"
+                        android:textSize="18sp" />
+
+                </android.support.v7.widget.CardView>
+            </LinearLayout>
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:descendantFocusability="blocksDescendants"
+        android:orientation="vertical">
+
+
+        <android.support.v4.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dimen_180">
+                    <android.support.v4.view.ViewPager
+                        android:id="@+id/viewpager"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
+                    <RelativeLayout
+                        android:id="@+id/rl_dots"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/dimen_20"
+                        android:layout_marginLeft="@dimen/dimen_20"
+                        android:layout_alignParentBottom="true">
+                        <LinearLayout
+                            android:id="@+id/ll_points"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"/>
+
+                        <ImageView
+                            android:id="@+id/iv_point"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </RelativeLayout>
+                </RelativeLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/unread_ll"
+                        style="@style/work_center_ll">
+
+                        <ImageView
+                            style="@style/work_center_iv"
+                            android:src="@drawable/unread_log"/>
+
+                        <TextView
+                            style="@style/work_center_tv"
+                            android:text="@string/unread_log"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/approval_process_ll"
+                        style="@style/work_center_ll">
+
+                        <ImageView
+                            style="@style/work_center_iv"
+                            android:src="@drawable/pending_approval"/>
+
+                        <TextView
+                            style="@style/work_center_tv"
+                            android:text="@string/pending_approval"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/process_ll"
+                        style="@style/work_center_ll">
+
+                        <ImageView
+                            style="@style/work_center_iv"
+                            android:src="@drawable/my_process"/>
+
+                        <TextView
+                            style="@style/work_center_tv"
+                            android:text="@string/my_process"/>
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/work_center_rv"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                        </android.support.v7.widget.RecyclerView>
+
+                    </LinearLayout>
+
+
+                    <include
+                        android:id="@+id/view_badnet"
+                        layout="@layout/layout_bad_net"
+                        android:visibility="gone"/>
+
+                </FrameLayout>
+
+
+            </LinearLayout>
+
+        </android.support.v4.widget.NestedScrollView>
+
+    </LinearLayout>
+
+
+</layout>

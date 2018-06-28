@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <com.lensim.fingerchat.components.widget.SquareLayout
+            android:id="@+id/item_sl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <ImageButton
+                android:id="@+id/item_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="12dp"
+                android:minWidth="12dp"
+                android:src="@drawable/job_delete"
+                android:visibility="gone"
+                android:layout_marginTop="6dp"
+                android:background="@android:color/transparent"/>
+            <ImageView
+                android:id="@+id/item_pic"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:layout_marginTop="16dp"
+                android:layout_centerHorizontal="true"
+                android:scaleType="fitXY"
+                android:src="@drawable/data_center"
+                />
+            <TextView
+                android:id="@+id/item_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="12dp"
+                android:minHeight="12dp"
+                android:visibility="gone"
+                android:layout_marginTop="6dp"
+                android:layout_alignParentRight="true"
+                android:text="1"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:background="@drawable/work_message"/>
+            <TextView
+                android:id="@+id/item_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/item_pic"
+                android:layout_marginTop="11dp"
+                android:textSize="13sp"
+                android:textColor="@color/work_item_text_color"
+                android:layout_centerHorizontal="true"
+                android:text="@string/data_center"/>
+            <View
+                android:layout_width="0.5dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:background="@color/work_item_bg"/>
+
+        </com.lensim.fingerchat.components.widget.SquareLayout>
+
+    </RelativeLayout>
+
+</layout>

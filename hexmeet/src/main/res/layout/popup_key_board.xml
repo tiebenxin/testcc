@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/background"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="bottom"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#e1e1e1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <Button
+            android:id="@+id/one"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="1"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/two"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="2"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/three"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="3"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#e1e1e1"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <Button
+            android:id="@+id/four"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="4"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/five"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="5"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/six"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="6"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#e1e1e1"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <Button
+            android:id="@+id/seven"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="7"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/eight"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="8"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/nine"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="9"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#e1e1e1"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <Button
+            android:id="@+id/dot"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="."
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/zero"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="0"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <Button
+            android:id="@+id/star"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="*"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#e1e1e1"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <LinearLayout
+            android:id="@+id/exit"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:gravity="center" >
+
+            <ImageButton
+                android:id="@+id/exit_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="#0fff"
+                android:scaleType="fitCenter"
+                android:src="@drawable/key_exit" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <LinearLayout
+            android:id="@+id/join_via_video"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_call_bkg"
+            android:gravity="center" >
+
+            <ImageButton
+                android:id="@+id/call_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="#0fff"
+                android:scaleType="fitCenter"
+                android:src="@drawable/key_call" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/enter"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:text="@string/commit"
+            android:textAllCaps="false"
+            android:textColor="@drawable/popup_key_label"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="#e1e1e1" />
+
+        <LinearLayout
+            android:id="@+id/backspace"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:background="@drawable/popup_key_bkg"
+            android:gravity="center" >
+
+            <ImageButton
+                android:id="@+id/backspace_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="#0fff"
+                android:scaleType="fitCenter"
+                android:src="@drawable/key_backspace" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="1dp"
+        android:paddingBottom="0.5dp"
+        android:paddingLeft="10dp"
+        android:background="@color/work_title_bg"
+        android:textColor="#8a99ac"
+        android:textSize="14sp"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/ease_mm_listitem"
+        android:duplicateParentState="true"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="43dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp">
+
+            <com.lensim.fingerchat.commons.widgt.AvatarImageView
+                android:id="@+id/iv_msg_stub"
+                android:layout_width="43dp"
+                android:layout_height="43dp"
+                android:layout_gravity="center"
+                android:background="@color/custom_divider_color"/>
+        </FrameLayout>
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="4dp"
+                android:layout_gravity="center_vertical"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:text="名字"
+                android:textColor="#333333"
+                android:textSize="@dimen/normal_text_size"/>
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/contact_summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:textColor="@color/secondary_text"
+                    android:textSize="@dimen/small_text_size"
+                    android:visibility="gone"/>
+
+                <ImageView
+                    android:id="@+id/isValid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="4dp"
+                    android:background="@null"/>
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/iv_checkbox"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="30dp"
+            android:layout_gravity="center_vertical"
+            android:background="@android:color/transparent"
+            android:scaleType="centerInside"
+            android:src="@drawable/check_box"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="primary">#0e8fdb</color>
+    <color name="primary_dark">#0e8fdb</color>
+    <color name="accent">#448AFF</color>
+    <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
+    <color name="custom_divider_color">#ebebeb</color>
+    <color name="gay_identify_code">#535353</color>
+    <color name="divider">#B6B6B6</color>
+    <color name="transparent">#00000000</color>
+    <color name="black_33">#333333</color>
+    <color name="toolbar_background">#0e8fdb</color>
+
+    <color name="border_color">#f5f5f5</color>
+    <color name="btn_border">#cccccc</color>
+
+
+
+    <color name="host_notice">#8c8c8c</color>
+    <color name="gray_pressed">#b5b5b6</color>
+    <color name="apply_normal">#c6c6c6</color>
+    <color name="color_474747">#474747</color>
+    <color name="plan_edit_item_title">#777777</color>
+    <color name="common_travel_color">#2CC9B3</color>
+    <color name="color_8b8b8b">#8b8b8b</color>
+    <color name="travel_stories_item_date_color">#565656</color>
+
+    <!-- 个人中心 -->
+    <color name="work_title_bg">#f5f5f5</color>
+    <color name="comment_blue">#880e8fdb</color>
+    <color name="primary_text">#333333</color>
+    <color name="bbwhite">#bbffffff</color>
+    <color name="im_line_color">#dadada</color>
+    <color name="common_bg">#fcfcfc</color>
+    <color name="bg_search_note">#f5f5f5</color>
+
+    <!-- 个人中心 end-->
+
+    <!-- 工作中心-->
+    <color name="sub_title">#666666</color>
+    <color name="work_item_text_color">#333333</color>
+    <color name="work_item_bg">#ebebeb</color>
+    <color name="work_center_tv">#999999</color>
+    <color name="clock_in_dialog_address">#666666</color>
+
+    <!-- 工作中心 end-->
+
+    <color name="bghuise">#F2F2F2</color>
+    <color name="orange">#FFA500</color>
+
+
+
+    <color name="side_bar_pressed">#BFBFBF</color>
+    <color name="gray2">#969696</color>
+    <!-- group end-->
+
+    <color name="tab_tv_selected">@color/primary_dark</color>
+    <color name="tab_tv_normal">@android:color/darker_gray</color>
+
+    <color name="ripplecolor_lvitem">@android:color/darker_gray</color>
+</resources>

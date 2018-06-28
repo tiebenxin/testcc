@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#33000000"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="273dp"
+        android:layout_height="270dp"
+        android:alpha="0.85"
+        android:background="@drawable/bg_conference_item" >
+
+        <RelativeLayout
+            android:id="@+id/head_bar"
+            android:layout_width="match_parent"
+            android:layout_height="33dp"
+            android:layout_alignParentTop="true"
+            android:background="#f4f4f4" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/participant_detail"
+                android:textColor="#313131"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <RelativeLayout
+                android:id="@+id/close"
+                android:layout_width="33dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:clickable="true" >
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/btn_close" />
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/audio_video_bar"
+            android:layout_width="match_parent"
+            android:layout_height="33dp"
+            android:layout_below="@id/head_bar"
+            android:background="#e5f4f4f4" >
+
+            <TextView
+                android:id="@+id/video_participant_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:gravity="center"
+                android:text="@string/video"
+                android:textColor="#313131"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/audio_participant_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:gravity="center"
+                android:text="@string/audio"
+                android:textColor="#919191"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bottom_bar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_below="@id/audio_video_bar"
+            android:background="#e5f4f4f4"
+            android:orientation="horizontal" >
+
+            <View
+                android:id="@+id/video_bottom_bar"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="12dp"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="#f04848" />
+
+            <View
+                android:id="@+id/audio_bottom_bar"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="12dp"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="#f04848"
+                android:visibility="invisible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@id/bottom_bar"
+            android:background="#e5ffffff"
+            android:orientation="horizontal" >
+
+            <ListView
+                android:id="@+id/video_participant_list"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_marginTop="1dp" />
+
+            <ListView
+                android:id="@+id/audio_participant_list"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_marginTop="1dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

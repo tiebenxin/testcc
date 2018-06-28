@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="2dip"
+    android:orientation="vertical">
+    <!--    android:paddingTop="2dip"-->
+
+    <!--<View-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="0.5dp"-->
+    <!--android:background="@color/gray_normal" />-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:background="#aaffffff"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_set_mode_voice"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginLeft="6dp"
+            android:background="@drawable/voice_chat"
+            android:visibility="visible"/>
+
+        <Button
+            android:id="@+id/btn_set_mode_keyboard"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginLeft="6dp"
+            android:background="@drawable/ease_chatting_setmode_keyboard_btn"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/btn_secret"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginLeft="6dp"
+            android:padding="@dimen/dimen_3"
+            android:src="@drawable/unread_icon"
+            android:visibility="gone"/>
+
+        <LinearLayout
+            android:id="@+id/btn_press_to_speak"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:background="@drawable/ease_chat_press_speak_btn"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:text="@string/button_pushtotalk"
+                android:textColor="#666666"
+                android:textSize="16sp"/>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/edittext_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="bottom">
+
+            <EditText
+                android:id="@+id/et_sendmessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="3dp"
+                android:paddingBottom="1dp"
+                android:paddingLeft="1dp"
+                android:paddingRight="1dp"
+                android:background="@null"
+                android:gravity="center_vertical"
+                android:imeOptions="actionSend"
+                android:maxLines="3"
+                android:minHeight="40dp"
+                android:textColor="@color/black_33"
+                android:textSize="18sp"/>
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/rl_face"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="15dp"
+            android:layout_gravity="center_vertical"
+            >
+            <ImageView
+                android:id="@+id/iv_face_normal"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="1dip"
+                android:scaleType="fitCenter"
+                android:src="@drawable/emoticons"
+                android:visibility="visible"/>
+
+            <ImageView
+                android:id="@+id/iv_face_checked"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="1dip"
+                android:scaleType="fitCenter"
+                android:src="@drawable/emoticons"
+                android:visibility="invisible"/>
+
+        </RelativeLayout>
+        <Button
+            android:id="@+id/btn_more"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/ease_type_select_btn"/>
+
+        <ImageButton
+            android:id="@+id/btn_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="4dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/chat_to_send"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+</LinearLayout>

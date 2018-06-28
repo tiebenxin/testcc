@@ -1,0 +1,51 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.greenrobot.greendao'
+
+android {
+    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.android["minSdkVersion"]
+        targetSdkVersion rootProject.ext.android["targetSdkVersion"]
+        versionCode 1
+        versionName "1.0"
+        consumerProguardFiles 'proguard-rules.pro'
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        debug {}
+        beta {}
+        release {}
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    greendao {
+        //指定数据库schema版本号，迁移等操作会用到
+        schemaVersion 1
+        daoPackage 'com.lensim.fingerchat.db.greendao'
+        targetGenDir 'src/main/java'
+    }
+}
+
+
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(path: ':commons')
+    implementation project(path: ':fingerchat-sdk')
+    implementation rootProject.ext.dependencies["appcompat-v7"]
+    testCompile "junit:junit:$rootProject.ext.junitVersion"
+    androidTestImplementation "com.android.support.test:runner:$rootProject.ext.runnerVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$rootProject.ext.espressoVersion"
+//    implementation 'org.greenrobot:greendao:3.2.2'
+//    implementation 'org.greenrobot:greendao-generator:3.2.2'
+    implementation files('libs/greendao-3.2.2.jar')
+    implementation files('libs/greendao-api-3.2.2.jar')
+}

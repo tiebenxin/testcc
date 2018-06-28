@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/work_title_bg"
+        android:orientation="vertical">
+
+        <com.lensim.fingerchat.commons.toolbar.FGToolbar
+            android:id="@+id/clock_in_toolbar"
+            style="@style/FGToolbarStyle">
+
+        </com.lensim.fingerchat.commons.toolbar.FGToolbar>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:paddingLeft="10dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_clock_time_hint"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginRight="16dp"
+                        android:text="打卡时间"
+                        android:textSize="@dimen/dimen_14_sp" />
+                    <TextView
+                        android:id="@+id/tv_clock_time"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="4"
+                        android:textColor="@color/red"
+                        android:text="打卡时间"
+                        android:textSize="@dimen/dimen_14_sp" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/custom_divider_color">
+
+                </View>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:paddingLeft="10dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_clock_address_hint"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginRight="16dp"
+                        android:text="打卡地点"
+                        android:textSize="@dimen/dimen_14_sp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="4"
+                        android:paddingRight="15dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/tv_clock_address"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:text="adderss"
+                            android:textSize="@dimen/dimen_14_sp" />
+
+                        <com.baidu.mapapi.map.MapView
+                            android:id="@+id/mapView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:minHeight="180dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/custom_divider_color"></View>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:paddingBottom="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tv_input_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
+                        android:minHeight="50dp"
+                        android:textColor="@color/blue"
+                        android:textSize="@dimen/dimen_14_sp"/>
+                    <com.lensim.fingerchat.components.widget.NoScrollGridView
+                        android:id="@+id/statu_img_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:horizontalSpacing="3dp"
+                        android:numColumns="5"
+                        android:scrollbars="none"
+                        android:verticalSpacing="5dp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_people_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="15dp"
+                    android:paddingLeft="10dp"
+                    android:background="@drawable/ease_mm_listitem"
+                    android:text="汇报人"
+                    android:textSize="@dimen/dimen_14_sp"/>
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+</layout>

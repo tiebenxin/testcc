@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_selectpic"
+        android:icon="@drawable/ofm_qrcode_icon"
+        android:title="从图库选择"
+        app:showAsAction="never"/>
+</menu>

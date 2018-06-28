@@ -1,0 +1,155 @@
+package com.fingerchat.api.client;
+
+import com.fingerchat.api.Constants;
+import com.fingerchat.api.Logger;
+import com.fingerchat.api.util.IOUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import static com.fingerchat.api.Constants.DEFAULT_SO_TIMEOUT;
+
+/**
+ * Created by LY309313 on 2017/9/26.
+ */
+
+public class AllotClient {
+
+
+    private List<String> serverAddress = new ArrayList<>();
+
+    public List<String> getServerAddress() {
+        if (serverAddress.isEmpty()) {
+            serverAddress.add("oa.fingerchat.net:9999");
+//            serverAddress.add("10.3.7.111:9999");
+//            serverAddress.add("172.16.6.54:9999");
+            //  serverAddress = queryServerAddressList();
+        }
+        return serverAddress;
+    }
+
+    public List<String> queryServerAddressList() {
+        ClientConfig config = ClientConfig.I;
+        Logger logger = config.getLogger();
+
+        if (config.getAllotServer() == null) {
+            if (config.getServerHost() != null) {
+                serverAddress.add(config.getServerHost() + ":" + config.getServerPort());
+            }
+            return serverAddress;
+        }
+
+        HttpURLConnection connection;
+        try {
+            URL url = new URL(config.getAllotServer());
+            connection = (HttpURLConnection) url.openConnection();
+            if (config.getAllotServer().startsWith("https")) {
+                ((HttpsURLConnection) connection).setSSLSocketFactory(getSSLSocketFactory());
+                ((HttpsURLConnection) connection).setHostnameVerifier(new NullHostnameVerifier());
+            }
+            connection.setConnectTimeout(DEFAULT_SO_TIMEOUT);
+            connection.setReadTimeout(DEFAULT_SO_TIMEOUT);
+            connection.setUseCaches(false);
+            connection.setDoInput(true);
+            connection.setDoOutput(false);
+            int statusCode = connection.getResponseCode();
+            if (statusCode != HttpURLConnection.HTTP_OK) {
+                logger.w("get server address failure statusCode=%d", statusCode);
+                connection.disconnect();
+                return serverAddress;
+            }
+        } catch (Exception e) {
+            logger.e(e, "get server address ex, when connect server. allot=%s",
+                config.getAllotServer());
+            return Collections.emptyList();
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream(128);
+        byte[] buffer = new byte[128];
+        InputStream in = null;
+        try {
+            in = connection.getInputStream();
+            int count;
+            while ((count = in.read(buffer)) != -1) {
+                out.write(buffer, 0, count);
+            }
+        } catch (IOException ioe) {
+            logger.e(ioe, "get server address ex, when read result.");
+            return serverAddress;
+        } finally {
+            IOUtils.close(in);
+            connection.disconnect();
+        }
+
+        byte[] content = out.toByteArray();
+        if (content.length > 0) {
+            String result = new String(content, Constants.UTF_8);
+            logger.w("get server address success result=%s", result);
+            List<String> serverAddress = new ArrayList<>();
+            serverAddress.addAll(Arrays.asList(result.split(",")));
+            this.serverAddress = serverAddress;
+        } else {
+            logger.w("get server address failure return content empty.");
+        }
+
+        return serverAddress;
+    }
+
+    private SSLSocketFactory getSSLSocketFactory() {
+        return getTrustAllContext().getSocketFactory();
+    }
+
+    private SSLContext getTrustAllContext() {
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext
+                .init(null, new TrustManager[]{new TrustAnyTrustManager()}, new SecureRandom());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return sslContext;
+    }
+
+    private static class TrustAnyTrustManager implements X509TrustManager {
+
+        public void checkClientTrusted(X509Certificate[] chain, String authType)
+            throws CertificateException {
+        }
+
+        public void checkServerTrusted(X509Certificate[] chain, String authType)
+            throws CertificateException {
+        }
+
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
+
+    private static class NullHostnameVerifier implements HostnameVerifier {
+
+        @Override
+        public boolean verify(String s, SSLSession sslSession) {
+            return true;
+        }
+    }
+
+}

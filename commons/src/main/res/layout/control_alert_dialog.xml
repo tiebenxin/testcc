@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_view_padding">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/pnlPlace"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/dlg_back_place_light"
+            android:focusableInTouchMode="true"
+            android:gravity="center|top"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/pnlHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <com.hellopal.android.common.ui.controls.ControlTextView
+                    android:id="@+id/txt_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerInParent="true"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="2"
+                    android:minHeight="@dimen/default_btn_height"
+                    android:padding="@dimen/indent_4"
+                    android:textColor="@color/lrp_gray2"
+                    android:textSize="@dimen/text_20" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/container"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/dlg_back_content_light"
+                android:padding="@dimen/indent_4"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/ll_buttons"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_view_padding"
+                android:layout_weight="1"
+                android:divider="@drawable/divider_6dp"
+                android:orientation="vertical"
+                android:showDividers="middle"/>
+
+            <TableLayout
+                android:id="@+id/tbl_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_view_padding"
+                android:layout_weight="1">
+
+                <TableRow
+                    android:id="@+id/btns_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </TableLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

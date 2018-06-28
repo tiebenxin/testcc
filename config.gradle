@@ -1,0 +1,71 @@
+ext {
+    def android_support_version = "26.1.0"
+    def gradle_version = "3.0.0"
+
+    android = [
+        compileSdkVersion: 26,
+        buildToolsVersion: "26.0.2",
+        applicationId    : "com.lensim.fingerchat.fingerchat",
+        minSdkVersion    : 16,
+        targetSdkVersion : 23,
+        versionCode      : 1,
+        versionName      : "1.0.5",
+        "gradle"         : "com.android.tools.build:gradle:" + gradle_version
+    ]
+
+    dependencies = [
+        "appcompat-v7"       : "com.android.support:appcompat-v7:" + android_support_version,
+        "support-v4"         : "com.android.support:support-v4:" + android_support_version,
+        "design"             : "com.android.support:design:" + android_support_version,
+        "support-annotations": "com.android.support:support-annotations:" + android_support_version,
+        "cardview-v7"        : "com.android.support:cardview-v7:" + android_support_version,
+        "recyclerview"       : "com.android.support:recyclerview-v7:" + android_support_version
+    ]
+
+    // App dependencies
+    multidexVersion = '1.0.1'
+    constraintVersion = '1.0.0'
+    junitVersion = '4.12'
+    butterknifeVersion = '5.1.1'
+    glideVersion = '3.7.0'
+    eventbusVersion = '3.0.0'
+    magicIndicatorVersion = '1.5.0'
+    runnerVersion = '1.0.1'
+    espressoVersion = '3.0.1'
+    mp3recorderVersion = '1.0.4'
+    guavaVersion = '18.0'
+    okhttpVersion = '3.9.1'
+    retrofitVersion = '2.3.0'
+    rxjavaVersion = '2.1.7'
+    rxandroidVersion = '2.0.1'
+    percentSupportExtendsVersion = '1.1.1'
+    supportLibraryVersion = '25.3.1'
+
+    host = [
+        /**
+         * DEV 开发环境
+         */
+        HOST_DEV : '',
+        /**
+         * QA 测试环境
+         */
+        HOST_QA  : 'http://oa.fingerchat.net:9999',
+        /**
+         * RE 正式环境
+         */
+        HOST_PROD: 'http://mobile.fingerchat.cn:9696'
+    ]
+
+    /**
+     * 默认环境
+     */
+    host_default = host.HOST_QA
+    /**
+     * beta 环境
+     */
+    host_beta = host.HOST_QA
+    /**
+     * release 生产环境
+     */
+    host_release = host.HOST_PROD
+}

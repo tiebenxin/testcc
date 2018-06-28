@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.lensim.fingerchat.components.widget.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="#3a3a3a">
+
+  <com.lensim.fingerchat.components.widget.SquaredImageView
+    android:id="@+id/image"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="centerInside"
+    android:src="@drawable/default_error" />
+
+  <View
+    android:id="@+id/mask"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#88000000"
+    android:visibility="gone" />
+
+  <ImageView
+    android:id="@+id/moivemark"
+    android:layout_width="25dp"
+    android:layout_height="20dp"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_gravity="bottom"
+    android:src="@drawable/movie"
+    android:visibility="visible" />
+
+  <TextView
+    android:id="@+id/tv_gif"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_gravity="bottom"
+    android:background="@drawable/shape_gif"
+    android:gravity="center"
+    android:text="GIF"
+    android:textColor="#88000000"
+    android:textSize="12sp"
+    android:visibility="gone" />
+  <ImageView
+    android:id="@+id/checkmark"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="5.5dp"
+    android:layout_marginRight="5.5dp"
+    android:layout_gravity="top|right"
+    android:src="@drawable/btn_unselected" />
+
+</com.lensim.fingerchat.components.widget.SquareFrameLayout>

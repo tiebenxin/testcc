@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <com.lens.chatmodel.view.photoview.ZoomImageView
+    android:id="@+id/animation"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center" />
+
+  <ImageView
+    android:id="@+id/iv_play"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clickable="false"
+    android:focusable="false"
+    android:scaleType="center"
+    android:src="@drawable/icn_play_big"
+    android:visibility="gone" />
+
+  <TextView
+    android:id="@+id/lookOrigin"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="15dp"
+    android:layout_gravity="bottom|center_horizontal"
+    android:padding="5dp"
+    android:background="@drawable/bg_tv_str_cor"
+    android:gravity="center"
+    android:minWidth="100dp"
+    android:textColor="@color/white"
+    android:visibility="gone" />
+</FrameLayout>

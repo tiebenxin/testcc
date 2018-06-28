@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pop_input_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#cc0f0e15"
+    android:orientation="vertical">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+        <TextView
+            android:id="@+id/pop_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:gravity="center"
+            android:text="@string/btn_cancel"
+            android:textColor="@color/white"
+            android:textSize="16sp"/>
+        <TextView
+            android:id="@+id/pop_confrim"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:gravity="center"
+            android:text="@string/btn_confrim"
+            android:textColor="@color/primary"
+            android:textSize="16sp"/>
+
+    </FrameLayout>
+
+    <ScrollView
+        android:id="@+id/pop_input_sc"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+        <EditText
+            android:id="@+id/pop_et"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:gravity="top|left"
+            />
+    </ScrollView>
+
+    <FrameLayout
+        android:id="@+id/colorviewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:background="@android:color/transparent">
+
+        <com.lens.chatmodel.view.photoedit.ColorPickView
+            android:id="@+id/colorview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:bar_height="8dp"
+            app:block_index="0"/>
+    </FrameLayout>
+</LinearLayout>

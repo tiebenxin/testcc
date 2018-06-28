@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/viewTitleBar"
+        style="@style/FGToolbarStyleWithNoOverflow"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:paddingBottom="10dp">
+
+
+        <ImageView
+            android:id="@+id/remind_search"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/search_account" />
+
+        <EditText
+            android:id="@+id/remind_et_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@id/remind_search"
+            android:background="@null"
+            android:hint="搜索"
+            android:singleLine="true"
+            android:textColor="#353535"
+            android:textColorHint="#484c4c"
+            android:textSize="16sp" />
+
+    </RelativeLayout>
+
+    <include layout="@layout/layout_divider" />
+
+
+    <!--联系人选择列表-->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/remind_rvContacts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</LinearLayout>

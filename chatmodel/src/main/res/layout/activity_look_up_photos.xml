@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mLookUpPhotosMain"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/black">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/mLookUpPhotosPager"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"/>
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/mLookUpPhotosToolbar"
+        android:layout_width="match_parent"
+        android:background="@color/primary"
+        android:layout_height="?actionBarSize"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:baselineAligned="true"
+        android:fitsSystemWindows="true"
+        android:gravity="bottom"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/mLookUpPhotosContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="#cc0f0e15"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxLines="4"
+            android:shadowColor="@color/dark_gray"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textColor="@color/white"
+            android:textSize="14sp"/>
+
+        <LinearLayout
+            android:id="@+id/mLookUpPhotosBottom"
+            android:layout_width="match_parent"
+            android:layout_height="49dp"
+            android:background="#333333"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/mLookUpPhotosZam"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingLeft="10dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/mLookUpPhotosCommentImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/photo_points_like"/>
+
+                <TextView
+                    android:id="@+id/mLookUpPhotosZamText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10dp"
+                    android:layout_gravity="right"
+                    android:gravity="center"
+                    android:text="@string/zam"
+                    android:textColor="@color/white"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/mLookUpPhotosComment"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingLeft="10dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/photo_comment"/>
+
+                <TextView
+                    android:id="@+id/mLookUpPhotosComenText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10dp"
+                    android:layout_gravity="right"
+                    android:gravity="center"
+                    android:text="@string/comment"
+                    android:textColor="@color/white"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+
+            <View
+                android:layout_width="1px"
+                android:layout_height="match_parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@color/black"/>
+
+            <LinearLayout
+                android:id="@+id/mLookUpPhotosCount"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="?android:attr/selectableItemBackground"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/mLookUpPhotosZamCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10dp"
+                    android:drawableLeft="@drawable/photo_points_like"
+                    android:gravity="center"
+                    android:minWidth="40dp"
+                    android:textColor="@color/white"
+                    />
+
+                <TextView
+                    android:id="@+id/mLookUpPhotosCommentCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="10dp"
+                    android:layout_gravity="right"
+                    android:drawableLeft="@drawable/photo_comment"
+                    android:gravity="center"
+                    android:minWidth="40dp"
+                    android:textColor="@color/white"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>
+</layout>

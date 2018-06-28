@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView
+        android:id="@+id/statu_img"
+        android:layout_width="68dp"
+        android:layout_height="68dp"
+        android:layout_gravity="center"
+        />
+
+    <ImageButton
+        android:id="@+id/ib_delete"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/icon_delete_new"
+        android:layout_alignRight="@id/statu_img"/>
+</RelativeLayout>

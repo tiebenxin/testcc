@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="ChatMessageList">
+        <attr format="reference" name="msgListMyBubbleBackground"/>
+        <attr format="reference" name="msgListOtherBubbleBackground"/>
+        <attr format="boolean" name="msgListShowUserAvatar"/>
+        <attr format="boolean" name="msgListShowUserNick"/>
+    </declare-styleable>
+
+    <declare-styleable name="EmojiconMenu">
+        <attr format="integer" name="bigEmojiconRows"/>
+        <attr format="integer" name="emojiconColumns"/>
+    </declare-styleable>
+
+    <declare-styleable name="ChatExtendMenu">
+        <attr format="integer" name="numColumns"/>
+    </declare-styleable>
+
+    <!--<declare-styleable name="MultiAvatarView">-->
+        <!--<attr format="dimension" name="muliti_space"/>-->
+    <!--</declare-styleable>-->
+
+    <declare-styleable name="MoveLinearlayout">
+        <attr format="boolean" name="changeOrietation"/>
+        <attr format="reference|color" name="src"/>
+    </declare-styleable>
+
+    <declare-styleable name="ColorPickView">
+        <attr format="dimension" name="block_width"/>
+        <attr format="integer" name="block_index"/>
+        <attr format="dimension" name="bar_height"/>
+    </declare-styleable>
+
+    <declare-styleable name="SwitchButton">
+        <attr name="defaultStatus">
+            <enum name="open" value="1"/>
+            <enum name="close" value="0"/>
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="GifView">
+        <attr format="reference" name="gif"/>
+        <attr format="boolean" name="paused"/>
+    </declare-styleable>
+    <declare-styleable name="CustomTheme">
+        <attr format="reference" name="gifViewStyle"/>
+    </declare-styleable>
+
+
+
+</resources>

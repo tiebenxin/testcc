@@ -1,0 +1,73 @@
+<resources>
+
+    <string name="fingerchat_key">e4dd3</string>
+
+    <!--权限申请-->
+    <string name="allow">允许</string>
+    <string name="not_now">暂不</string>
+    <string name="action_settings">设置</string>
+    <string name="deny">拒绝访问</string>
+    <string name="permission_camera">请先开通相机权限</string>
+    <string name="app_settings">应用设置</string>
+    <string name="denied_access_mask">你拒绝 %s访问</string>
+    <string formatted="false" name="nf_allow_to_access_your_mask">允许%s打开你的%s</string>
+    <string name="that_lets_use_camera_mask">允许在%s使用相机</string>
+    <string name="this_lets_use_storage_mask">允许%s打开手机或SD卡里的图片或保存图片。</string>
+    <string name="this_lets_use_mic_mask">允许 %s打开麦克风录音</string>
+    <string name="this_lets_use_contacts_mask">允许%s查看你的邮件信息</string>
+    <string formatted="false" name="nf_to_enable_this_click_below_and_activate_permission_mask">启动请点击下面的%s，激活权限里的 %s</string>
+    <string name="microphone">麦克风</string>
+    <string name="storage">存储器</string>
+    <string name="camera">摄像头</string>
+    <string name="accounts">账户</string>
+    <string name="contacts">联系人</string>
+    <string name="sms">短信</string>
+    <string name="location">位置</string>
+    <string name="gps">GPS</string>
+    <string name="phone">电话</string>
+    <string name="this_lets_use_phone_contacts_mask">允许%s打开你的联系方式</string>
+    <string name="this_lets_use_sms_mask">允许%s访问你的短信自动认证</string>
+    <string name="this_lets_use_phone_mask">允许%s访问你的电话自动认证</string>
+    <string name="this_lets_use_location_mask">请允许 %s 自动获取你的定位</string>
+    <string name="this_lets_use_gps_mask">允许%s开启你的定位服务</string>
+    <!--权限申请-->
+
+
+    <string name="app_name">fingerchat</string>
+
+    <string name="notifyTitle">提示</string>
+    <string name="notifyMsg">当前应用缺少必要权限。\n\n请点击\"设置\"-\"权限\"-打开所需权限。</string>
+    <string name="setting">设置</string>
+    <string name="cancel">取消</string>
+
+    <string name="btn_confrim">确定</string>
+    <string name="search_header">搜索</string>
+    <string name="picker_internalerror">发生错误</string>
+    <string name="login">登录</string>
+
+    <string name="message_one_and_one">逐条转发</string>
+    <string name="pack_message">事项附件</string>
+    <string name="message_together">合并转发</string>
+
+    <string name="mark_unread">标为未读</string>
+    <string name="record_to_top">置顶聊天</string>
+    <string name="delete_recoder">删除记录</string>
+    <string name="btn_cancel">取消</string>
+    <string name="leave_message">给朋友留言</string>
+    <string name="message_to">发送给:</string>
+    <string name="personal_card">[个人名片]%1$s</string>
+
+    <string name="scan_addfrind">扫码可以直接加好友/群聊</string>
+    <string name="contact">通讯录</string>
+
+    <string name="add_groups_and_bak">添加分组及备注</string>
+    <string name="delete_friends">删除好友</string>
+
+    <string name="attach_messages_hint">上传消息附件成功之后，可以前往事项跟踪发起事件，并将这些消息作为附件添加，上传之前必须输入主题</string>
+    <string name="attach_messages_title">输入主题</string>
+
+
+
+
+
+</resources>

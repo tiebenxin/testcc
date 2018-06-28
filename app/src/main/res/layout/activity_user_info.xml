@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/custom_divider_color"
+    android:orientation="vertical">
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/viewTitleBar"
+        style="@style/FGToolbarStyleWithNoOverflow"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/viewAvatar"
+                layout="@layout/control_info_avatar"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <include
+                android:id="@+id/viewNick"
+                layout="@layout/control_info_text"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <include
+                android:id="@+id/viewAccout"
+                layout="@layout/control_info_text"/>
+
+            <include layout="@layout/layout_divider"/>
+
+            <include
+                android:id="@+id/view2Code"
+                layout="@layout/control_info_image"/>
+
+            <include layout="@layout/layout_divider"/>
+
+
+            <LinearLayout
+                android:id="@+id/ll_identify_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include layout="@layout/control_info_title"/>
+
+                <include
+                    android:id="@+id/viewFactoryName"
+                    layout="@layout/control_info_text"/>
+                <include layout="@layout/layout_divider"/>
+
+                <include
+                    android:id="@+id/viewSex"
+                    layout="@layout/control_info_text"/>
+                <include layout="@layout/layout_divider"/>
+
+                <include
+                    android:id="@+id/viewWorkNum"
+                    layout="@layout/control_info_text"/>
+                <include layout="@layout/layout_divider"/>
+
+                <include
+                    android:id="@+id/viewUserName"
+                    layout="@layout/control_info_text"/>
+                <include layout="@layout/layout_divider"/>
+
+                <include
+                    android:id="@+id/viewDepartment"
+                    layout="@layout/control_info_text"/>
+                <include layout="@layout/layout_divider"/>
+
+                <!--职责-->
+                <include
+                    android:id="@+id/viewDuty"
+                    layout="@layout/control_info_text"/>
+
+                <include layout="@layout/layout_divider"/>
+
+                <!--职务-->
+                <include
+                    android:id="@+id/viewPosition"
+                    layout="@layout/control_info_text"/>
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+
+
+</LinearLayout>

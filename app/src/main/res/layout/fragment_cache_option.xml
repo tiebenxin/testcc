@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+       <com.lensim.fingerchat.fingerchat.view.MomeryView
+           android:id="@+id/mCacheSize"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:background="@color/gray_normal"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:text="@string/cache_hint"
+        android:padding="8dp"
+        android:gravity="center"/>
+        <Button
+            android:id="@+id/mCacheClearBt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/clear_memory_bg"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="25dp"
+            android:textColor="@color/black"
+            android:text="@string/clear_memory"
+            />
+</LinearLayout>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/fg_toolbar"
+        style="@style/FGToolbarStyleWithNoOverflow"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <WebView
+            android:id="@+id/recommend_web"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <!--<ProgressBar-->
+        <!--android:id="@+id/progress"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="2dp"-->
+        <!--style="@android:style/Widget.ProgressBar.Horizontal"-->
+        <!--android:background="@color/green"-->
+        <!--android:max="100"-->
+        <!--android:progress="10"/>-->
+
+        <RelativeLayout
+            android:id="@+id/mWebErrorRoot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:background="@color/white">
+            <ImageView
+                android:id="@+id/mWebError"
+                android:layout_width="180dp"
+                android:scaleType="fitCenter"
+                android:layout_height="120dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/system_maintenance"
+                />
+            <TextView
+                android:id="@+id/mErrorDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/mWebError"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/secondary_text"
+                android:text="@string/no_function"
+                android:gravity="center"/>
+        </RelativeLayout>
+        <com.lensim.fingerchat.components.widget.FloatMenu
+            android:id="@+id/floatMenu"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
+</LinearLayout>

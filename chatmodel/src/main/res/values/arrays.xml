@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<!--<string-array name="items_hr">-->
+		<!--<item>我的出勤</item>-->
+		<!--<item>考勤处理</item>-->
+		<!--<item>我的绩效</item>-->
+		<!--<item>我的薪资</item>-->
+		<!--<item>企业活动</item>-->
+		<!--<item>电话会议</item>-->
+		<!--<item>学习考试</item>-->
+		<!--<item>内部推荐</item>-->
+	<!--</string-array>-->
+
+	<string-array name="items_hr">
+		<item>我的出勤</item>
+		<item>考勤处理</item>
+		<item>我的绩效</item>
+		<item>我的薪资</item>
+		<item>企业活动</item>
+		<item>电话会议</item>
+		<item>内部推荐</item>
+		<item>建议箱</item>
+	</string-array>
+
+	<string-array name="items_admin">
+		<item>我的快递</item>
+		<item>会议助手</item>
+		<item>车辆管理</item>
+		<item>学习考试</item>
+		<item>电子巡更</item>
+		<item>物资出门</item>
+		<item>来访接待</item>
+		<item>违规违纪</item>
+	</string-array>
+
+	<string-array name="items_erp">
+		<item>资产盘点</item>
+		<item>设备报修</item>
+	</string-array>
+
+	<string-array name="items_other">
+		<item>网络对讲</item>
+		<item>添加更多</item>
+	</string-array>
+
+	<string-array name="chat_message_quantity">
+		<item>@string/chat_message_quantity_1</item>
+		<item>@string/chat_message_quantity_2</item>
+	</string-array>
+
+
+	<string-array name="managers">
+		<item>com.lens.lensfly.smack.connection.ConnectionManager</item>
+		<item>com.lens.lensfly.smack.account.ScreenManager</item>
+		<item>com.lens.lensfly.smack.connection.ReconnectionManager</item>
+		<item>com.lens.lensfly.smack.account.AccountManager</item>
+		<item>com.lens.lensfly.smack.extension.muc.MUCManager</item>
+		<item>com.lens.lensfly.smack.message.MessageManager</item>
+		<item>com.lens.lensfly.smack.roster.PresenceManager</item>
+		<item>com.lens.lensfly.smack.roster.RosterManager</item>
+		<item>com.lens.lensfly.smack.notification.NotificationManager</item>
+		<item>com.lens.lensfly.smack.ActivityManager</item>
+		<item>com.lens.lensfly.smack.extension.ping.PingManager</item>
+		<item>com.lens.lensfly.smack.connection.NetworkManager</item>
+		<item>com.lens.lensfly.smack.extension.capability.ServerInfoManager</item>
+		<item>com.lens.lensfly.smack.extension.time.TimeManager</item>
+		<item>com.lens.lensfly.smack.extension.attetion.AttentionManager</item>
+		<item>com.lens.lensfly.db.cache.FileCache</item>
+	</string-array>
+
+
+
+</resources>

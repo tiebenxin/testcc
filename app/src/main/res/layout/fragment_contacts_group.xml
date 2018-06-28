@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+
+
+  <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.RecyclerView
+      android:id="@+id/recyclerview"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+
+    <com.lensim.fingerchat.fingerchat.view.Sidebar
+      android:id="@+id/sidebar"
+      android:layout_width="@dimen/dimen_32"
+      android:layout_height="match_parent"
+      android:layout_alignParentRight="true"
+      android:background="@android:color/transparent"
+      android:clickable="true" />
+
+    <TextView
+      android:id="@+id/tv_pop"
+      android:layout_width="42dp"
+      android:layout_height="42dp"
+      android:layout_toLeftOf="@+id/sidebar"
+      android:paddingLeft="@dimen/dimen_12"
+      android:background="@drawable/ic_letter_bg"
+      android:gravity="center_vertical"
+      android:text="A"
+      android:textColor="@color/white"
+      android:textSize="@dimen/dimen_20_sp"
+      android:visibility="gone" />
+
+  </RelativeLayout>
+
+</LinearLayout>

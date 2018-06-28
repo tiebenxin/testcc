@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <import type="com.lensim.fingerchat.fingerchat.component.databind.ClickHandle"/>
+        <variable
+            name="Click"
+            type="ClickHandle"/>
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/viewMeTitle"
+            layout="@layout/controller_me_title"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dimen_180"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@color/activity_bg"/>
+
+        <!-- 朋友圈 -->
+        <com.lensim.fingerchat.fingerchat.view.UserMenuView
+            android:id="@+id/menu_moments"
+            style="@style/RippleTheme"
+            android:onClick="@{Click.onClick}"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dimen_50"
+            app:left_icon="@drawable/ic_moments"
+            app:title="@string/moments"/>
+
+        <include layout="@layout/layout_divider" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@color/activity_bg"/>
+
+        <!-- 收藏 -->
+        <com.lensim.fingerchat.fingerchat.view.UserMenuView
+            android:id="@+id/menu_collection"
+            style="@style/RippleTheme"
+            android:onClick="@{Click.onClick}"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dimen_50"
+            app:left_icon="@drawable/ic_collection"
+            app:title="@string/collection"/>
+
+        <include layout="@layout/layout_divider" />
+
+        <!-- 相册 -->
+        <com.lensim.fingerchat.fingerchat.view.UserMenuView
+            android:id="@+id/menu_gallery"
+            style="@style/RippleTheme"
+            android:onClick="@{Click.onClick}"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dimen_50"
+            app:left_icon="@drawable/ic_gallery"
+            app:title="@string/gallery"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@color/activity_bg"/>
+
+        <!-- 个人网盘 -->
+        <com.lensim.fingerchat.fingerchat.view.UserMenuView
+            android:id="@+id/menu_netdisk"
+            style="@style/RippleTheme"
+            android:onClick="@{Click.onClick}"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dimen_50"
+            app:left_icon="@drawable/ic_netdisc"
+            app:title="@string/netdisk"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/activity_bg"/>
+
+    </LinearLayout>
+</layout>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/activity_bg"
+    android:orientation="vertical">
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/viewTitleBar"
+        style="@style/FGToolbarStyle"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <include layout="@layout/chatcell_text_send"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:orientation="vertical">
+        <!--<include layout="@layout/control_chatcell_text_received" />-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="5dp"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="@dimen/dimen_36"
+                android:layout_height="@dimen/dimen_36"
+                android:layout_gravity="bottom"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_logo"/>
+
+            <TextView
+                android:id="@+id/tv_received_msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dimen_5"
+                android:layout_centerInParent="true"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingLeft="13dp"
+                android:paddingRight="10dp"
+                android:background="@drawable/finger_chatfrom_bg"
+                android:gravity="center_vertical|left"
+                android:lineSpacingExtra="2dp"
+                android:maxWidth="260dp"
+                android:minHeight="36dp"
+                android:text="点击相应按钮以改变大小"
+                android:textColor="#333333"
+                android:textSize="@dimen/dimen_14_sp"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="5dp"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="@dimen/dimen_36"
+                android:layout_height="@dimen/dimen_36"
+                android:layout_gravity="bottom"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_logo"/>
+
+            <TextView
+                android:id="@+id/tv_remind"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dimen_5"
+                android:layout_centerInParent="true"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingLeft="13dp"
+                android:paddingRight="10dp"
+                android:background="@drawable/finger_chatfrom_bg"
+                android:gravity="center_vertical|left"
+                android:lineSpacingExtra="2dp"
+                android:maxWidth="260dp"
+                android:minHeight="36dp"
+                android:text="此大小只改变聊天框字体，不会对整体字体大小做出改变"
+                android:textColor="#333333"
+                android:textSize="@dimen/dimen_14_sp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!-- <TextView
+         android:layout_width="match_parent"
+         android:layout_height="0dp"
+         android:layout_weight="1"
+         android:text="调整字体大小"
+         android:id="@+id/tv_text"
+         android:textColor="@color/white"
+         android:background="@color/primary"
+         android:gravity="center"/>-->
+    <com.lensim.fingerchat.fingerchat.ui.settings.ReceivedColorPickView
+        android:id="@+id/receivedcolorpickview"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/white"/>
+    <com.lensim.fingerchat.fingerchat.ui.settings.SettingColorPickView
+        android:id="@+id/colorpickview"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/primary"/>
+
+    <com.lensim.fingerchat.fingerchat.ui.settings.FontAdjustView
+        android:id="@+id/fontadjustview"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/white"
+        app:start_size="10"/>
+
+</LinearLayout>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:orientation="horizontal">
+
+        <com.lensim.fingerchat.components.widget.TimelineView
+            android:id="@+id/time_marker"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:line="@color/divider"
+            app:lineSize="1dp"
+            app:markerSize="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
+                android:id="@+id/ll_timeline_date"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:gravity="right"
+                android:orientation="vertical">
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/tv_clock_in_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:padding="15dp"
+                    android:maxLines="1"
+                    android:background="@drawable/record_time_bg"
+                    android:gravity="center"
+                    android:textColor="@android:color/black"
+                    tools:text="2017年08月24 星期四" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/container_item"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:background="@drawable/record_bg"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <android.support.v7.widget.AppCompatTextView
+                        android:id="@+id/text_timeline_date"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/comment_blue"
+                        android:textSize="16sp"
+                        tools:text="外出打卡(08:00)" />
+
+                    <android.support.v7.widget.AppCompatTextView
+                        android:id="@+id/text_timeline_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="@color/black"
+                        tools:text="Order Successfully Completed" />
+                </LinearLayout>
+                <ImageView
+                    android:id="@+id/img_item_pic"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/punch_the_clock" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</layout>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.lensim.fingerchat.fingerchat">
+
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <!-- 这个权限用于获取wifi的获取权限，wifi信息会用来进行网络定位 -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <!-- SD卡读取权限，用户写入离线定位数据 -->
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- 用于访问GPS定位 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE" />
+    <!-- Authenticator -->
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <!-- <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" -->
+    <!-- tools:ignore="ProtectedPermissions"/> -->
+
+
+    <!-- Sync Adapter -->
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+
+    <permission
+        android:name="android.permission.FLASHLIGHT"
+        android:permissionGroup="android.permission-group.HARDWARE_CONTROLS"
+        android:protectionLevel="normal" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
+
+    <application
+        android:name=".FGApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_logo"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Lens.Theme.Apptheme"
+        tools:replace="android:label,android:icon,android:allowBackup,android:theme">
+        <activity
+            android:name="${LAUNCHER_ACTIVITY}"
+            android:theme="@style/Theme.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.guide.GuideActivity">
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN"/> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER"/> -->
+            <!-- </intent-filter> -->
+        </activity>
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:label="登陆">
+            <intent-filter>
+                <action android:name="com.hnlens.action.LOGIN" />
+
+                <!-- <category android:name="android.intent.category.DEFAULT" /> -->
+            </intent-filter>
+        </activity>
+        <activity android:name="com.lens.chatmodel.ui.image.MultiImageSelectorActivity" />
+        <activity android:name=".ui.photo_picture.ClipPictureActivity" />
+        <activity
+            android:name=".ui.MainActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/Lens.Theme.Fadein"
+            android:windowSoftInputMode="adjustUnspecified|stateAlwaysHidden" />
+
+        <!-- <service android:name="com.lens.chatmodel.im_service.FingerIMService" /> -->
+
+
+        <!-- 个人中心 -->
+        <activity android:name=".ui.me.photo.PhotosActivity" />
+        <activity android:name=".ui.me.photo.CommentDetailActivity" />
+        <activity android:name="com.lens.chatmodel.ui.image.LookUpPhotosActivity" />
+        <activity android:name=".ui.me.photo.VideoStatuActivity" />
+        <activity android:name=".ui.me.circle_friends.CircleFriendsActivity" />
+        <activity android:name="com.lens.chatmodel.ui.profile.FriendDetailActivity" />
+        <activity android:name=".ui.me.circle_friends.UserInfoActivity" />
+        <activity android:name=".ui.me.InputInfoActivity" />
+        <activity android:name=".ui.me.circle_friends.StatuActivity" />
+        <activity android:name=".ui.me.circle_friends.LookupCommentActivity" />
+        <activity android:name=".ui.me.collection.NoteActivity" />
+        <activity android:name=".ui.me.collection.SearchNoteActivity" />
+        <activity android:name=".ui.me.collection.CollectionDetailActivity" />
+        <activity android:name=".ui.me.collection.CollectionActivity" />
+        <activity android:name=".ui.me.collection.DisplayImageActivity" />
+        <activity android:name=".ui.me.collection.CollectionMarkActivity" />
+
+        <!-- 个人中心 end -->
+
+
+        <!-- 工作中心 -->
+        <activity android:name=".ui.work_center.sign.ClockInActivity" />
+        <activity android:name=".ui.work_center.sign.ClockInRecordActivity" />
+        <activity android:name=".ui.work_center.sign.ClockInRecordDetailActivity" />
+        <activity android:name=".ui.work_center.sign.CameraViewActivity" />
+        <activity android:name=".ui.work_center.identify.IdentifyActivity" />
+        <activity android:name=".ui.work_center.sign.ImagePagerOptActivity" />
+
+        <!-- 工作中心 end -->
+
+
+        <!-- 设置 -->
+        <activity android:name=".ui.settings.MessageSettingActivity" />
+        <activity android:name=".ui.settings.AboutFGActivity" />
+        <activity android:name=".ui.settings.AccoutAndSafeActivity" />
+        <activity android:name=".ui.settings.ChangePassWordActivity" />
+        <!--<activity android:name=".ui.settings.GeneralActivity"/>-->
+        <activity android:name=".ui.settings.AdjustTextSizeActivity" />
+        <activity android:name=".ui.settings.ViewHelpAndFeedbackActivity" />
+        <activity android:name=".ui.settings.clear_cache.CacheOptionActivity" />
+        <activity android:name=".ui.settings.ChatGlobalSettingActivity" />
+        <activity
+            android:name="com.lens.chatmodel.ui.message.ChatActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity android:name="com.lens.chatmodel.ui.message.TransforMsgActivity" />
+        <activity
+            android:name="com.lens.chatmodel.ui.video.LookUpVideoActivity"
+            android:hardwareAccelerated="true" />
+        <activity
+            android:name="com.lens.chatmodel.ui.image.GalleryAnimationActivity"
+            android:configChanges="screenSize|keyboardHidden|orientation"
+            android:launchMode="singleTop"
+            android:theme="@style/GalleryTheme" />
+        <activity android:name="com.lens.chatmodel.ui.emoji.ExpressionActivity" />
+        <activity android:name="com.example.webview.BrowserActivity" />
+
+        <!-- Group -->
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupOperationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupSelectListActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.SetOperationNameActivty"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupNoticeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupManageSetActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.ChatBgListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.ChatBgLocalSelActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupRemindSelectActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupSingerListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.lens.chatmodel.ui.group.GroupInviteManageActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ui.code.QRCodeScanActivity" />
+        <activity android:name="com.lens.chatmodel.ui.image.PhotoPreviewActivity" />
+        <activity android:name="com.lens.chatmodel.ui.image.ImagePagerActivity" />
+        <activity android:name="com.lens.chatmodel.ui.image.PhotoEditActivity" />
+        <activity android:name="com.lens.chatmodel.ui.multi.ActivityMultiMsgDetail" />
+        <!-- Group end -->
+
+        <activity android:name=".ui.contacts.FriendAliasActivity" />
+        <activity android:name="com.lens.chatmodel.ui.message.SecretActivity" />
+        <activity android:name=".ui.login.UserConflictActivity" />
+        <activity android:name=".ui.login.PermitLoginActivity" />
+        <activity android:name=".ui.search.ActivitySearchContacts" />
+        <activity android:name=".ui.settings.IdentifyActivity" />
+
+        <!-- 密聊 -->
+        <activity android:name=".ui.secretchat.SecretChatMessageActivity" />
+        <activity android:name=".ui.secretchat.SecretChatSettingActivity" />
+        <activity android:name=".ui.secretchat.PassWordSettingActivity" />
+        <activity android:name=".ui.me.circle_friends.PreviewSingleImageActivity"/>
+    </application>
+
+</manifest>

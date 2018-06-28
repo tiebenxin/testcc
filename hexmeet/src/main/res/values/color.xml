@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="font_color_313131">#313131</color>
+    <color name="gray_normal">#666666</color>
+    <color name="contents_text">#ff000000</color>
+    <color name="title_bar">#313131</color>
+</resources>

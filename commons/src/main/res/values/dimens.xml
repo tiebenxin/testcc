@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="min_text_size">12sp</dimen>
+    <dimen name="small_text_size">14dp</dimen>
+    <dimen name="normal_text_size">16dp</dimen>
+    <dimen name="large_text_size">18dp</dimen>
+    <dimen name="max_text_size">20dp</dimen>
+    <dimen name="group_avatar">48dp</dimen>
+
+    <dimen name="dialog_view_padding">8dp</dimen>
+    <dimen name="btn_corner_radius_6">6dp</dimen>
+    <dimen name="indent_4">4dp</dimen>
+    <dimen name="img5">30dp</dimen>
+    <dimen name="indent_10">10dp</dimen>
+    <dimen name="default_btn_height">44dp</dimen>
+    <dimen name="indent_5">5dp</dimen>
+    <dimen name="input_text_padding">5dp</dimen>
+    <dimen name="text_20">20dp</dimen>
+
+
+
+
+
+
+
+
+
+</resources>

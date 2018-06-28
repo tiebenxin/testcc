@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minWidth="240dp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:lineSpacingExtra="8dp"
+        android:textSize="@dimen/small_text_size"
+        android:textColor="@color/primary_text"
+        android:text="@string/attach_messages_hint"/>
+
+    <EditText
+        android:id="@+id/mAttachTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColorHint="@color/btn_border"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="15dp"
+        android:textSize="12sp"
+        android:padding="5dp"
+        android:textColor="@color/black"
+        android:layout_marginRight="15dp"
+        android:background="@drawable/edittext_bg"
+        android:hint="@string/attach_messages_title"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        >
+
+        <TextView
+            android:id="@+id/mAttachCancel"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:text="@string/btn_cancel"
+            android:padding="8dp"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:layout_toLeftOf="@+id/mAttachConfirm"
+            android:textColor="@color/gray_normal"/>
+
+        <TextView
+            android:id="@+id/mAttachConfirm"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:text="@string/btn_confrim"
+            android:padding="8dp"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:textColor="@color/primary"/>
+
+    </RelativeLayout>
+</LinearLayout>

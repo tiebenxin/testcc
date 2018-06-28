@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="comment_bg">#282d2c</color>
+    <color name="primary_text">#333333</color>
+    <color name="secondary_text">#b5b5b5</color>
+    <color name="black">#000000</color>
+
+
+    <color name="clock_in_dialog_text">#7bbb5e</color>
+    <color name="clock_in_dialog_text_fail">#f15353</color>
+    <color name="clock_in_dialog_address">#666666</color>
+    <color name="clock_in_dialog_divider">#ebebeb</color>
+    <color name="clock_in_dialog_bg">#fffcf7</color>
+    <color name="clock_in_dialog_ok">#f6a076</color>
+    <color name="name_selector_color">#cccccc</color>
+    <color name="black_deep">#FF000000</color>
+    <color name="color_hei">#ff000000</color>
+    <color name="work_item_text_color">#333333</color>
+
+</resources>

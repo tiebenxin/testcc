@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/ll_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/white"
+  android:orientation="vertical">
+
+  <include
+    android:id="@+id/viewInputJobNum"
+    layout="@layout/controller_login_item" />
+
+  <include layout="@layout/layout_divider" />
+
+  <include
+    android:id="@+id/viewInputPsw"
+    layout="@layout/controller_login_item" />
+
+  <include layout="@layout/layout_divider" />
+
+  <include
+    android:id="@+id/viewInputNick"
+    layout="@layout/controller_login_item" />
+
+  <include layout="@layout/layout_divider" />
+
+  <include
+    android:id="@+id/viewPhoneNum"
+    layout="@layout/controller_login_item" />
+
+  <include layout="@layout/layout_divider" />
+
+  <include
+    android:id="@+id/viewIdentifyCode"
+    layout="@layout/controller_login_item" />
+
+  <include layout="@layout/layout_divider" />
+
+  <include
+    android:id="@+id/viewLoginBtn"
+    layout="@layout/controller_login_btn" />
+
+
+</LinearLayout>

@@ -1,0 +1,132 @@
+<resources>
+    <string name="app_name">chatModel</string>
+
+    <string name="button_pushtotalk">按住说话</string>
+    <string name="button_send">发送</string>
+    <string name="take_pic">拍照</string>
+    <string name="take_photo">拍摄</string>
+    <string name="move_up_to_cancel">向上移动，取消录音</string>
+    <string name="The_recording_time_is_too_short">录音时间太短</string>
+    <string name="Send_voice_need_sdcard_support">sd卡不存在，不能录音</string>
+    <string name="recoding_fail">录音失败，请重试！</string>
+    <string name="release_to_cancel">松开手指，取消发送</string>
+    <string name="up_to_cancel">上滑取消</string>
+    <string name="release__cancel">松开取消</string>
+    <string name="position">位置</string>
+    <string name="calling_card">名片</string>
+    <string name="shake">抖动</string>
+    <string name="small_video">小视频</string>
+    <string name="picture">图片</string>
+
+    <string name="chats_attention_sound_key">chats_attention_sound</string>
+    <string name="chat_messages_from_contact">来自%2$s的%1$d条消息</string>
+    <string name="chat_status">%3$d位%4$s的%1$d条%2$s</string>
+    <string name="chat_contact_quantity_1">联系人</string>
+    <string name="chat_contact_and_message">%1$s：%2$s</string>
+    <string name="chat_message_quantity_1">消息</string>
+    <string name="chat_message_quantity_2">消息</string>
+
+    <string name="circle_update">有%1$d位好友评论了你</string>
+    <string name="Is_download_voice_click_later">正在下载语音，稍后点击</string>
+
+
+    <!--消息type类型-->
+    <item name="type_text_received" type="id"/>
+    <item name="type_text_send" type="id"/>
+    <item name="type_voice_received" type="id"/>
+    <item name="type_voice_send" type="id"/>
+    <item name="type_video_received" type="id"/>
+    <item name="type_video_send" type="id"/>
+    <item name="type_emoticon_received" type="id"/>
+    <item name="type_emoticon_send" type="id"/>
+    <item name="type_map_received" type="id"/>
+    <item name="type_map_send" type="id"/>
+    <item name="type_business_card_received" type="id"/>
+    <item name="type_business_card_send" type="id"/>
+    <item name="type_work_login_received" type="id"/>
+    <item name="type_work_login_send" type="id"/>
+    <item name="type_image_received" type="id"/>
+    <item name="type_image_send" type="id"/>
+    <item name="type_vote_received" type="id"/>
+    <item name="type_vote_send" type="id"/>
+    <item name="type_secret_received" type="id"/>
+    <item name="type_action" type="id"/>
+    <item name="type_notice" type="id"/>
+    <item name="type_oa" type="id"/>
+    <item name="type_system" type="id"/>
+
+    <item name="emotion_uri" type="id"/>
+
+    <string name="select_muc">选择一个群</string>
+    <string name="search">搜索</string>
+    <string name="identified">已认证</string>
+    <string name="unidentified">未认证</string>
+
+    <string name="emoji_manage">表情管理</string>
+    <string name="manage">整理</string>
+    <string name="action_done">完成</string>
+
+    <string name="error_image">图片错误</string>
+    <string name="clip_image">图片裁剪</string>
+    <string name="select_image">选择图片</string>
+    <string name="select">选择</string>
+    <string name="text_origin">原图</string>
+    <string name="text_edit">编辑</string>
+    <string name="pop_menu_photo">照片</string>
+    <string name="pop_menu_video">视频</string>
+    <string name="pop_menu_video_silent">静音播放</string>
+    <string name="pop_menu_collect">收藏</string>
+    <string name="pop_menu_trans">转发</string>
+    <string name="pop_delete_collect">删除</string>
+    <string name="pop_menu_copy_to_local">复制到图片文件夹</string>
+    <string name="dialog_menu_send_to_friend">发送给朋友</string>
+    <string name="sure">确定</string>
+    <string name="folder_all">所有照片</string>
+    <string name="preview">预览</string>
+    <string name="msg_no_camera">没有系统相机</string>
+    <string name="msg_amount_limit">已经达到最高选择数量</string>
+    <string name="photo_unit">张</string>
+    <string name="user_photos">相册</string>
+    <string name="max_images">最多只能选9张</string>
+    <string name="saving">正在保存...</string>
+    <string name="save">正在保存</string>
+    <string name="picture_read_failed">图片读取失败</string>
+    <string name="wait_for_download_picture">正在下载...</string>
+    <string name="tip_take_photo">拍摄照片</string>
+    <string name="edit">编辑</string>
+    <string name="retry">重试</string>
+
+    <string name="private_info">个人信息</string>
+    <string name="confirm_add_friend">发送邀请</string>
+    <string name="send_message">发送消息</string>
+    <string name="add_friend_send_seccess">发送邀请成功</string>
+    <string name="add_friend_seccess">添加成功</string>
+    <string name="add_friend_failed">添加失败</string>
+    <string name="not_repeated">请勿重复发送</string>
+    <string name="divide_group">分组</string>
+    <string name="more_result">更多结果</string>
+    <string name="friends_create_groups">好友分组</string>
+    <string name="groups_name">分组名称</string>
+    <string name="groups_members">成员</string>
+    <string name="delete_group">删除分组</string>
+
+
+    <string name="set_for_star_friend">设置为星标好友</string>
+    <string name="network_error">网络无法连接，点击重连...</string>
+    <string name="reconnecting">正在重连...</string>
+
+    <string name="downstairs_new_message">————以下是新消息————</string>
+    <string name="cancel_message">\"%s\"撤销了一条消息</string>
+    <string name="cancel_message_you">你撤销了一条消息</string>
+
+    <string name="message_record_remain">与“%1$s”相关消息记录</string>
+
+    <string name="can_chat_now">我通过了你的朋友验证请求，现在我们可以开始聊天了</string>
+
+    <string name="no_friend_verify_notice">%1$s 开启了好友验证，你还不是他（她）朋友。请先发送朋友验证请求，对方验证过后，才能聊天。</string>
+    <string name="error_no_member_of_muc">你不是该群成员，不能发送消息</string>
+    <string name="error_no_exit_room">当前群聊不存在，不能发送消息</string>
+
+
+
+</resources>

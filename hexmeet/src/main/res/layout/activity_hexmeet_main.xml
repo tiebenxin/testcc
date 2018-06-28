@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/bg_search_note"
+  android:orientation="vertical">
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/toolbar_hexmeet_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </com.lensim.fingerchat.commons.toolbar.FGToolbar>
+
+
+  <com.lensim.fingerchat.components.springview.widget.SpringView
+    android:id="@+id/springview_hexmeet"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:visibility="gone">
+    <android.support.v7.widget.RecyclerView
+      android:id="@+id/recycler_hexmeet"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"/>
+  </com.lensim.fingerchat.components.springview.widget.SpringView>
+
+  <RelativeLayout
+    android:id="@+id/no_conference"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="gone">
+
+    <ImageView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:scaleType="fitXY"
+      android:src="@drawable/no_conference"/>
+
+    <TextView
+      android:id="@+id/no_conference_hint"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="200dp"
+      android:layout_centerHorizontal="true"
+      android:text="@string/no_conference_hint"
+      android:textColor="@color/font_color_313131"
+      android:textSize="19sp"/>
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@id/no_conference_hint"
+      android:gravity="center"
+      android:orientation="horizontal">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/please_click"
+        android:textColor="@color/font_color_313131"
+        android:textSize="19sp"/>
+
+      <ImageView
+        android:id="@+id/add_conference"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:padding="0dp"
+        android:src="@drawable/appointment_me"/>
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_conference"
+        android:textColor="@color/font_color_313131"
+        android:textSize="19sp"/>
+    </LinearLayout>
+  </RelativeLayout>
+
+</LinearLayout>

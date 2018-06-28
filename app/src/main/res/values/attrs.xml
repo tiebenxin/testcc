@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="CustomTabView">
+        <attr format="reference" name="tabIcon"/>
+        <attr format="reference" name="tabClickIcon"/>
+        <attr format="color" name="tabColor"/>
+        <attr format="string" name="tabText"/>
+        <attr format="dimension" name="tabTextSize"/>
+    </declare-styleable>
+
+    <declare-styleable name="CustomTableView">
+        <attr format="integer" name="numCols"/>
+        <attr format="dimension" name="spaceH"/>
+        <attr format="dimension" name="spaceV"/>
+    </declare-styleable>
+
+
+    <!--圆角imageview-->
+    <attr format="dimension" name="borderRadius"/>
+    <attr name="type">
+        <enum name="circle" value="0"/>
+        <enum name="round" value="1"/>
+    </attr>
+
+    <declare-styleable name="PagerSlidingTabStrip">
+        <attr format="color" name="pstsIndicatorColor"/>
+        <attr format="color" name="pstsUnderlineColor"/>
+        <attr format="color" name="pstsDividerColor"/>
+        <attr format="dimension" name="pstsIndicatorHeight"/>
+        <attr format="dimension" name="pstsUnderlineHeight"/>
+        <attr format="dimension" name="pstsDividerPadding"/>
+        <attr format="dimension" name="pstsTabPaddingLeftRight"/>
+        <attr format="dimension" name="pstsScrollOffset"/>
+        <attr format="reference" name="pstsTabBackground"/>
+        <attr format="boolean" name="pstsShouldExpand"/>
+        <attr format="boolean" name="pstsTextAllCaps"/>
+    </declare-styleable>
+
+
+
+    <!--自定义开关-->
+    <declare-styleable name="SwitchButton">
+        <attr format="reference" name="switch_background"/>
+        <attr format="reference" name="slide_button"/>
+        <attr format="boolean" name="switch_state"/>
+    </declare-styleable>
+
+    <!--自定义字体调节大小-->
+    <declare-styleable name="FontAdjustView">
+        <attr format="color" name="line_color"/>
+        <attr format="dimension" name="horizantol_padding"/>
+        <attr format="color" name="circle_color"/>
+        <attr format="dimension" name="circle_raduis"/>
+        <attr format="integer" name="start_size"/>
+        <attr format="integer" name="raise_size"/>
+        <attr format="dimension" name="space_v"/>
+        <attr format="dimension" name="lineWidth"/>
+        <attr name="default_position">
+            <enum name="minSize" value="0"/>
+            <enum name="mormalSize" value="1"/>
+            <enum name="bigSize" value="2"/>
+            <enum name="biggerSize" value="3"/>
+            <enum name="maxSize" value="4"/>
+        </attr>
+    </declare-styleable>
+
+
+
+
+
+
+    <declare-styleable name="TagCloudView">
+        <attr format="reference" name="tcvBackground"/>
+        <attr format="color" name="tcvTextColor"/>
+        <attr format="dimension" name="tcvBorder"/>
+        <attr format="integer" name="tcvTextSize"/>
+        <attr format="dimension" name="tcvBorderItem"/>
+        <attr format="dimension" name="tcvItemBorderVertical"/>
+        <attr format="dimension" name="tcvItemBorderHorizontal"/>
+
+        <attr format="boolean" name="tcvSingleLine"/>
+        <attr format="boolean" name="tcvShowEndText"/>
+        <attr format="boolean" name="tcvShowRightImg"/>
+        <attr format="string" name="tcvEndText"/>
+        <attr format="reference" name="tcvRightResId"/>
+        <attr format="boolean" name="tcvCanTagClick"/>
+
+        <attr format="reference" name="tcvTagResId"/>
+        <attr format="boolean" name="tcvShowEdit"/>
+    </declare-styleable>
+
+    <!--视频录制控制按钮-->
+    <declare-styleable name="VideoControlView">
+        <!--录制最小时间-->
+        <attr format="integer" name="minTime"/>
+        <!--录制最大时间-->
+        <attr format="integer" name="maxTime"/>
+        <!--内圆颜色-->
+        <attr format="color" name="innerCircleColor"/>
+        <!--外圆颜色-->
+        <attr format="color" name="annulusColor"/>
+        <!--进度条颜色-->
+        <attr format="color" name="progressColor"/>
+        <!--内圆半径-->
+        <attr format="dimension" name="innerCircleRadius"/>
+        <!--外圆半径-->
+        <attr format="dimension" name="excircleRadius"/>
+        <!--外圆放大倍数-->
+        <attr format="float" name="excicleMagnification"/>
+        <!--内圆缩小倍数-->
+        <attr format="float" name="innerCircleShrinks"/>
+        <!--进度条宽度-->
+        <attr format="float" name="progressWidth"/>
+    </declare-styleable>
+
+    <declare-styleable name="MomeryView">
+        <attr name="cache_raduis" format="dimension"/>
+        <attr name="cache_offset" format="dimension"/>
+        <attr name="cache_blocksize" format="dimension"/>
+        <attr name="cache_border_padding" format="dimension"/>
+        <attr name="cache_block_margin_top" format="dimension"/>
+        <attr name="cache_textSize" format="dimension"/>
+        <attr name="cache_block_text_size" format="dimension"/>
+    </declare-styleable>
+
+    <!-- UserMenuView -->
+    <declare-styleable name="UserMenuView">
+        <attr name="left_icon" format="integer"/>
+        <attr name="title" format="string"/>
+        <attr name="title_size" format="integer"/>
+        <attr name="title_color" format="integer"/>
+    </declare-styleable>
+</resources>

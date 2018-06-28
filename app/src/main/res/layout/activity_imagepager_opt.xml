@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black">
+    <!--<include-->
+        <!--android:id="@+id/mImageOptToolbar"-->
+        <!--layout="@layout/fg_toolbar"-->
+        <!--/>-->
+
+    <com.lensim.fingerchat.commons.toolbar.FGToolbar
+        android:id="@+id/mImageOptToolbar"
+        style="@style/FGToolbarStyle">
+
+    </com.lensim.fingerchat.commons.toolbar.FGToolbar>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
+</LinearLayout>

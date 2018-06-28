@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+  <LinearLayout
+      android:id="@+id/ll_one_message"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@drawable/ease_mm_listitem"
+      android:clickable="true"
+      android:minHeight="50dp"
+      >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/message_one_and_one"
+        android:textColor="@color/black_33"
+        android:textSize="@dimen/normal_text_size"
+        />
+  </LinearLayout>
+
+
+  <View
+      android:layout_width="match_parent"
+      android:layout_height="2px"
+      android:layout_marginLeft="5dp"
+      android:layout_marginRight="5dp"
+      android:background="@color/custom_divider_color"
+      />
+
+
+  <LinearLayout
+      android:id="@+id/ll_all_message"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@drawable/ease_mm_listitem"
+      android:clickable="true"
+      android:minHeight="50dp"
+      >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/message_together"
+        android:textColor="@color/black_33"
+        android:textSize="@dimen/normal_text_size"
+        />
+  </LinearLayout>
+
+  <View
+      android:layout_width="match_parent"
+      android:layout_height="2px"
+      android:layout_marginLeft="5dp"
+      android:layout_marginRight="5dp"
+      android:background="@color/custom_divider_color"
+      />
+
+
+  <LinearLayout
+      android:id="@+id/ll_pack_message"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@drawable/ease_mm_listitem"
+      android:clickable="true"
+      android:minHeight="50dp"
+      >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/pack_message"
+        android:textColor="@color/black_33"
+        android:textSize="@dimen/normal_text_size"
+        />
+  </LinearLayout>
+
+</LinearLayout>
