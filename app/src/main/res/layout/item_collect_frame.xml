@@ -16,8 +16,7 @@
 
         <ImageView
             android:id="@+id/avatar"
-            style="@style/Collection.Avatar"
-            />
+            style="@style/Collection.Avatar"/>
 
         <TextView
             android:id="@+id/username"

@@ -28,7 +28,7 @@ android {
 
     greendao {
         //指定数据库schema版本号，迁移等操作会用到
-        schemaVersion 1
+        schemaVersion 2
         daoPackage 'com.lensim.fingerchat.db.greendao'
         targetGenDir 'src/main/java'
     }

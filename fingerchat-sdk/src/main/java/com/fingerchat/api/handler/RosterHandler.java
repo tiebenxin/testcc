@@ -5,9 +5,11 @@ import com.fingerchat.api.Logger;
 import com.fingerchat.api.client.ClientConfig;
 import com.fingerchat.api.connection.Connection;
 import com.fingerchat.api.listener.RosterListener;
+import com.fingerchat.api.message.AckMessage;
 import com.fingerchat.api.message.RosterMessage;
 import com.fingerchat.api.protocol.Packet;
 
+import com.fingerchat.proto.message.BaseChat;
 import java.util.Collection;
 
 /**
@@ -25,6 +27,13 @@ public class RosterHandler extends BaseMessageHandler<RosterMessage> {
     @Override
     public void handle(RosterMessage message) {
         logger.w("received rostermessage ========>>>>>>" + message.message.getCode());
+
+        AckMessage ackMessage = AckMessage.from(message);
+        BaseChat.SysAck.Builder builder = BaseChat.SysAck.newBuilder();
+        builder.addId(message.message.getId());
+        ackMessage.setAck(builder.build());
+        ackMessage.sendRaw();
+
         ClientListener listener = ClientConfig.I.getClientListener();
         listener.onReceiveMessage(message);
 

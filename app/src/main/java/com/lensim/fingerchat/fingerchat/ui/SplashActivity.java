@@ -2,9 +2,13 @@ package com.lensim.fingerchat.fingerchat.ui;
 
 
 import android.Manifest;
+import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -12,19 +16,20 @@ import android.text.TextUtils;
 import android.view.WindowManager;
 
 import com.fingerchat.api.client.ClientConfig;
+import com.lens.chatmodel.ChatEnum.ENetStatus;
 import com.lens.chatmodel.im_service.FingerIM;
 import com.lens.chatmodel.im_service.IMLog;
+import com.lens.chatmodel.net.network.NetworkReceiver;
 import com.lensim.fingerchat.commons.BuildConfig;
-import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.commons.dialog.NiftyDialogBuilder;
 import com.lensim.fingerchat.commons.utils.TDevice;
 import com.lensim.fingerchat.data.login.PasswordRespository;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
-import com.lensim.fingerchat.db.DaoManager;
 import com.lensim.fingerchat.fingerchat.FGApplication;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.ui.login.LoginActivity;
+import com.lensim.fingerchat.commons.utils.AppHostUtil;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 
@@ -65,6 +70,7 @@ public class SplashActivity extends BaseActivity {
     }
 
 
+
     @SuppressLint("CheckResult")
     private void requestPermission() {
         //权限获取
@@ -75,6 +81,8 @@ public class SplashActivity extends BaseActivity {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.READ_PHONE_STATE
+//                permission.RECORD_AUDIO,
+//                permission.CAMERA
             )
             .subscribe((bool) -> {
                 if (bool) {
@@ -91,14 +99,14 @@ public class SplashActivity extends BaseActivity {
         if (checkIsLogin()) {
             if (FingerIM.I.hasStarted()) {
                 FingerIM.I.login(userId, password);
-                startActivity(true);
             } else {
                 initIMClient();
-                startActivity(false);
             }
             startActivity(true);
         } else {
-            initIMClient();
+            if (!FingerIM.I.hasStarted()) {
+                initIMClient();
+            }
             startActivity(false);
         }
     }
@@ -159,10 +167,7 @@ public class SplashActivity extends BaseActivity {
         //公钥有服务端提供和私钥对应
         ClientConfig cc = ClientConfig.build()
             .setPublicKey(FGApplication.PUBLIC_KEY)
-//            .setAllotServer(FGApplication.ALLOTSERVER)
-//            .setServerAddress(FGApplication.ALLOTSERVER)
-            .setServerAddress(FGApplication.TEST_SERVER)
-//            .setServerAddress(FGApplication.LOCAL_SERVER)
+            .setServerAddress(AppHostUtil.getTcpConnectHostApi())
             .setDeviceId(TDevice.getDeviceId(this))
             .setClientVersion(BuildConfig.VERSION_NAME)
             .setLogger(new IMLog())

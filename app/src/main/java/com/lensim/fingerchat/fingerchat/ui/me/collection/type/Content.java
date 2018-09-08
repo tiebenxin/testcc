@@ -51,8 +51,8 @@ public abstract class Content {
     /***
      * 1.text 文字
      2.image 图片
-     3.video 视频
-     4.gif 大表情
+     3.video 语音
+     4.gif 视频
      * */
     public static int getMsgType(String type) {
         switch (type) {
@@ -61,9 +61,9 @@ public abstract class Content {
             case "2":
                 return EMessageType.IMAGE.ordinal();
             case "3":
-                return EMessageType.VIDEO.ordinal();
+                return EMessageType.VOICE.ordinal();
             case "4":
-                return EMessageType.FACE.ordinal();
+                return EMessageType.VIDEO.ordinal();
             case "5":
                 return EMessageType.CONTACT.ordinal();
             default:

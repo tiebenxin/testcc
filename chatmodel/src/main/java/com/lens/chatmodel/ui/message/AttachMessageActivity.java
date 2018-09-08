@@ -61,7 +61,7 @@ public class AttachMessageActivity extends BaseUserInfoActivity {
                 dialog.setOnConfrimListener(new AttachDialog.OnConfrimListener() {
                     @Override
                     public void onConfirm(String title) {
-                        if (TextUtils.isEmpty(title)) {
+                        if (TextUtils.isEmpty(title.trim())) {
                             T.show("主题不能为空");
                         } else {
                             dialog.dismiss();

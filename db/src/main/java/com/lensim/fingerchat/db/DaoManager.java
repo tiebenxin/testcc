@@ -8,19 +8,20 @@ import android.text.TextUtils;
 
 public class DaoManager {
 
-  private static String userID = "";
+    private static String userID = "";
 
-  public static void initUserId(String user) {
-    if (!TextUtils.isEmpty(user)) {
-      userID = user;
+    public static void initUserId(String user) {
+        if (!TextUtils.isEmpty(user)) {
+            userID = user;
+        }
     }
-  }
 
-  public static String getUserID() {
-    return userID;
-  }
+    public static String getUserID() {
+        return userID;
+    }
 
-
-
+    public static void clearUserId() {
+        userID = "";
+    }
 
 }

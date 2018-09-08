@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 
 public final class TcpConnection implements Connection {
+
     public enum State {connecting, connected, disconnecting, disconnected}
 
     private final AtomicReference<State> state = new AtomicReference<>(disconnected);
@@ -43,7 +44,7 @@ public final class TcpConnection implements Connection {
     private final FingerClient client;
     private final PacketWriter writer;
     private final PacketReader reader;
-//    private final AllotClient allotClient;
+    //    private final AllotClient allotClient;
     private SocketChannel channel;
     private SessionContext context;
     private long lastReadTime;
@@ -90,11 +91,13 @@ public final class TcpConnection implements Connection {
         try {
             Channel channel = this.channel;
             if (channel != null) {
-                if (channel.isOpen()) {
-                    IOUtils.close(channel);
-                    listener.onDisConnected(client);
-                    logger.w("channel closed !!!");
-                }
+//                if (channel.isOpen()) {
+//                    IOUtils.close(channel);
+//                    listener.onDisConnected(client);
+//                    logger.w("channel closed !!!");
+//                }
+                IOUtils.close(channel);
+                listener.onDisConnected(client);
                 this.channel = null;
             }
         } finally {
@@ -124,9 +127,33 @@ public final class TcpConnection implements Connection {
         connect();
     }
 
+    @Override
+    public void manualReconnect() {
+        reader.stopRead();
+        if (connectThread != null) {
+            connectThread.shutdown();
+        }
+        doClose();
+        logger.w("connection closed !!!");
+
+        if (state.compareAndSet(State.disconnected, connecting)) {
+            if ((connectThread == null) || !connectThread.isAlive()) {
+                connectThread = new ConnectThread(connLock);
+            }
+            connectThread.addConnectTask(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return doConnect();
+                }
+            });
+        }
+
+    }
+
     private boolean doReconnect() {
         if (totalReconnectCount > Constants.MAX_TOTAL_RESTART_COUNT || !autoConnect) {// 过载保护
-            logger.w("doReconnect failure reconnect count over limit or autoConnect off, total=%d, state=%s, autoConnect=%b"
+            logger
+                .w("doReconnect failure reconnect count over limit or autoConnect off, total=%d, state=%s, autoConnect=%b"
                     , totalReconnectCount, state.get(), autoConnect);
             state.set(disconnected);
             return true;
@@ -135,7 +162,8 @@ public final class TcpConnection implements Connection {
         reconnectCount++;    // 记录重连次数
         totalReconnectCount++;
 
-        logger.d("try doReconnect, count=%d, total=%d, autoConnect=%b, state=%s", reconnectCount, totalReconnectCount, autoConnect, state.get());
+        logger.d("try doReconnect, count=%d, total=%d, autoConnect=%b, state=%s", reconnectCount,
+            totalReconnectCount, autoConnect, state.get());
 
         if (reconnectCount > MAX_RESTART_COUNT) {    // 超过此值 sleep 10min
             if (connLock.await(TimeUnit.MINUTES.toMillis(10))) {
@@ -150,13 +178,16 @@ public final class TcpConnection implements Connection {
             }
         }
 
-        if (Thread.currentThread().isInterrupted() || state.get() != State.connecting || !autoConnect) {
-            logger.w("doReconnect failure, count=%d, total=%d, autoConnect=%b, state=%s", reconnectCount, totalReconnectCount, autoConnect, state.get());
+        if (Thread.currentThread().isInterrupted() || state.get() != State.connecting
+            || !autoConnect) {
+            logger.w("doReconnect failure, count=%d, total=%d, autoConnect=%b, state=%s",
+                reconnectCount, totalReconnectCount, autoConnect, state.get());
             state.set(disconnected);
             return true;
         }
 
-        logger.w("doReconnect, count=%d, total=%d, autoConnect=%b, state=%s", reconnectCount, totalReconnectCount, autoConnect, state.get());
+        logger.w("doReconnect, count=%d, total=%d, autoConnect=%b, state=%s", reconnectCount,
+            totalReconnectCount, autoConnect, state.get());
         return doConnect();
     }
 
@@ -169,7 +200,7 @@ public final class TcpConnection implements Connection {
 
                     String host = host_port[0];
                     int port = Strings.toInt(host_port[1], 0);
-                    logger.w("doConnect, host=%s, port=%s",host,port);
+                    logger.w("doConnect, host=%s, port=%s", host, port);
                     if (doConnect(host, port)) {
                         return true;
                     }
@@ -278,13 +309,13 @@ public final class TcpConnection implements Connection {
     @Override
     public String toString() {
         return "TcpConnection{" +
-                "state=" + state +
-                ", channel=" + channel +
-                ", lastReadTime=" + lastReadTime +
-                ", lastWriteTime=" + lastWriteTime +
-                ", totalReconnectCount=" + totalReconnectCount +
-                ", reconnectCount=" + reconnectCount +
-                ", autoConnect=" + autoConnect +
-                '}';
+            "state=" + state +
+            ", channel=" + channel +
+            ", lastReadTime=" + lastReadTime +
+            ", lastWriteTime=" + lastWriteTime +
+            ", totalReconnectCount=" + totalReconnectCount +
+            ", reconnectCount=" + reconnectCount +
+            ", autoConnect=" + autoConnect +
+            '}';
     }
 }

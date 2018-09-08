@@ -36,6 +36,18 @@ public class ProviderUser {
         }
     }
 
+    public static boolean updateRosterAsyn(Context context, IChatUser user) {
+        if (context != null && user != null) {
+            RosterDao dao = new RosterDao(context, DaoManager.getUserID());
+            boolean result = dao.updateAsyn(user);
+            if (!result) {
+                return dao.insertAsyn(user);
+            }
+        }
+        return true;
+
+    }
+
     public static void updateUser(Context context, UserInfo user) {
         if (context != null && user != null) {
             RosterDao dao = new RosterDao(context, DaoManager.getUserID());
@@ -56,7 +68,7 @@ public class ProviderUser {
     }
 
     /*
-    获取所有非星标好友
+    获取所有好友
     * */
     public static List<UserBean> selectRosterAll(Context context) {
         if (context != null) {
@@ -101,10 +113,10 @@ public class ProviderUser {
         return userId;
     }
 
-    public static boolean updateRosterNick(Context context, String userId, String nick) {
+    public static boolean updateRosterRemarkName(Context context, String userId, String nick) {
         if (context != null && !TextUtils.isEmpty(userId)) {
             RosterDao dao = new RosterDao(context, DaoManager.getUserID());
-            return dao.updateRosterNick(userId, nick);
+            return dao.updateRosterRemarkName(userId, nick);
         }
         return false;
     }
@@ -139,10 +151,21 @@ public class ProviderUser {
     /*
      * 获取所有分组信息
      * */
-    public static List<RosterGroupBean> getAllGroup(Context context) {
+    public static List<UserBean> getAllGroups(Context context) {
         if (context != null) {
             RosterDao dao = new RosterDao(context, DaoManager.getUserID());
-            return dao.selectAllGroup();
+            return dao.selectAllGroups();
+        }
+        return null;
+    }
+
+    /*
+        * 获取所有分组名字
+        * */
+    public static List<String> getAllGroupNames(Context context) {
+        if (context != null) {
+            RosterDao dao = new RosterDao(context, DaoManager.getUserID());
+            return dao.selectGroupNames();
         }
         return null;
     }
@@ -240,5 +263,25 @@ public class ProviderUser {
         return dao.getUserNewStatus(userId);
     }
 
+    public static int getRosterCount() {
+        RosterDao dao = new RosterDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectRosterCount();
+    }
 
+    public static List<UserBean> getValidFriendList() {
+        RosterDao dao = new RosterDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectAllValidFriend();
+    }
+
+    //更新私聊消息中发送者头像及昵称
+    public static boolean updateSenderAvatar(String userId, String avatar, String userNick) {
+        RosterDao dao = new RosterDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateAvatarAndNick(userId, avatar, userNick);
+    }
+
+
+    public static boolean updateNewStatus(String userId, int newStatus) {
+        RosterDao dao = new RosterDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateNewStatus(userId, newStatus);
+    }
 }

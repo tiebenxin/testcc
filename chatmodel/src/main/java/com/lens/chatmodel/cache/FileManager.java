@@ -4,18 +4,17 @@ package com.lens.chatmodel.cache;
 import android.text.TextUtils;
 import com.lens.chatmodel.ChatEnum.EMessageType;
 import com.lens.chatmodel.ChatEnum.EPlayType;
+import com.lens.chatmodel.bean.body.VideoUploadEntity;
 import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.helper.FileCache;
 import com.lens.chatmodel.interf.IChatRoomModel;
-import com.lensim.fingerchat.data.HttpChannel;
-import com.lens.chatmodel.bean.body.VideoUploadEntity;
-import com.lens.chatmodel.bean.body.VoiceUploadEntity;
-import com.lensim.fingerchat.data.help_class.IProgressListener;
 import com.lensim.fingerchat.commons.global.CommonEnum.EProgressType;
 import com.lensim.fingerchat.commons.global.CommonEnum.EUploadFileType;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.ThreadUtils;
+import com.lensim.fingerchat.data.HttpChannel;
+import com.lensim.fingerchat.data.help_class.IProgressListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -152,6 +151,24 @@ public class FileManager {
 
             }
         });
+    }
+
+    /*
+    *密聊语音视频下载
+    * */
+    public void downloadFileSecret(final String url, final EUploadFileType type,
+        final IProgressListener listener) {
+        if (TextUtils.isEmpty(url)) {
+            return;
+        }
+        downloadUrl = url;
+        if (startedDownloads.contains(downloadUrl)) {
+            L.i(FileManager.class.getSimpleName(),
+                "Downloading of file " + downloadUrl + " already started");
+            return;
+        }
+        startedDownloads.add(downloadUrl);
+        HttpChannel.retrofitGetBytes(downloadUrl, listener);
     }
 
     /**

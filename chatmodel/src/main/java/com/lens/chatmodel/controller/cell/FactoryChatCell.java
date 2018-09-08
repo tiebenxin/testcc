@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import com.lens.chatmodel.ChatEnum;
 import com.lens.chatmodel.adapter.MessageAdapter;
 import com.lens.chatmodel.interf.IChatEventListener;
@@ -12,13 +11,10 @@ import com.lens.chatmodel.interf.IChatEventListener;
 
 public class FactoryChatCell {
 
-    private final Context mContext;
     private IChatEventListener mListener;
     MessageAdapter mAdapter;
 
-    public FactoryChatCell(Context context, MessageAdapter adapter,
-        IChatEventListener listener) {
-        mContext = context;
+    public FactoryChatCell(MessageAdapter adapter, IChatEventListener listener) {
         mListener = listener;
         mAdapter = adapter;
     }
@@ -34,63 +30,63 @@ public class FactoryChatCell {
         switch (cellLayout) {
             case TEXT_RECEIVED:
             case TEXT_SEND:
-                result = new ChatCellText(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellText(cellLayout, mListener, mAdapter, position);
                 break;
             case IMAGE_RECEIVED:
             case IMAGE_SEND:
-                result = new ChatCellImage(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellImage(cellLayout, mListener, mAdapter, position);
                 break;
             case VOICE_RECEIVED:
             case VOICE_SEND:
-                result = new ChatCellVoice(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellVoice(cellLayout, mListener, mAdapter, position);
                 break;
             case VIDEO_RECEIVED:
             case VIDEO_SEND:
-                result = new ChatCellVideo(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellVideo(cellLayout, mListener, mAdapter, position);
                 break;
             case MAP_RECEIVED:
             case MAP_SEND:
-                result = new ChatCellMap(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellMap(cellLayout, mListener, mAdapter, position);
                 break;
             case VOTE_RECEIVED:
             case VOTE_SEND:
-                result = new ChatCellVote(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellVote(cellLayout, mListener, mAdapter, position);
                 break;
             case EMOTICON_RECEIVED:
             case EMOTICON_SEND:
-                result = new ChatCellEmoticon(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellEmoticon(cellLayout, mListener, mAdapter, position);
                 break;
             case BUSINESS_CARD_RECEIVED:
             case BUSINESS_CARD_SEND:
-                result = new ChatCellBusinessCard(mContext, cellLayout, mListener, mAdapter,
+                result = new ChatCellBusinessCard(cellLayout, mListener, mAdapter,
                     position);
                 break;
             case WORK_LOGIN_RECEIVED:
             case WORK_LOGIN_SEND:
-                result = new ChatCellWorkLogin(mContext, cellLayout, mListener, mAdapter,
+                result = new ChatCellWorkLogin(cellLayout, mListener, mAdapter,
                     position);
                 break;
             case MULTI_RECEIVED:
             case MULTI_SEND:
-                result = new ChatCellMulti(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellMulti(cellLayout, mListener, mAdapter, position);
                 break;
             case CHAT_ACTION:
-                result = new ChatCellAction(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellAction(cellLayout, mListener, mAdapter, position);
                 break;
             case SECRET:
-                result = new ChatCellSecret(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellSecret(cellLayout, mListener, mAdapter, position);
                 break;
-//            case NOTICE:
-//                result = new ChatCellOA(mContext, cellLayout, mListener, mAdapter, position);
-//                break;
             case OA:
-                result = new ChatCellOA(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellOA(cellLayout, mListener, mAdapter, position);
                 break;
             case SYSTEM:
-                result = new ChatCellSystemNotice(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellSystemNotice(cellLayout, mListener, mAdapter, position);
+                break;
+            case NOTICE:
+                result = new ChatCellNotice(cellLayout, mListener, mAdapter, position);
                 break;
             default:
-                result = new ChatCellText(mContext, cellLayout, mListener, mAdapter, position);
+                result = new ChatCellText(cellLayout, mListener, mAdapter, position);
                 break;
         }
 

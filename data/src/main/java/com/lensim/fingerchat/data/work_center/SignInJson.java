@@ -6,196 +6,189 @@ package com.lensim.fingerchat.data.work_center;
 
 public class SignInJson {
 
-//    "token":"coolpadf2-token",
-//        "empno":"AhgRM7FS2VzZrCug%2f8mkyQ%3d%3d",
-//        "imuser":"AhgRM7FS2VzZrCug%2f8mkyQ%3d%3d",
-//        "signIP":"BJ5KcB8kmyKj40TfKne2Mw%3d%3d",
+    //    "deviceToken":"coolpadf2-deviceToken",
+//        "employeeNo":"AhgRM7FS2VzZrCug%2f8mkyQ%3d%3d",
+//        "imUser":"AhgRM7FS2VzZrCug%2f8mkyQ%3d%3d",
+//        "signIp":"BJ5KcB8kmyKj40TfKne2Mw%3d%3d",
 //        "signTime":"1ZkcpgbrCMk%2bx6SH%2bjY965gXHrMkr7fk",
-//        "mobiletype":"wvfjzA3Oins%3d",
-//        "mobilename":"z2Q49mVkXAw%3d",
-//        "mobileVer":"4.4.4",
+//        "clientType":"wvfjzA3Oins%3d",
+//        "clientName":"z2Q49mVkXAw%3d",
+//        "clientVersion":"4.4.4",
 //        "uuid":"5%2fAmBjI7j1ALqiKNILGeuQbW7KOT38McAk%2bT6UVxTOOXSmqv75irAg%3d%3d",
 //        "imver":"1.6.0",
-//        "locationtype":"JdvefCGyu78%3d",
-//        "locationdata":"Q6R4Y2Kwt%2fd8rbt5tbLFNNN0VUaHQUveKmrnNDwKCIs09QtTWqHN2OkqZWC1G8IWyqfqfxT8HofAmqBuUKoXinkpjCdeQLUn",
+//        "locationType":"JdvefCGyu78%3d",
+//        "locationData":"Q6R4Y2Kwt%2fd8rbt5tbLFNNN0VUaHQUveKmrnNDwKCIs09QtTWqHN2OkqZWC1G8IWyqfqfxT8HofAmqBuUKoXinkpjCdeQLUn",
 //        "TPSignIn":"y4AQT93FR4XK1mL%2fmZr7vbBWt2BGGgMRU9FWknpBsO0%3d"
-  /***
-   *暂时可乱写
-   */
-  private String token;
-  /**
-   * 唯一识别ID
-   */
-  private String empno;
-  /**
-   */
-  private String imuser;
-  /**
-   */
-  private String signIP;
-  /**
-   * 收藏时间
-   * yyyy-MM-dd HH:mm:ss
-   * 2017-08-03T00:00:00
-   */
-  private String signTime;
-  /**
-   **/
-  private String mobiletype;
-  /**
-   */
-  private String mobilename;
-  /**
-   */
-  private String mobileVer;
-  private String uuid;
-  private String imver;
-  private String locationtype;
-  private String locationdata;
-  /***
-   * /// TakePhoto 签到拍照 url
-   /// 最多三张图片的URL; 用 @分隔
-   * **/
-  private String TPSignIn;
-  private String Remark;
-  /***
-   *  汇报对象
-   *格式:  用户名;用户名;用户名
-   * */
-  private String ForReport;
-  /***
-   * 汇报对象的昵称/备注名,用@分隔多人
-   因为汇报对象可能是群
-   加密 再encode
-   * */
-  private String ForReportNick;
+
+    String clientName;//客户端手机品牌
+    String clientType;//客户端类型，android
+    String clientVersion;//客户端版本
+    String deviceToken;//客户端签名,暂时可乱写
+    String employeeNo;//工号
+    String imUser;//IM账号
+    int isValid;//0无效，1有效
+    String locationData;//定位数据
+    String locationPhoto;//定位图片（最多三张图片的URL; 用 @分隔）
+    String locationType;//位置类型。GPS,基站
+    //    int logId;//主键
+    String remark;//备注
+    String reporter;//报告人(格式:  用户名;用户名;用户名)
+    String reporterNickname;//报告人昵称(汇报对象的昵称/备注名,用@分隔多人,因为汇报对象可能是群,加密 再encode)
+    String signIp;//签到IP地址
+
+    /**
+     * 签到时间
+     * yyyy-MM-dd HH:mm:ss
+     * 2017-08-03T00:00:00
+     */
+    private String signTime;
+
+//    private String uuid;
+//    private String imver;
+//    private String TPSignIn;
 
 
-  public String getToken() {
-    return token;
-  }
+    public String getDeviceToken() {
+        return deviceToken;
+    }
 
-  public void setToken(String token) {
-    this.token = token;
-  }
+    public void setDeviceToken(String deviceToken) {
+        this.deviceToken = deviceToken;
+    }
 
-  public String getEmpno() {
-    return empno;
-  }
+    public String getEmployeeNo() {
+        return employeeNo;
+    }
 
-  public void setEmpno(String empno) {
-    this.empno = empno;
-  }
+    public void setEmployeeNo(String employeeNo) {
+        this.employeeNo = employeeNo;
+    }
 
-  public String getImuser() {
-    return imuser;
-  }
+    public String getImUser() {
+        return imUser;
+    }
 
-  public void setImuser(String imuser) {
-    this.imuser = imuser;
-  }
+    public void setImUser(String imUser) {
+        this.imUser = imUser;
+    }
 
-  public String getSignIP() {
-    return signIP;
-  }
+    public String getSignIp() {
+        return signIp;
+    }
 
-  public void setSignIP(String signIP) {
-    this.signIP = signIP;
-  }
+    public void setSignIp(String signIp) {
+        this.signIp = signIp;
+    }
 
-  public String getSignTime() {
-    return signTime;
-  }
+    public String getSignTime() {
+        return signTime;
+    }
 
-  public void setSignTime(String signTime) {
-    this.signTime = signTime;
-  }
+    public void setSignTime(String signTime) {
+        this.signTime = signTime;
+    }
 
-  public String getMobiletype() {
-    return mobiletype;
-  }
+    public String getClientType() {
+        return clientType;
+    }
 
-  public void setMobiletype(String mobiletype) {
-    this.mobiletype = mobiletype;
-  }
+    public void setClientType(String clientType) {
+        this.clientType = clientType;
+    }
 
-  public String getMobilename() {
-    return mobilename;
-  }
+    public String getClientName() {
+        return clientName;
+    }
 
-  public void setMobilename(String mobilename) {
-    this.mobilename = mobilename;
-  }
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
 
-  public String getMobileVer() {
-    return mobileVer;
-  }
+    public String getClientVersion() {
+        return clientVersion;
+    }
 
-  public void setMobileVer(String mobileVer) {
-    this.mobileVer = mobileVer;
-  }
+    public void setClientVersion(String clientVersion) {
+        this.clientVersion = clientVersion;
+    }
 
-  public String getUuid() {
-    return uuid;
-  }
+//    public String getUuid() {
+//        return uuid;
+//    }
+//
+//    public void setUuid(String uuid) {
+//        this.uuid = uuid;
+//    }
+//
+//    public String getImver() {
+//        return imver;
+//    }
+//
+//    public void setImver(String imver) {
+//        this.imver = imver;
+//    }
 
-  public void setUuid(String uuid) {
-    this.uuid = uuid;
-  }
+    public String getLocationType() {
+        return locationType;
+    }
 
-  public String getImver() {
-    return imver;
-  }
+    public void setLocationType(String locationType) {
+        this.locationType = locationType;
+    }
 
-  public void setImver(String imver) {
-    this.imver = imver;
-  }
+    public String getLocationData() {
+        return locationData;
+    }
 
-  public String getLocationtype() {
-    return locationtype;
-  }
+    public void setLocationData(String locationData) {
+        this.locationData = locationData;
+    }
 
-  public void setLocationtype(String locationtype) {
-    this.locationtype = locationtype;
-  }
+//    public String getTPSignIn() {
+//        return TPSignIn;
+//    }
+//
+//    public void setTPSignIn(String TPSignIn) {
+//        this.TPSignIn = TPSignIn;
+//    }
 
-  public String getLocationdata() {
-    return locationdata;
-  }
+    public String getRemark() {
+        return remark;
+    }
 
-  public void setLocationdata(String locationdata) {
-    this.locationdata = locationdata;
-  }
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 
-  public String getTPSignIn() {
-    return TPSignIn;
-  }
+    public String getReporter() {
+        return reporter;
+    }
 
-  public void setTPSignIn(String TPSignIn) {
-    this.TPSignIn = TPSignIn;
-  }
+    public void setReporter(String reporter) {
+        this.reporter = reporter;
+    }
 
-  public String getRemark() {
-    return Remark;
-  }
+    public String getReporterNickname() {
+        return reporterNickname;
+    }
 
-  public void setRemark(String remark) {
-    Remark = remark;
-  }
+    public void setReporterNickname(String reporterNickname) {
+        this.reporterNickname = reporterNickname;
+    }
 
-  public String getForReport() {
-    return ForReport;
-  }
+    public int getIsValid() {
+        return isValid;
+    }
 
-  public void setForReport(String forReport) {
-    ForReport = forReport;
-  }
+    public void setIsValid(int isValid) {
+        this.isValid = isValid;
+    }
 
-  public String getForReportNick() {
-    return ForReportNick;
-  }
+    public String getLocationPhoto() {
+        return locationPhoto;
+    }
 
-  public void setForReportNick(String forReportNick) {
-    ForReportNick = forReportNick;
-  }
+    public void setLocationPhoto(String locationPhoto) {
+        this.locationPhoto = locationPhoto;
+    }
 }

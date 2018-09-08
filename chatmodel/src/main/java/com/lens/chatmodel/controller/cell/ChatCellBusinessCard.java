@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,16 +23,12 @@ public class ChatCellBusinessCard extends ChatCellBase {
 
     private ImageView iv_avatar;
 
-    private final Context mContext;
     private TextView tv_card_name;
     private TextView tv_userid;
 
-    protected ChatCellBusinessCard(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
-        mContext = context;
-
+    protected ChatCellBusinessCard(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 

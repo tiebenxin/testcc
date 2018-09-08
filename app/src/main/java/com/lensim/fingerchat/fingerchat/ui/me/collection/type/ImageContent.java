@@ -29,6 +29,9 @@ public class ImageContent extends Content {
 
     private void toUrl() {
         FavContent favContent = JsonUtils.fromJson(getText(), FavContent.class);
+        if (favContent == null){
+            return;
+        }
         setText(favContent.getOriginalUrl());
     }
 }

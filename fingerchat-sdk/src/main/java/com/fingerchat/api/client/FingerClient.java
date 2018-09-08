@@ -11,6 +11,8 @@ import com.fingerchat.api.connection.Connection;
 import com.fingerchat.api.connection.SessionContext;
 import com.fingerchat.api.connection.SessionStorage;
 import com.fingerchat.api.message.AckMessage;
+import com.fingerchat.api.message.BindExcuteMessage;
+import com.fingerchat.api.message.BindReadAckMessage;
 import com.fingerchat.api.message.BindRosterMessage;
 import com.fingerchat.api.message.BindUserMessage;
 import com.fingerchat.api.message.FastConnectMessage;
@@ -25,11 +27,14 @@ import com.fingerchat.api.session.PersistentSession;
 import com.fingerchat.api.util.Strings;
 import com.fingerchat.api.util.thread.ExecutorManager;
 import com.fingerchat.proto.message.BaseChat;
+import com.fingerchat.proto.message.Excute.ExcuteMessage;
 import com.fingerchat.proto.message.FastConnect;
 import com.fingerchat.proto.message.HandShake;
+import com.fingerchat.proto.message.ReadAck.ReadedMessageList;
 import com.fingerchat.proto.message.Roster;
 import com.fingerchat.proto.message.Roster.ROption;
 import com.fingerchat.proto.message.Roster.RosterItem;
+import com.fingerchat.proto.message.Roster.RosterOption;
 import com.fingerchat.proto.message.User;
 import com.fingerchat.proto.message.User.BindMessage;
 import com.google.protobuf.ByteString;
@@ -85,6 +90,7 @@ public final class FingerClient implements IMClient, AckCallback {
     @Override
     public void stop() {
         logger.w("client shutdown !!!, state=%s", clientState.get());
+        System.out.println(FingerClient.class.getSimpleName() + "--stop");
         if (clientState.compareAndSet(State.Started, State.Shutdown)) {
             connection.setAutoConnect(false);
             connection.close();
@@ -100,6 +106,11 @@ public final class FingerClient implements IMClient, AckCallback {
             ClientConfig.I.destroy();
             clientState.set(State.Destroyed);
         }
+    }
+
+    @Override
+    public boolean isClientState() {
+        return clientState.get() == State.Started;
     }
 
     @Override
@@ -295,14 +306,16 @@ public final class FingerClient implements IMClient, AckCallback {
 
     @Override
     public void applyVerCode(String userid, String phoneNumber) {
-        if (Strings.isBlank(userid) || Strings.isBlank(phoneNumber)) {
+        if (Strings.isBlank(userid)) {
             logger.w("user is null or phoneNumber is null");
             return;
         }
         User.BindMessage.Builder builder = User.BindMessage.newBuilder();
-        builder.setUsername(userid).setPhoneNumber(phoneNumber);
-//        String id = UUID.randomUUID().toString();
-//        builder.setId(id);
+        if (Strings.isBlank(phoneNumber)) {//忘记密码，不需要输入手机号
+            builder.setUsername(userid);
+        } else {
+            builder.setUsername(userid).setPhoneNumber(phoneNumber);
+        }
         BindUserMessage message = BindUserMessage
             .buildApplyVerCode(connection)
             .setUserMessage(builder.build());
@@ -320,7 +333,8 @@ public final class FingerClient implements IMClient, AckCallback {
     }
 
     @Override
-    public void register(String userId, String password, String phoneNumber, String verCode) {
+    public void register(String userId, String password, String userNick, String phoneNumber,
+        String verCode, String avatar) {
         if (Strings.isBlank(userId)) {
             logger.w("bind user is null");
             return;
@@ -339,8 +353,12 @@ public final class FingerClient implements IMClient, AckCallback {
         config.setUserId(userId).setPassword(password);
 
         User.BindMessage.Builder builder = User.BindMessage.newBuilder();
-        builder.setUsername(userId).setPassword(password).setPhoneNumber(phoneNumber)
+        builder.setUsername(userId).setPassword(password).setUsernick(userNick)
+            .setPhoneNumber(phoneNumber)
             .setVerCode(verCode);
+        if (!Strings.isBlank(avatar)) {
+            builder.setAvatar(avatar);
+        }
 //        String id = UUID.randomUUID().toString();
 //        builder.setId(id);
         BindUserMessage message = BindUserMessage
@@ -378,7 +396,8 @@ public final class FingerClient implements IMClient, AckCallback {
         config.setUserId(userId).setPassword(password);
 
         User.BindMessage.Builder builder = User.BindMessage.newBuilder();
-        builder.setUsername(userId).setPassword(password).setNeedInfo(1);//1 需要user info,0 不需要
+        //setNeedInfo 1 需要user info, 0 不需要.. setNoNeedOffline 1 不需要， 不设置或0为需要
+        builder.setUsername(userId).setPassword(password).setNeedInfo(1).setNoNeedOffline(1);
         BindUserMessage message = BindUserMessage
             .buildBind(connection)
             .setUserMessage(builder.build());
@@ -416,7 +435,8 @@ public final class FingerClient implements IMClient, AckCallback {
         config.setUserId(phone).setPassword(password);
 
         User.BindMessage.Builder builder = User.BindMessage.newBuilder();
-        builder.setPhoneNumber(phone).setPassword(password).setNeedInfo(1);//1 需要user info,0 不需要
+        //setNeedInfo 1 需要user info, 0 不需要.. setNoNeedOffline 1 不需要， 不设置或0为需要
+        builder.setPhoneNumber(phone).setPassword(password).setNeedInfo(1).setNoNeedOffline(1);
         BindUserMessage message = BindUserMessage
             .buildBind(connection)
             .setUserMessage(builder.build());
@@ -458,8 +478,32 @@ public final class FingerClient implements IMClient, AckCallback {
             .buildUnbind(connection)
             .setUserMessage(builder.build())
             .send();
+        config.setBannedAotoLogin(true);//设置不能自动登录
         stop();
         logger.w("<<< do unbind user, userId=%s", userId);
+    }
+
+    @Override
+    public void changePassword(String userId, String var1, String var2, boolean isForget) {
+        //两种修改方式：
+        // 1. userId + old密码+ new密码
+        //2.userId + 新密码 + 验证码
+        if (isForget) {
+            User.BindMessage.Builder builder = User.BindMessage.newBuilder();
+            builder.setUsername(userId).setPassword(var1).setVerCode(var2);
+            BindUserMessage
+                .changePassword(connection)
+                .setUserMessage(builder.build())
+                .send();
+        } else {
+            User.BindMessage.Builder builder = User.BindMessage.newBuilder();
+            builder.setUsername(userId).setOldPassword(var1).setPassword(var2);
+            BindUserMessage
+                .changePassword(connection)
+                .setUserMessage(builder.build())
+                .send();
+        }
+
     }
 
     @Override
@@ -532,6 +576,25 @@ public final class FingerClient implements IMClient, AckCallback {
             .send();
     }
 
+    @Override
+    public void updateGroup(RosterOption option) {
+        BindRosterMessage.buildOption(connection).setRosterMessage(option).send();
+    }
+
+    @Override
+    public void excute(ExcuteMessage message) {
+        BindExcuteMessage.buildExcute(connection)
+            .setExcuteMessage(message)
+            .send();
+    }
+
+    @Override
+    public void read(ReadedMessageList message) {
+        BindReadAckMessage.buildReaded(connection)
+            .setReadedMessageList(message)
+            .send();
+    }
+
 
     @Override
     public int sendResult(Command cmd, MessageContext context) {
@@ -557,6 +620,7 @@ public final class FingerClient implements IMClient, AckCallback {
             Future<Boolean> future = ackRequestMgr.add(message.getSessionId(), context);
             message.send();
             logger.d("<<< send push message=%s", message);
+            System.out.println(FingerClient.class.getSimpleName() + "  发送了一条消息");
             return future;
         }
         logger.d("神奇");
@@ -572,6 +636,16 @@ public final class FingerClient implements IMClient, AckCallback {
     @Override
     public void onTimeout(Packet request) {
         this.connection.reconnect();
+    }
+
+
+    //是否握手成功
+    @Override
+    public boolean isHandOk() {
+        if (connection != null) {
+            return connection.getSessionContext().handshakeOk();
+        }
+        return false;
     }
 
 }

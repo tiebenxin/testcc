@@ -48,9 +48,21 @@ public class FragmentSearchFriend extends BaseFragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(mAdapter);
 
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, final int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy <= 0) {
+                    return;
+                }
+                int last = layoutManager.findLastVisibleItemPosition();
+                if (last + 4 >= mAdapter.getItemCount()) {
+                    ((ActivitySearchContacts) getActivity()).loadNextPager();
+                }
+            }
+        });
     }
-
 
     @Override
     public void notifyRequestResult(IEventProduct event) {

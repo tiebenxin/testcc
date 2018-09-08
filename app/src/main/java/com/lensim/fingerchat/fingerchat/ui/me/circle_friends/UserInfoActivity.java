@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
-import com.example.annotation.Path;
 import com.fingerchat.api.message.RespMessage;
 import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.base.BaseUserInfoActivity;
@@ -21,6 +20,8 @@ import com.lens.chatmodel.eventbus.ResponseEvent;
 import com.lens.chatmodel.manager.RosterManager;
 import com.lens.chatmodel.net.HttpUtils;
 import com.lens.chatmodel.ui.image.MultiImageSelectorActivity;
+import com.lens.route.annotation.Path;
+import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.global.Common;
 import com.lensim.fingerchat.commons.global.CommonEnum.EUploadFileType;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
@@ -34,6 +35,7 @@ import com.lensim.fingerchat.components.dialog.DialogUtil;
 import com.lensim.fingerchat.data.bean.ImageBean;
 import com.lensim.fingerchat.data.help_class.IUploadListener;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
+import com.lensim.fingerchat.data.repository.SPSaveHelper;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.ui.me.ControllerInfoAvatar;
 import com.lensim.fingerchat.fingerchat.ui.me.ControllerInfoImage;
@@ -139,7 +141,8 @@ public class UserInfoActivity extends BaseUserInfoActivity {
                 .setTitleAndContent(ContextHelper.getString(R.string.avatar),
                     userBean.getAvatarUrl());
             viewNick
-                .setTitleAndContent(ContextHelper.getString(R.string.nick), userBean.getUserNick());
+                .setTitleAndContent(ContextHelper.getString(R.string.nick),
+                    userBean.getRemarkName());
             viewAccount
                 .setTitleAndContent(ContextHelper.getString(R.string.accout), userBean.getUserId());
             view2Code.setTitleAndContent(ContextHelper.getString(R.string.user_qrcode),
@@ -202,22 +205,19 @@ public class UserInfoActivity extends BaseUserInfoActivity {
             }
         });
 
-        viewNick.setOnClickListener(() ->
-
-        {
+        viewNick.setOnClickListener(() -> {
+            if (!isSelf) {//不能修改好友昵称,只能修改备注名
+                return;
+            }
             Intent nick = new Intent(this, InputInfoActivity.class);
             nick.putExtra("content", viewNick.getContent());
             nick.putExtra(InputInfoActivity.REQUEST_CODE, InputInfoActivity.REQUEST_NICK);
             startActivityForResult(nick, InputInfoActivity.REQUEST_NICK);
         });
-        viewAccount.setOnClickListener(() ->
-
-        {
+        viewAccount.setOnClickListener(() -> {
 
         });
-        view2Code.setOnClickListener(() ->
-
-        {
+        view2Code.setOnClickListener(() -> {
             if (isSelf) {
                 DialogUtil
                     .getUserInfoDialog(this, R.style.MyDialog, getUserId(), getUserAvatar(),
@@ -261,17 +261,16 @@ public class UserInfoActivity extends BaseUserInfoActivity {
         } else if (requestCode == InputInfoActivity.REQUEST_NICK) {
             if (resultCode == RESULT_OK) {
                 sNick = data.getStringExtra(InputInfoActivity.INPUT_RESULT);
-                if (!StringUtils.isEmpty(sNick)) {
-                    if (isSelf) {
+                if (isSelf) {
+                    if (!StringUtils.isEmpty(sNick)) {
                         RosterManager.getInstance()
                             .updateUser(getUserId(), sNick, RosterManager.NICK);
-                    } else {
-                        RosterManager.getInstance()
-                            .updateRoster(isSelf ? getUserId() : userBean.getUserId(), sNick,
-                                RosterManager.NICK);
                     }
-
+                } else {
+                    RosterManager.getInstance()
+                        .updateRoster(userBean.getUserId(), sNick, RosterManager.NICK);
                 }
+
 
             }
         } else if (requestCode == REQUEST_CLIP_IMAGE) {
@@ -281,11 +280,12 @@ public class UserInfoActivity extends BaseUserInfoActivity {
                 uploadImage(imagePath);
             }
         }
+
     }
 
     private void uploadImage(String path) {
         HttpUtils.getInstance()
-            .uploadFileProgress(path, EUploadFileType.JPG,
+            .uploadImageSave(path, EUploadFileType.JPG,
                 new IUploadListener() {
                     @Override
                     public void onSuccess(Object result) {
@@ -294,6 +294,9 @@ public class UserInfoActivity extends BaseUserInfoActivity {
                             ImageUploadEntity entity = (ImageUploadEntity) result;
                             if (entity != null && !TextUtils.isEmpty(entity.getOriginalUrl())) {
                                 avatarUrl = entity.getOriginalUrl();
+                                SPSaveHelper.setValue(
+                                    UserInfoRepository.getUserName() + AppConfig.HEAD_IMAGE,
+                                    entity.getOriginalUrl());
                                 RosterManager.getInstance()
                                     .updateUser(getUserId(), entity.getOriginalUrl(),
                                         RosterManager.AVATAR);
@@ -325,10 +328,11 @@ public class UserInfoActivity extends BaseUserInfoActivity {
             RespMessage message = ((ResponseEvent) event).getPacket();
             if (message != null && message.response != null) {
                 int code = message.response.getCode();
-                if (code == Common.UPDATE_INFO_SUCCESS) {//更新成功
+                if (code == Common.UPDATE_ROSTER_SUCCESS) {//更新成功
                     System.out.println("修改成功");
                     ProviderUser
-                        .updateRosterNick(ContextHelper.getContext(), userBean.getUserId(), sNick);
+                        .updateRosterRemarkName(ContextHelper.getContext(), userBean.getUserId(),
+                            sNick);
                     viewNick.setContent(sNick);
                 } else if (code == Common.UPDATE_ROSTER_FAILURE) {//修改失败
                     T.show("修改失败");
@@ -336,6 +340,7 @@ public class UserInfoActivity extends BaseUserInfoActivity {
                     if (!TextUtils.isEmpty(avatarUrl)) {
                         UserInfoRepository.getInstance().getUserInfo()
                             .setImage(avatarUrl);
+
                         viewAvatar.setAvatar(avatarUrl);
                     } else if (!TextUtils.isEmpty(sNick)) {
                         UserInfoRepository.getInstance().getUserInfo()

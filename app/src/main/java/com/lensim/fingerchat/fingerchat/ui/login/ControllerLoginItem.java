@@ -7,6 +7,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -44,8 +45,10 @@ public class ControllerLoginItem {
     private OnActionListener actionListener;
     private boolean isShowPsw;
     private View viewRight;
+    private final View viewRoot;
 
     public ControllerLoginItem(View v) {
+        viewRoot = v;
         init(v);
     }
 
@@ -143,10 +146,10 @@ public class ControllerLoginItem {
                 Button button = new Button(ContextHelper.getContext());
                 button.setText(ContextHelper.getString(R.string.get_identify_code));
                 button.setTextColor(ContextHelper.getColor(R.color.gay_identify_code));
-                button.setBackground(ContextHelper.getDrawable(R.drawable.btn_get_identify_code));
+//                button.setBackground(ContextHelper.getDrawable(R.drawable.btn_get_identify_code));
+                button.setBackground(ContextHelper.getDrawable(R.drawable.btn_forget_psw_code));
                 button.setPadding(5, 5, 5, 5);
-//                params = new LayoutParams(DensityUtil.dip2px(ContextHelper.getContext(), 90),
-//                    DensityUtil.dip2px(ContextHelper.getContext(), 32));
+
                 params = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     DensityUtil.dip2px(ContextHelper.getContext(), 32));
                 params.setMargins(0, 0, DensityUtil.dip2px(ContextHelper.getContext(), 10), 0);
@@ -211,6 +214,18 @@ public class ControllerLoginItem {
         }
     }
 
+
+    public void setForgetButtonText(boolean isClickable, String text) {
+        if (rightType == TYPE_VERIFICATION_CODE && viewRight instanceof Button) {
+            setClickable(isClickable);
+            ((Button) viewRight).setText(text);
+//            viewRight.setBackground(ContextHelper.getDrawable(drawable));
+            if (viewRight.isSelected() == isClickable) {
+                viewRight.setSelected(!isClickable);
+            }
+        }
+    }
+
     private void setImeOptions(int imeOptions) {
         et_input.setImeOptions(imeOptions);
     }
@@ -237,6 +252,10 @@ public class ControllerLoginItem {
         if (!TextUtils.isEmpty(s)) {
             et_input.setText(s);
         }
+    }
+
+    public void setVisible(boolean b) {
+        viewRoot.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
 

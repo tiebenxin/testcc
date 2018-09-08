@@ -27,6 +27,8 @@ import android.net.NetworkInfo.State;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.support.v4.app.ActivityCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -210,17 +212,30 @@ public class TDevice {
     public static String getDeviceId(Context context) {
         final TelephonyManager TelephonyMgr = (TelephonyManager) context
             .getSystemService(TELEPHONY_SERVICE);
+        String id;
         if (Build.VERSION.SDK_INT >= 23) {
             if (ActivityCompat.checkSelfPermission(context, permission.READ_PHONE_STATE)
                 != PackageManager.PERMISSION_GRANTED) {
                 return null;
             }
             assert TelephonyMgr != null;
-            return TelephonyMgr.getDeviceId();
+            if (!TextUtils.isEmpty(TelephonyMgr.getDeviceId())) {
+                id = TelephonyMgr.getDeviceId();
+            } else {
+                id = Settings.Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
+            }
+            System.out.println("DeviceId:" + id);
+            return id;
 
         } else {
             assert TelephonyMgr != null;
-            return TelephonyMgr.getDeviceId();
+            if (!TextUtils.isEmpty(TelephonyMgr.getDeviceId())) {
+                id = TelephonyMgr.getDeviceId();
+            } else {
+                id = Settings.Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
+            }
+            System.out.println("DeviceId:" + id);
+            return id;
         }
 
 

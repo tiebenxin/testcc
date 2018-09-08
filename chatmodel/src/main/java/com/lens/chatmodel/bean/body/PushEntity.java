@@ -11,6 +11,7 @@ public class PushEntity extends BaseJsonEntity {
 
 /*    {
         "from" : "小秘书", //从小秘书推送来的
+        "username" : "mytip", //从小秘书推送来的
         "body" : {
         "title" : "OA通知标题",
             "content" : "OA通知内容",
@@ -23,6 +24,7 @@ public class PushEntity extends BaseJsonEntity {
     }*/
 
     String from;
+    String username;
     String type;
     PushBody body;
 
@@ -32,6 +34,14 @@ public class PushEntity extends BaseJsonEntity {
 
     public void setFrom(String from) {
         this.from = from;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getType() {

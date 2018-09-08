@@ -69,6 +69,7 @@ public class SearchNoteFragment extends BaseFragment {
         ui.tvSearchText.setOnClickListener(v -> click(v.getId()));
         ui.tvSearchImg.setOnClickListener(v -> click(v.getId()));
         ui.tvSearchVideo.setOnClickListener(v -> click(v.getId()));
+        ui.tvSearchVoide.setOnClickListener(v -> click(v.getId()));
 
         results = new ArrayList<>();
         ui.mSearchNoteList.setHasFixedSize(true);
@@ -86,7 +87,8 @@ public class SearchNoteFragment extends BaseFragment {
 
     public static final String MSG_TYPE_TEXT = "1";
     public static final String MSG_TYPE_PIC = "2";
-    public static final String MSG_TYPE_VIDEO = "3";
+    public static final String MSG_TYPE_VOICE = "3";
+    public static final String MSG_TYPE_VIDEO = "4";
     //1.text 文字 2.image 图片 3.video 视频 4.gif 大表情
     private void click(int id) {
         switch (id) {
@@ -98,6 +100,9 @@ public class SearchNoteFragment extends BaseFragment {
                 break;
             case R.id.tv_search_video:
                 type = MSG_TYPE_VIDEO;
+                break;
+            case R.id.tv_search_voide:
+                type = MSG_TYPE_VOICE;
                 break;
         }
         filterAll("", type);
@@ -121,7 +126,7 @@ public class SearchNoteFragment extends BaseFragment {
                 public List<FavJson> apply(@io.reactivex.annotations.NonNull String s)
                     throws Exception {
                     mKeyWord = s;
-                    return CollectionManager.getInstance().queryContent(s, type);
+                    return CollectionManager.getInstance().queryByContentOrType(s, Integer.parseInt(type == null? "0" :type));
                 }
             }).subscribeOn(Schedulers.io()).observeOn(
             AndroidSchedulers.mainThread()).subscribe(new Consumer<List<FavJson>>() {

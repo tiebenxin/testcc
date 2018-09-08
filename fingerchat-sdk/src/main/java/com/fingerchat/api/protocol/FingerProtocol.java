@@ -1,7 +1,10 @@
 package com.fingerchat.api.protocol;
 
 import com.fingerchat.api.push.MessageContext;
+import com.fingerchat.proto.message.Excute.ExcuteMessage;
+import com.fingerchat.proto.message.ReadAck.ReadedMessageList;
 import com.fingerchat.proto.message.Roster.RosterItem;
+import com.fingerchat.proto.message.Roster.RosterOption;
 import com.fingerchat.proto.message.User.BindMessage;
 import java.util.concurrent.Future;
 
@@ -24,7 +27,8 @@ public interface FingerProtocol {
 
     void applyVerCode(String userid, String phoneNumber);
 
-    void register(String userId, String password, String phoneNumber, String verCode);
+    void register(String userId, String password, String userNick, String phoneNumber,
+        String verCode,String avatar);
 
     void login(String userId, String password);
 
@@ -33,6 +37,8 @@ public interface FingerProtocol {
     void loginError();
 
     void logout();
+
+    void changePassword(String userId, String var1, String var2, boolean isForget);
 
     Future<Boolean> send(Command cmd, MessageContext context);
 
@@ -51,6 +57,12 @@ public interface FingerProtocol {
     void updateFriendInfo(String user, RosterItem item);
 
     void updateUserInfo(BindMessage message);
+
+    void updateGroup(RosterOption option);
+
+    void excute(ExcuteMessage excuteMessage);
+
+    void read(ReadedMessageList message);
 
 
 }

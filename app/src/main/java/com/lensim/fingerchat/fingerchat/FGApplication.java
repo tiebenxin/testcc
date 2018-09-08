@@ -4,6 +4,8 @@ import static com.lensim.fingerchat.commons.helper.ContextHelper.getApplication;
 
 import android.support.multidex.MultiDexApplication;
 import com.lens.chatmodel.base.ChatEnvironment;
+import com.lens.chatmodel.manager.NotifyManager;
+import com.lens.core.LensCore;
 import com.lensim.fingerchat.commons.app.BuildInfo;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.map.BaiduSDK;
@@ -12,6 +14,8 @@ import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.data.me.picture.CipherImageDecoder;
 import com.lensim.fingerchat.data.me.picture.CipherUnlimitedDiskCache;
 import com.lensim.fingerchat.fingerchat.component.carsh.CrashHandler;
+import com.lensim.fingerchat.hexmeet.App;
+import com.lensim.fingerchat.data.me.content.CollectionTable;
 import com.nostra13.universalimageloader.cache.disc.naming.HashCodeFileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -26,9 +30,11 @@ public class FGApplication extends MultiDexApplication {
     public static final String PUBLIC_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCghPCWCobG8nTD24juwSVataW7iViRxcTkey/B792VZEhuHjQvA3cAJgx2Lv8GnX8NIoShZtoCg3Cx6ecs+VEPD2fBcg2L4JK7xldGpOJ3ONEAyVsLOttXZtNXvyDZRijiErQALMTorcgi79M5uVX9/jMv2Ggb2XAeZhlLD28fHwIDAQAB";
     public static final String ALLOTSERVER = "http://10.3.7.111:9696/";
     public static final String TEST_SERVER = "oa.fingerchat.net:9999";
-    //    public static final String LOCAL_SERVER = "172.16.6.54:9999";
     public static final String LOCAL_SERVER = "172.16.6.211:9999";
-
+    //        public static final String NORMAL_SERVER = LOCAL_SERVER;
+//    public static final String NORMAL_SERVER = TEST_SERVER;
+//    public static final String NORMAL_SERVER = BaseURL.BASE_IM_URL;
+    private App mHexMeet;
 
     @Override
     public void onCreate() {
@@ -36,13 +42,28 @@ public class FGApplication extends MultiDexApplication {
         ContextHelper.setContext(getApplicationContext());
         ContextHelper.setApplication(this);
         initMap();
-//        initHexMeet();
         initChatEnvironment();
         initImageLoader();
         initCrash();
+        LensCore.init(this);
         FGRouter.init();
+        initHexMeet();
+        CollectionTable.getInstance().getWritableDatabase();
     }
 
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        System.out.println(FGApplication.class.getSimpleName() + "--onTerminate");
+        NotifyManager.getInstance().clearNotification();
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        System.out.println(FGApplication.class.getSimpleName() + "--onTrimMemory");
+        NotifyManager.getInstance().clearNotification();
+    }
 
     /***
      * 初始化定位sdk，建议在Application中创建
@@ -51,10 +72,6 @@ public class FGApplication extends MultiDexApplication {
         BaiduSDK.initSDK(getApplication());
     }
 
-    private void initHexMeet() {
-//        mHexMeet = new App();
-//        mHexMeet.init();
-    }
 
     private void initCrash() {
         if (!BuildConfig.DEBUG) {
@@ -88,5 +105,10 @@ public class FGApplication extends MultiDexApplication {
             .threadPriority(Thread.NORM_PRIORITY - 2)  //降低线程的优先级保证主UI线程不受太大影响
             .build();// 开始构建
         ImageLoader.getInstance().init(config);
+    }
+
+    private void initHexMeet() {
+        mHexMeet = new App();
+        mHexMeet.init();
     }
 }

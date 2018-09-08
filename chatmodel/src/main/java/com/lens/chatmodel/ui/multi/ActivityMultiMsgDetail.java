@@ -40,7 +40,6 @@ public class ActivityMultiMsgDetail extends FGActivity implements IChatEventList
         AdapterMultiList mAdapter = new AdapterMultiList(this);
         mAdapter.setViewFactory(new FactoryMultiCell(this, this));
         mAdapter.setEntity(entity);
-
         recyclerView.setAdapter(mAdapter);
     }
 

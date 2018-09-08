@@ -6,6 +6,9 @@ import android.util.Log;
 
 import com.lensim.fingerchat.db.greendao.DaoMaster;
 
+import com.lensim.fingerchat.db.greendao.FavJsonDBDao;
+import com.lensim.fingerchat.db.greendao.PasswordDao;
+import com.lensim.fingerchat.db.greendao.WorkItemDao;
 import org.greenrobot.greendao.database.Database;
 
 /**
@@ -28,6 +31,10 @@ public class GreenDBOpenHelper extends DaoMaster.DevOpenHelper {
     public void onUpgrade(Database db, int oldVersion, int newVersion) {
         // 不做super.onUpgrade操作
         Log.w(TAG, "db version update from " + oldVersion + " to " + newVersion);
-
+        //第二版增加了WORKITEM 表
+        if (oldVersion == 1) {
+            WorkItemDao.dropTable(db, true);
+            WorkItemDao.createTable(db, false);
+        }
     }
 }

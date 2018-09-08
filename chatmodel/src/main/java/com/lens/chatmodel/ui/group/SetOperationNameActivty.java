@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.fingerchat.api.message.MucActionMessage;
 import com.fingerchat.api.message.MucMessage;
-import com.fingerchat.api.message.RespMessage;
 import com.fingerchat.proto.message.Muc;
 import com.fingerchat.proto.message.Muc.MOption;
 import com.fingerchat.proto.message.Muc.MucAction;
@@ -18,7 +17,6 @@ import com.fingerchat.proto.message.Resp;
 import com.lens.chatmodel.ChatEnum;
 import com.lens.chatmodel.ChatEnum.EChatBgId;
 import com.lens.chatmodel.R;
-import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.db.MucInfo;
 import com.lens.chatmodel.db.MucUser;
 import com.lens.chatmodel.db.ProviderChat;
@@ -37,6 +35,7 @@ import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.IChatUser;
 import com.lensim.fingerchat.commons.interf.IEventProduct;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
+import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.db.DBHelper;
 import com.lens.chatmodel.manager.MucManager;
@@ -83,6 +82,10 @@ public class SetOperationNameActivty extends BaseUserInfoActivity {
                 if (TextUtils.isEmpty(etNameStr)) {
                     T.show("请输入内容");
                 } else {
+//                    if (StringUtils.isContainSpecailChar(etNameStr)) {
+//                        T.show(getToastContent());
+//                        return;
+//                    }
                     showProgress("加载中...", true);
                     createMucInfoOperation(etNameStr);
                 }
@@ -93,6 +96,18 @@ public class SetOperationNameActivty extends BaseUserInfoActivity {
             etName.setText(bundle.getString("content"));
             etName.setSelection(etName.getText().toString().length());//将光标移至文字末尾
         }
+    }
+
+    private String getToastContent() {
+        switch (operationType) {
+            case SET_GROUP_NAME:
+            case ADD_GROUP_NAME:
+                return "群名不能包含特殊字符";
+            //修改组昵称
+            case SET_GROUP_NICKNAME:
+                return "群昵称不能包含特殊字符";
+        }
+        return "";
     }
 
     @Override
@@ -155,7 +170,11 @@ public class SetOperationNameActivty extends BaseUserInfoActivity {
             //群聊创建成功
             if (MOption.Create == mucActionMessage.action.getAction()) {
                 //添加加入的成员 取群成员更新数据库
-                updateMucData(mucActionMessage);
+//                updateMucData(mucActionMessage);
+//                MucManager.getInstance().getRequestBuilder()
+//                    .queryOneRoomCode(
+//                        MucManager.getInstance().qRoomInfo(Muc.QueryType.QRoomById,
+//                            mucActionMessage.action.getMucid()));
                 //跳转到chat2
                 startChat2Activity(mucActionMessage.action.getMucid(),
                     mucActionMessage.action.getMucname());
@@ -184,10 +203,15 @@ public class SetOperationNameActivty extends BaseUserInfoActivity {
                 //群昵称
             } else if ((Muc.MOption.UpdateConfig == mucActionMessage.action.getAction()
                 && Muc.UpdateOption.UUsernick == mucActionMessage.action.getUpdateOption())) {
+
                 MucInfo.updateById(getApplicationContext(), mucActionMessage.action.getMucid(),
                     DBHelper.MUC_USERNICK,
                     mucActionMessage.action.getFrom().getMucusernick()
                 );
+                MucUser.updateById(ContextHelper.getContext(), mucActionMessage.action.getMucid(),
+                    mucActionMessage.action.getFrom().getUsername(), DBHelper.GROUP_MUC_USERNICK,
+                    mucActionMessage.action.getFrom().getMucusernick());
+
                 EventBus.getDefault().post(MucRefreshEvent
                     .createMucRefreshEvent(MucRefreshEvent.MucRefreshEnum.MUC_OPTION));
                 finish();
@@ -215,10 +239,12 @@ public class SetOperationNameActivty extends BaseUserInfoActivity {
                 EventBus.getDefault().post(MucRefreshEvent
                     .createMucRefreshEvent(MucRefreshEvent.MucRefreshEnum.MUC_OPTION));
                 Intent intent = new Intent();
-                intent.putExtra("name",etName.getText());
-                setResult(RESULT_OK,intent);
+                intent.putExtra("name", etName.getText());
+                setResult(RESULT_OK, intent);
                 finish();
-            } else {
+            } else if (message.getCode() == Common.ROOM_INEXIST
+                || message.getCode() == Common.NEED_OWNER || message.getCode() == Common.NOT_MEMBER
+                || message.getCode() == Common.EMPTY_OWNER) {
                 T.show("修改群昵称失败");
             }
 
@@ -250,8 +276,8 @@ public class SetOperationNameActivty extends BaseUserInfoActivity {
             MucAction.Builder builder = action.toBuilder();
             builder.addAllUsernames(memberItems);
             action = builder.build();
-            MucUser.insertMultipleGroupUser(ContextHelper.getContext(), memberItems,
-                action.getMucid());//初始化群成员
+            MucUser.updateMultipleGroupUser(ContextHelper.getContext(), memberItems,
+                action.getMucid(), action.getCreator());//初始化群成员
             IChatRoomModel model = MessageManager.getInstance()
                 .createActionMessage(action.getFrom().getUsername(),
                     action.getFrom().getMucusernick(),

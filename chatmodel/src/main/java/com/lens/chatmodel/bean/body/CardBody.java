@@ -13,16 +13,18 @@ import org.json.JSONObject;
 public class CardBody extends BaseJsonEntity {
 
     String senderAvatar;//发送者头像
-    String mucNickName;//群聊备注名，非群聊则无
-    boolean secret;//是否密聊
+    String mucNickName;//群聊备注名，私聊为昵称
+    int secret;//是否密聊
     int bubbleWidth;
     int bubbleHeight;
+    String groupName;//群聊专有字段，群名
+
 
     //名片消息
     String friendName;
     String friendHeader;
-    boolean isValid;
-    boolean isEnable;
+    int isValid;
+    int isEnable;
     String friendId;
 
     public String getSenderAvatar() {
@@ -43,10 +45,10 @@ public class CardBody extends BaseJsonEntity {
     }
 
     public boolean isSecret() {
-        return secret;
+        return secret == 1;
     }
 
-    public void setSecret(boolean secret) {
+    public void setSecret(int secret) {
         this.secret = secret;
     }
 
@@ -83,18 +85,18 @@ public class CardBody extends BaseJsonEntity {
     }
 
     public boolean isValid() {
-        return isValid;
+        return isValid == 1;
     }
 
-    public void setValid(boolean valid) {
+    public void setValid(int valid) {
         isValid = valid;
     }
 
     public boolean isEnable() {
-        return isEnable;
+        return isEnable == 1;
     }
 
-    public void setEnable(boolean enable) {
+    public void setEnable(int enable) {
         isEnable = enable;
     }
 
@@ -104,6 +106,14 @@ public class CardBody extends BaseJsonEntity {
 
     public void setFriendId(String friendId) {
         this.friendId = friendId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public String toJson() {
@@ -135,6 +145,9 @@ public class CardBody extends BaseJsonEntity {
             }
             object.put("isValid", isValid);
             object.put("isEnable", isEnable);
+            if (!TextUtils.isEmpty(groupName)) {
+                object.put("groupName", groupName);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

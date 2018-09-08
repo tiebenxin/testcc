@@ -6,9 +6,11 @@ import android.text.TextUtils;
 import com.lens.chatmodel.ChatEnum.EPlayType;
 import com.lens.chatmodel.ChatEnum.ESendType;
 import com.lens.chatmodel.bean.AllResult;
+import com.lens.chatmodel.bean.EmoBean;
 import com.lens.chatmodel.bean.message.RecentMessage;
 import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.interf.IChatRoomModel;
+import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.db.DaoManager;
 
 import java.util.ArrayList;
@@ -21,10 +23,22 @@ import java.util.List;
 
 public class ProviderChat {
 
-    public static boolean insertPrivateMessage(Context context, IChatRoomModel message) {
+    public static boolean insertAndUpdateMessage(Context context, IChatRoomModel message) {
         if (context != null && message != null) {
             ChatMessageDao dao = new ChatMessageDao(context, DaoManager.getUserID());
-            return dao.insert(message);
+            boolean flag = dao.update(message);
+            if (!flag) {
+                flag = dao.insert(message);
+            }
+            return flag;
+        }
+        return false;
+    }
+
+    public static boolean insertMessageAsyn(Context context, IChatRoomModel message) {
+        if (context != null && message != null) {
+            ChatMessageDao dao = new ChatMessageDao(context, DaoManager.getUserID());
+            return dao.insertAsyn(message);
         }
         return false;
     }
@@ -175,6 +189,17 @@ public class ProviderChat {
         return dao.update(message);
     }
 
+    public static boolean updateRecentMessageAsyn(Context context, RecentMessage message) {
+        RecentMsgDao dao = new RecentMsgDao(context, DaoManager.getUserID());
+        return dao.updateAsyn(message);
+    }
+
+    public static boolean updateRecentMessageAsyn(Context context, RecentMessage message,
+        int unreadCount) {
+        RecentMsgDao dao = new RecentMsgDao(context, DaoManager.getUserID());
+        return dao.updateAsyn(message, unreadCount);
+    }
+
     public static List<RecentMessage> selectAllRecents(Context context) {
         RecentMsgDao dao = new RecentMsgDao(context, DaoManager.getUserID());
         return dao.selectAll();
@@ -226,9 +251,9 @@ public class ProviderChat {
     }
 
     //获取所有未读消息总数
-    public static int selectTotalUnreadMessageCount(Context context) {
-        RecentMsgDao dao = new RecentMsgDao(context, DaoManager.getUserID());
-        return dao.selectTotalUnreadMessageCount();
+    public static int selectTotalUnreadMessageCount() {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.getUnreadCountOfAll();
     }
 
     //更新聊天背景图片
@@ -257,8 +282,8 @@ public class ProviderChat {
 
     //获取某聊天对象的未读消息数量
     public static int selectUnreadMessageCountOfUser(Context context, String user) {
-        RecentMsgDao dao = new RecentMsgDao(context, DaoManager.getUserID());
-        return dao.selectUnreadMessageCountOfUser(user);
+        ChatMessageDao dao = new ChatMessageDao(context, DaoManager.getUserID());
+        return dao.getUnreadCountOfUser(user);
     }
 
     //更新会话名称
@@ -272,4 +297,72 @@ public class ProviderChat {
         return dao.clearMessage(chatId);
     }
 
+    public static long getLastMessageTime() {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectLastMessageTime();
+    }
+
+    //获取聊天消息playstatus
+    public static int getPlayStatus(Context context, String msgId) {
+        ChatMessageDao dao = new ChatMessageDao(context, DaoManager.getUserID());
+        return dao.getPlayStatus(msgId);
+    }
+
+    public static IChatRoomModel getLastMessage(String user, boolean isGroupChat) {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectLastMessage(user, isGroupChat);
+    }
+
+    //更新消息未读状态,isUnreaded true 表示当前有未读，需修改为已读。
+    public static boolean updateHasReaded(String userId, boolean isUnreaded) {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateHasReaded(userId, isUnreaded);
+    }
+
+    //已读标记为未读，只改一条
+    public static boolean updateHasReaded(String messageId) {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateUnreadReaded(messageId);
+    }
+
+    public static List<String> getAllChat() {
+        RecentMsgDao dao = new RecentMsgDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectChatIds();
+    }
+
+    public static List<String> getAllUnreadChat() {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectUnreadChats();
+    }
+
+    public static List<IChatRoomModel> getSendFailedMessage() {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectSendFailedMessage();
+    }
+
+    //更新消息at状态。
+    public static boolean updateAt(String userId) {
+        RecentMsgDao dao = new RecentMsgDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateAt(userId);
+    }
+
+    public static int getSendErrorMessageCount(String chatId) {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectSendErrorMessageCount(chatId);
+    }
+
+    public static String getReadedUserIds(String msgId) {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.selectReadedUserIds(msgId);
+    }
+
+    public static boolean updateReadedUserIds(String msgId, String userIds) {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateReadedUserIds(msgId, userIds);
+    }
+
+    public static boolean updateServerReaded(String msgId) {
+        ChatMessageDao dao = new ChatMessageDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateServerReaded(msgId);
+    }
 }

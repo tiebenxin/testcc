@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +18,7 @@ import com.fingerchat.api.message.MucActionMessage;
 import com.fingerchat.api.message.MucMemberMessage;
 import com.fingerchat.api.message.MucMessage;
 import com.fingerchat.proto.message.Muc;
+import com.fingerchat.proto.message.Muc.MucMemberItem;
 import com.fingerchat.proto.message.Resp;
 import com.lens.chatmodel.ChatEnum;
 import com.lens.chatmodel.ChatEnum.EChatType;
@@ -38,6 +40,7 @@ import com.lens.chatmodel.ui.profile.FriendDetailActivity;
 import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.app.AppManager;
 import com.lensim.fingerchat.commons.base.FGActivity;
+import com.lensim.fingerchat.commons.dialog.NiftyDialogBuilder;
 import com.lensim.fingerchat.commons.global.Common;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.IEventProduct;
@@ -85,6 +88,7 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
     private View viewNickInGroup;
     private View groupBottonView;
     private boolean isGroupChat;
+    private boolean isGroupEnable = false;//有效群聊，自己是群成员
 
     @Override
     public void initView() {
@@ -126,7 +130,7 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
         Bundle bundle = getIntent().getExtras();
         mucId = bundle.getString("mucId");
         mucName = bundle.getString("mucName");
-        chatType = bundle.getInt("chat_type", 0);
+        chatType = bundle.getInt("chat_type", 1);
         isGroupChat = ChatHelper.isGroupChat(chatType);
 
         // 每行显示的item项数目 垂直排列
@@ -167,6 +171,16 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
      */
     private void selectDbData() {
         mucItem = MucInfo.selectByMucId(getApplicationContext(), mucId);
+        if (mucItem != null) {
+            MucMemberItem item = MucUser
+                .selectUserById(ContextHelper.getContext(), mucId, UserInfoRepository.getUserId());
+            if (item == null) {
+                isGroupEnable = true;
+            }
+        } else {
+            isGroupEnable = true;
+        }
+
         //数据库获取群成员信息
         List<Muc.MucMemberItem> members = MucUser
             .selectByGroupId(getApplicationContext(), mucId, is_admin ? 43 : 44);
@@ -176,15 +190,6 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
         }
     }
 
-    //加载服务器最新群信息
-    private void loadMucInfo() {
-
-    }
-
-    //加载服务器最新群成员
-    private void loadMembers() {
-
-    }
 
     //会话
     private RecentMessage recentMessage;
@@ -192,12 +197,9 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
     @Override
     public void initData(Bundle savedInstanceState) {
         if (isGroupChat) {
-            //查询单个群信息
-            MucManager.getInstance().getRequestBuilder()
-                .queryOneRoomCode(
-                    MucManager.getInstance().qRoomInfo(Muc.QueryType.QRoomById, mucId));
             //从数据库取群组信息
             selectDbData();
+
             //读取会话数据
             recentMessage = ProviderChat
                 .selectSingeRecent(getApplicationContext(), mucId);
@@ -225,6 +227,15 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
                 checkBoxDaRao.setChecked(
                     disturb == ChatEnum.ESureType.YES.ordinal());
             }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isGroupChat && !isGroupEnable) {
+            //查询单个群信息
+            loadMucInfo();
         }
     }
 
@@ -272,7 +283,13 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
         groupUserOGongGao
             .setVisibility(TextUtils.isEmpty(mucItem.getSubject()) ? View.GONE : View.VISIBLE);
         groupUserOGongGao.setText(mucItem.getSubject());
-        itemIpAvatar.setText(is_admin ? "解散群聊" : "退出群聊");
+        if (isGroupEnable) {
+//            itemIpAvatar.setVisibility(View.GONE);
+            itemIpAvatar.setText("删除群聊");
+        } else {
+            itemIpAvatar.setVisibility(View.VISIBLE);
+            itemIpAvatar.setText(is_admin ? "解散群聊" : "删除并退出群聊");
+        }
         checkBoxDaRao.setChecked(
             (ChatEnum.ESureType.NO.ordinal() == mucItem.getPConfig().getNoDisturb() ? false
                 : true));
@@ -303,8 +320,6 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
             List<Muc.MucMemberItem> members = MucInfo
                 .selectMucMemberItem(getApplicationContext(), mucId);
             groupListAdpter.setData(members);
-//            MucManager.getInstance().getRequestBuilder().queryRoomUserCode(
-//                MucManager.getInstance().qRoomInfo(Muc.QueryType.QAllMemberInRoom, mucId));
         } else if (i == R.id.group_o_clear) {//清空聊天记录
             final com.lensim.fingerchat.commons.dialog.NiftyDialogBuilder msgBuilder = com.lensim.fingerchat.commons.dialog.NiftyDialogBuilder
                 .getInstance(GroupOperationActivity.this);
@@ -329,7 +344,12 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
             }).show();
 
         } else if (i == R.id.item_ip_avatar) {//退出群组
-            final com.lensim.fingerchat.commons.dialog.NiftyDialogBuilder builder = com.lensim.fingerchat.commons.dialog.NiftyDialogBuilder
+            if (isGroupEnable) {
+                MucManager.getInstance().clearLocalMucInfo(mucId, true);
+                finish();
+                return;
+            }
+            final NiftyDialogBuilder builder = NiftyDialogBuilder
                 .getInstance(this);
             builder.withTitle("提示")
                 .withMessage(is_admin ? "确认解散该群吗？" : "确认退出群聊吗？")
@@ -434,6 +454,7 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
             MucRefreshEvent refreshEvent = ((MucRefreshEvent) event);
             if (MucRefreshEvent.MucRefreshEnum.MUC_OPTION.value == refreshEvent.getType()) {
                 selectDbData();
+//                loadMucInfo();
             }
             //群列表返回
         } else if (event instanceof MucGroupMessageEvent) {
@@ -472,6 +493,7 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
                 ) {
                 //T.show("免打扰设置");
                 checkBoxDaRao.setChecked(checkBoxDaRao.isChecked());
+                MucInfo.updateNoDisturb(mucId, checkBoxDaRao.isChecked());
                 ProviderChat
                     .markNoDisturb(getApplicationContext(), mucId, checkBoxDaRao.isChecked());
             } else {
@@ -485,9 +507,9 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == AppConfig.REQUEST_CHANGE_CONFIG) {
-//                setResult(RESULT_OK, data);
-//                finish();
-                MessageManager.getInstance().setMessageChange(true);
+                setResult(RESULT_OK, data);
+                finish();
+//                MessageManager.getInstance().setMessageChange(true);
             } else if (requestCode == AppConfig.REQUEST_CHANGE_MEMBER) {
 //                setResult(RESULT_OK, data);
 //                finish();
@@ -499,9 +521,16 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
                 MessageManager.getInstance().setMessageChange(true);
 
             } else if (requestCode == AppConfig.REQUEST_CHANGE_MUC_NICK) {//修改群昵称
-                String mucNick = data.getStringExtra("name");
+                String mucNick;
+                if (data.getExtras() != null){
+                    SpannableString spannableString = (SpannableString) data.getExtras().get("name");
+                    mucNick = spannableString.toString();
+                }else {
+                    mucNick = data.getStringExtra("name");
+                }
                 if (!TextUtils.isEmpty(mucNick)) {
                     groupONicheng.setText(mucNick);
+                    toolbar.setTitleText(mucNick);
                 }
             }
         } else {
@@ -510,5 +539,11 @@ public class GroupOperationActivity extends FGActivity implements GroupOperation
 //                finish();
             }
         }
+    }
+
+    private void loadMucInfo() {
+        MucManager.getInstance().getRequestBuilder()
+            .queryOneRoomCode(
+                MucManager.getInstance().qRoomInfo(Muc.QueryType.QRoomById, mucId));
     }
 }

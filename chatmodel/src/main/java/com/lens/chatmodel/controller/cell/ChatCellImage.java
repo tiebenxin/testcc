@@ -1,21 +1,20 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import com.lens.chatmodel.ChatEnum.ECellEventType;
 import com.lens.chatmodel.ChatEnum.EChatCellLayout;
+import com.lens.chatmodel.ChatEnum.EPlayType;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.adapter.MessageAdapter;
 import com.lens.chatmodel.bean.ImageEventBean;
+import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.helper.ImageHelper;
-import com.lens.chatmodel.interf.IBooleanListener;
 import com.lens.chatmodel.interf.IChatEventListener;
 import com.lens.chatmodel.view.CustomShapeTransformation;
-import com.lens.chatmodel.view.ImageLinearLayout;
-import com.lens.chatmodel.bean.body.ImageUploadEntity;
+import com.lens.chatmodel.view.chat.ImageLinearLayout;
 import com.lensim.fingerchat.commons.helper.AnimationRect;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.components.pulltorefresh.XCPullToLoadMoreListView;
@@ -28,18 +27,14 @@ import java.util.ArrayList;
  * 图片
  */
 
-public class ChatCellImage extends ChatCellBase implements IBooleanListener {
+public class ChatCellImage extends ChatCellBase {
 
-
-    private ImageView iv_content;
-    private final Context mContext;
     private boolean isLongImage;
+    private ImageView iv_content;
 
-    protected ChatCellImage(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
-        mContext = context;
+    protected ChatCellImage(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 
@@ -56,7 +51,17 @@ public class ChatCellImage extends ChatCellBase implements IBooleanListener {
             if (mChatRoomModel.isIncoming()) {
                 if (!TextUtils.isEmpty(mChatRoomModel.getContent())) {
                     if (entity != null) {
-                        loadImage(entity.getThumbnailUrl(), R.drawable.finger_chatfrom_bg);
+                        if (!TextUtils.isEmpty(entity.getThumbnailUrl())) {
+                            if (mChatRoomModel.getPlayStatus() == EPlayType.PALYED) {
+                                loadImage(entity.getOriginalUrl(), R.drawable.finger_chatfrom_bg);
+                            } else {
+                                loadImage(entity.getThumbnailUrl(), R.drawable.finger_chatfrom_bg);
+                            }
+                        } else if (!TextUtils.isEmpty(entity.getOriginalUrl())) {
+                            loadImage(entity.getOriginalUrl(), R.drawable.finger_chatfrom_bg);
+                        } else {
+                            loadImage("", R.drawable.finger_chatfrom_bg);
+                        }
                     } else {
                         loadImage("", R.drawable.finger_chatfrom_bg);
                     }
@@ -70,7 +75,6 @@ public class ChatCellImage extends ChatCellBase implements IBooleanListener {
                     loadImage("", R.drawable.finger_chatto_bg);
                 }
             }
-
             bindData();
             setSecretShow(mChatRoomModel.isSecret(), null);
 
@@ -141,8 +145,10 @@ public class ChatCellImage extends ChatCellBase implements IBooleanListener {
     }
 
     private void loadImage(String url, final int res) {
-        ImageHelper.loadMessageImage(url, iv_content,
-            new CustomShapeTransformation(ContextHelper.getContext(), res, false, this));
+        CustomShapeTransformation customShapeTransformation = new CustomShapeTransformation(
+            ContextHelper.getContext(), res, false);
+        ImageHelper.loadMessageImage(url, iv_content, customShapeTransformation);
+        isLongImage = customShapeTransformation.getIsLongImage();
     }
 
     public ImageView getImageView() {
@@ -151,14 +157,5 @@ public class ChatCellImage extends ChatCellBase implements IBooleanListener {
 
     public String getMsgId() {
         return mChatRoomModel.getMsgId();
-    }
-
-    @Override
-    public void onResult(boolean result) {
-        isLongImage = result;
-    }
-
-    private boolean isLongImage() {
-        return isLongImage;
     }
 }

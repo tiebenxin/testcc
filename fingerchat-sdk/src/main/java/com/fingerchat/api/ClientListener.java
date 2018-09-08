@@ -1,6 +1,8 @@
 package com.fingerchat.api;
 
 import com.fingerchat.api.message.BaseMessage;
+import com.fingerchat.api.message.ExcuteResultMessage;
+import com.fingerchat.api.message.ReadAckMessage;
 import com.fingerchat.api.message.RespMessage;
 
 /**
@@ -19,6 +21,10 @@ public interface ClientListener {
     void onReceiveMessage(BaseMessage message);
 
     void onResponse(RespMessage response);
+
+    void onExcute(ExcuteResultMessage message);
+
+    void onRead(ReadAckMessage message);
 
     void onKickUser(String deviceId, String userId);
 

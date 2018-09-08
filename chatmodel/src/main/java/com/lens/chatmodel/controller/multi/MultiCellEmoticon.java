@@ -6,15 +6,13 @@ import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.lens.chatmodel.ChatEnum.EMultiCellLayout;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.base.ChatEnvironment;
 import com.lens.chatmodel.bean.Emojicon;
+import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lens.chatmodel.helper.ImageHelper;
 import com.lens.chatmodel.interf.IChatEventListener;
-import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lens.chatmodel.ui.image.GalleryAnimationActivity;
 import com.lensim.fingerchat.commons.helper.AnimationRect;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
@@ -127,7 +125,7 @@ public class MultiCellEmoticon extends MultiCellBase {
         ArrayList<String> urls = new ArrayList<>();
         urls.add(mEntity.getBody());
         Intent intent = GalleryAnimationActivity
-            .newIntent(urls, null, animationRectArrayList, null, 0);
+            .newIntent(urls, null, animationRectArrayList, null, 0,"");
         mContext.startActivity(intent);
     }
 }

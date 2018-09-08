@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.lens.chatmodel.ChatEnum.ECellEventType;
@@ -23,15 +22,12 @@ public class ChatCellMap extends ChatCellBase {
     private TextView tv_address;
 
     private String content;
-    private final Context mContext;
     private MapBody mAddressInfo;
     private LinearLayout ll_map;
 
-    protected ChatCellMap(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
-        mContext = context;
+    protected ChatCellMap(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 

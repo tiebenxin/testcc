@@ -1,7 +1,6 @@
 package com.lensim.fingerchat.data.work_center;
 
 
-import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
 /**
@@ -13,34 +12,42 @@ import java.io.Serializable;
 public class WorkItem implements Serializable {
     /**
      * funcAddress :
-     * funcId : 1
+     * funcFlag : 0
+     * funcId : 10
      * funcIdx : 1
-     * funcLogo : data_center.png
-     * funcName : 数据中心
-     * funcType : 1
-     * funcTypeIdx : 1
+     * funcLogo : my_express_disabled.png
+     * funcName : 我的快递
+     * funcType : 3
+     * funcTypeIdx : 3
      * funcValid : 1
-     * typeName : 数据中心
-     * typeValid : 1
+     * hasNav : 1
+     * hasPwd : 0
+     * isBase : 0
+     * isWeb : 0
+     * tokenSys : 0
+     * typeName : 行政
      */
 
     private String funcAddress;
-    private int funcId;
+    private int funcFlag;
+    private String funcId;
     private int funcIdx;
     private String funcLogo;
     private String funcName;
     private int funcType;
     private int funcTypeIdx;
     private int funcValid;
+    private int hasNav;
+    private int hasPwd;
+    private int isBase;
+    private int isWeb;
+    private String tokenSys;
     private String typeName;
-    private int typeValid;
+    private String nodePath;
 
-    public WorkItem() {}
-
-    public WorkItem(String funcAddress, int funcId, int funcIdx, String funcLogo,
-        String funcName, int funcType, int funcTypeIdx, int funcValid, String typeName,
-        int typeValid) {
+    public WorkItem(String funcAddress, int funcFlag, String funcId, int funcIdx, String funcLogo, String funcName, int funcType, int funcTypeIdx, int funcValid, int hasNav, int hasPwd, int isBase, int isWeb, String tokenSys, String typeName, String nodePath) {
         this.funcAddress = funcAddress;
+        this.funcFlag = funcFlag;
         this.funcId = funcId;
         this.funcIdx = funcIdx;
         this.funcLogo = funcLogo;
@@ -48,8 +55,13 @@ public class WorkItem implements Serializable {
         this.funcType = funcType;
         this.funcTypeIdx = funcTypeIdx;
         this.funcValid = funcValid;
+        this.hasNav = hasNav;
+        this.hasPwd = hasPwd;
+        this.isBase = isBase;
+        this.isWeb = isWeb;
+        this.tokenSys = tokenSys;
         this.typeName = typeName;
-        this.typeValid = typeValid;
+        this.nodePath = nodePath;
     }
 
     public String getFuncAddress() {
@@ -60,11 +72,19 @@ public class WorkItem implements Serializable {
         this.funcAddress = funcAddress;
     }
 
-    public int getFuncId() {
+    public int getFuncFlag() {
+        return funcFlag;
+    }
+
+    public void setFuncFlag(int funcFlag) {
+        this.funcFlag = funcFlag;
+    }
+
+    public String getFuncId() {
         return funcId;
     }
 
-    public void setFuncId(int funcId) {
+    public void setFuncId(String funcId) {
         this.funcId = funcId;
     }
 
@@ -116,6 +136,46 @@ public class WorkItem implements Serializable {
         this.funcValid = funcValid;
     }
 
+    public int getHasNav() {
+        return hasNav;
+    }
+
+    public void setHasNav(int hasNav) {
+        this.hasNav = hasNav;
+    }
+
+    public int getHasPwd() {
+        return hasPwd;
+    }
+
+    public void setHasPwd(int hasPwd) {
+        this.hasPwd = hasPwd;
+    }
+
+    public int getIsBase() {
+        return isBase;
+    }
+
+    public void setIsBase(int isBase) {
+        this.isBase = isBase;
+    }
+
+    public int getIsWeb() {
+        return isWeb;
+    }
+
+    public void setIsWeb(int isWeb) {
+        this.isWeb = isWeb;
+    }
+
+    public String getTokenSys() {
+        return tokenSys;
+    }
+
+    public void setTokenSys(String tokenSys) {
+        this.tokenSys = tokenSys;
+    }
+
     public String getTypeName() {
         return typeName;
     }
@@ -124,12 +184,11 @@ public class WorkItem implements Serializable {
         this.typeName = typeName;
     }
 
-    public int getTypeValid() {
-        return typeValid;
+    public String getNodePath() {
+        return nodePath;
     }
 
-    public void setTypeValid(int typeValid) {
-        this.typeValid = typeValid;
+    public void setNodePath(String nodePath) {
+        this.nodePath = nodePath;
     }
-
 }

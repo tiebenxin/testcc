@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:clickable="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:paddingLeft="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.lensim.fingerchat.commons.widgt.AvatarImageView
+            android:id="@+id/ivHeader"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/default_avatar_muc"/>
+
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dimen_11"
+            android:singleLine="true"
+            android:text="gghtrhrthrh"
+            android:textColor="@color/black_operation"
+            android:textSize="@dimen/dimen_16_sp"/>
+
+        <TextView
+            android:id="@+id/tvCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dimen_5"
+            android:singleLine="true"
+            android:text="gghtrhrthrh"
+            android:textColor="@color/gray2"
+            android:textSize="@dimen/dimen_14_sp"/>
+    </LinearLayout>
+
+    <include layout="@layout/layout_divider"/>
+
+</LinearLayout>

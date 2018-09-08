@@ -2,20 +2,27 @@ package com.lens.chatmodel.manager;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.widget.TextView;
+import com.fingerchat.api.client.ClientConfig;
+import com.fingerchat.api.listener.AckListener;
+import com.fingerchat.api.message.AckMessage;
 import com.fingerchat.api.message.BaseMessage;
 import com.fingerchat.api.message.FGPushMessage;
 import com.fingerchat.api.message.MessageAckMessage;
 import com.fingerchat.api.message.MucChatMessage;
 import com.fingerchat.api.message.OfflineMessage;
 import com.fingerchat.api.message.PrivateChatMessage;
+import com.fingerchat.api.message.ReadAckMessage;
 import com.fingerchat.api.protocol.Command;
 import com.fingerchat.api.push.MessageContext;
 import com.fingerchat.proto.message.BaseChat.MessageType;
+import com.fingerchat.proto.message.Excute.ExcuteMessage;
+import com.fingerchat.proto.message.Excute.ExcuteType;
 import com.fingerchat.proto.message.Muc.MucItem;
 import com.fingerchat.proto.message.MucChat.RoomMessage;
 import com.fingerchat.proto.message.Notify.PushMessage;
 import com.fingerchat.proto.message.PrivateChat.PrivateMessage;
+import com.fingerchat.proto.message.ReadAck.ReadedMessage;
+import com.fingerchat.proto.message.ReadAck.ReadedMessageList;
 import com.lens.chatmodel.ChatEnum.EActionType;
 import com.lens.chatmodel.ChatEnum.EActivityNum;
 import com.lens.chatmodel.ChatEnum.EChatBgId;
@@ -30,15 +37,14 @@ import com.lens.chatmodel.bean.AllResult;
 import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.bean.body.BodyEntity;
 import com.lens.chatmodel.bean.body.CardBody;
-import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lens.chatmodel.bean.body.PushEntity;
 import com.lens.chatmodel.bean.body.VideoUploadEntity;
 import com.lens.chatmodel.bean.body.VoiceUploadEntity;
 import com.lens.chatmodel.bean.message.MessageBean;
 import com.lens.chatmodel.bean.message.RecentMessage;
-import com.lens.chatmodel.bean.transfor.VoiceBody;
 import com.lens.chatmodel.db.ChatMessageDao;
 import com.lens.chatmodel.db.MucInfo;
+import com.lens.chatmodel.db.MucUser;
 import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.eventbus.ChatMessageEvent;
@@ -58,12 +64,15 @@ import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.helper.GsonHelper;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.StringUtils;
+import com.lensim.fingerchat.data.login.PasswordRespository;
+import com.lensim.fingerchat.data.login.SSOTokenRepository;
 import com.lensim.fingerchat.data.login.UserInfo;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.db.DaoManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,12 +87,15 @@ import org.json.JSONObject;
  * 消息管理类
  */
 
-public class MessageManager {
+public class MessageManager implements AckListener {
 
     private ChatMessageEvent chatMessageEvent;
 
-    private Map<String, IChatRoomModel> sequenceMap = new HashMap<>();
+    private Map<String, IChatRoomModel> sequenceMap = new LinkedHashMap<>();
     private Map<String, UserBean> userMap = new HashMap<>();
+
+    private Map<String, IChatRoomModel> sequenceReadedChatMap = new LinkedHashMap<>();
+    private Map<String, ReadedMessageList> sequenceReadedMap = new LinkedHashMap<>();
 
     private static MessageManager instance;
     private String currentChatId;
@@ -175,10 +187,7 @@ public class MessageManager {
                     .setRetryCount(1);
                 FingerIM.I.sendMessage(Command.PRIVATE_CHAT, context);
             }
-
-
         }
-
         sequenceMap.put(message.getMsgId(), message);//添加到发送序列
     }
 
@@ -189,7 +198,8 @@ public class MessageManager {
         MessageContext context = null;
         if (!message.isGroupChat()) {
             PrivateMessage.Builder builder = PrivateMessage.newBuilder();
-            BodyEntity body = createBody(message.getMsgId(), false, EMessageType.NOTICE);
+            BodyEntity body = createBody(message.getMsgId(), false, EMessageType.NOTICE,
+                message.getNick());
             builder.setContent(BodyEntity.toJson(body));
             builder.setFrom(message.getFrom());
             builder.setTo(message.getTo());
@@ -203,7 +213,7 @@ public class MessageManager {
         } else {
             RoomMessage.Builder builder = RoomMessage.newBuilder();
             BodyEntity body = createBody(message.getMsgId(), false, EMessageType.NOTICE,
-                getUserInfo().getImage(), getUserInfo().getUsernick());
+                getUserInfo().getImage(), getUserInfo().getUsernick(), message.getGroupName());
             builder.setContent(BodyEntity.toJson(body));
             builder.setUsername(message.getFrom());
             builder.setMucid(message.getTo());
@@ -215,6 +225,25 @@ public class MessageManager {
                 .setRetryCount(1);
             FingerIM.I.sendMessage(Command.GROUP_CHAT, context);
         }
+    }
+
+    //发送已读消息
+    public void sendReadMessage() {
+        if (sequenceReadedChatMap == null || sequenceReadedChatMap.size() <= 0) {
+            return;
+        }
+        List<ReadedMessage> list = new ArrayList<>();
+        for (IChatRoomModel model : sequenceReadedChatMap.values()) {
+            ReadedMessage readedMessage = createReadedMessage(model);
+            list.add(readedMessage);
+        }
+        sequenceReadedChatMap.clear();
+        ReadedMessageList.Builder builder = ReadedMessageList.newBuilder();
+        builder.setId(UUID.randomUUID().toString());
+        builder.addAllReadedList(list);
+        ReadedMessageList readedMessageList = builder.build();
+        sequenceReadedMap.put(readedMessageList.getId(), readedMessageList);
+        FingerIM.I.read(readedMessageList);
     }
 
     private void doSendFailed(String msgId) {
@@ -240,8 +269,8 @@ public class MessageManager {
             RecentMessage message = ProviderChat
                 .selectSingeRecent(ContextHelper.getContext(), userId);
             if (message != null) {
-                message.setHint(getCancelText(model));
-                message.setMsgType(EMessageType.NOTICE);
+//                message.setHint(getCancelText(model));
+//                message.setMsgType(EMessageType.NOTICE);
                 message.setTime(System.currentTimeMillis());
                 ProviderChat.updateRecentMessage(ContextHelper.getContext(), message);
             }
@@ -251,8 +280,8 @@ public class MessageManager {
             RecentMessage message = ProviderChat
                 .selectSingeRecent(ContextHelper.getContext(), model.getTo());
             if (message != null) {
-                message.setHint(ContextHelper.getString(R.string.cancel_message_you));
-                message.setMsgType(EMessageType.NOTICE);
+//                message.setHint(ContextHelper.getString(R.string.cancel_message_you));
+//                message.setMsgType(EMessageType.NOTICE);
                 message.setTime(System.currentTimeMillis());
                 ProviderChat.updateRecentMessage(ContextHelper.getContext(), message);
             }
@@ -263,7 +292,14 @@ public class MessageManager {
 
     //发送消息错误，非好友。非群成员，房间不存在
     private void doSendError(long code, String msgId) {
-        ProviderChat.updateSendStatus(ContextHelper.getContext(), msgId, ESendType.ERROR);
+        if (ChatHelper.isSystemUser(getCurrentChatId())) {//小秘书，系统消息
+            return;
+        }
+        ProviderChat.updateSendStatus(ContextHelper.getContext(), msgId, ESendType.ACK_ERROR);
+        int count = ProviderChat.getSendErrorMessageCount(getCurrentChatId());//是否已经提示过了，提示过不再提示
+        if (count > 0) {
+            return;
+        }
         IChatRoomModel model = createErrorMessage(getUserInfo().getUserid(),
             getUserInfo().getUsernick(), getCurrentChatId(), "",
             getErrorText(code, getCurrentChatId()),
@@ -273,7 +309,7 @@ public class MessageManager {
         } else {
             ((MessageBean) model).setGroupChat(true);
         }
-        ProviderChat.insertPrivateMessage(ContextHelper.getContext(), model);
+        ProviderChat.insertAndUpdateMessage(ContextHelper.getContext(), model);
         notifyDataChange(EActivityNum.CHAT, null);
     }
 
@@ -318,19 +354,28 @@ public class MessageManager {
     }
 
 
-    private void doSendSuccess(String msgId) {
+    private void doSendSuccess(String msgId, long time) {
+        Map<String, IChatRoomModel> sequenceMap = getSequenceMap();
         if (isMapValid(sequenceMap) && sequenceMap.get(msgId) != null) {
             System.out.println(
-                "成功消息id:" + msgId + "--" + sequenceMap.get(msgId)
+                "MessageManager成功消息id:" + msgId + "--" + sequenceMap.get(msgId)
                     .getContent());
-            ProviderChat.updateSendStatus(ContextHelper.getContext(),
-                sequenceMap.get(msgId).getMsgId(), ESendType.MSG_SUCCESS);
-            sequenceMap.remove(msgId);
-//            notifyUpdateUI(msgId, false);
+            if (sequenceMap.get(msgId) != null) {
+                ProviderChat.updateSendSuccess(ContextHelper.getContext(),
+                    sequenceMap.get(msgId).getMsgId(), ESendType.MSG_SUCCESS, time);
+                sequenceMap.remove(msgId);
+            }
         }
     }
 
     private boolean isMapValid(Map<String, IChatRoomModel> map) {
+        if (map == null || map.size() <= 0) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isReadMapValid(Map<String, ReadedMessageList> map) {
         if (map == null || map.size() <= 0) {
             return false;
         }
@@ -362,6 +407,7 @@ public class MessageManager {
     //接收消息,以服务器时间为准
     public void onReceive(BaseMessage message) {
         if (message != null) {
+            boolean isFromMySelf = false;
             if (message instanceof PrivateChatMessage) {
                 PrivateChatMessage privateChatMessage = (PrivateChatMessage) message;
                 if (privateChatMessage.message != null) {
@@ -372,23 +418,32 @@ public class MessageManager {
                     if (type == EMessageType.ERROR) {//接受到错误消息
                         String msgId = privateChatMessage.message.getId();
                         doSendFailed(msgId);
-                    } else if (type == EMessageType.NOTICE) {
-                        if (privateChatMessage.message.getCancel() == 1) {//是cancel消息
-                            doCancel(privateChatMessage.message.getFrom(),
-                                privateChatMessage.message.getId());
-                        }
+                    } else if (type == EMessageType.NOTICE
+                        && privateChatMessage.message.getCancel() == 1) {//是cancel消息
+                        doCancel(privateChatMessage.message.getFrom(),
+                            privateChatMessage.message.getId());
                     } else {
-                        MessageBean msg = createMessageBean(privateMessage);
+                        if (checkFromSelf(privateMessage.getFrom())) {
+                            isFromMySelf = true;
+                        }
+                        MessageBean msg = createMessageBean(privateMessage, isFromMySelf);
                         if (msg != null) {
                             UserBean bean = getCacheUserBean(msg.getTo());
                             if (bean == null) {
                                 return;
                             }
                             if (!isDoingMessage(msg.getMsgType())) {
-                                msg.setNick(ChatHelper
-                                    .getUserRemarkName(bean.getRemarkName(), bean.getUserNick(),
-                                        bean.getUserId()));//初始化昵称
-                                ProviderChat.insertPrivateMessage(ContextHelper.getContext(), msg);
+                                if (!isFromMySelf) {
+                                    msg.setNick(ChatHelper
+                                        .getUserRemarkName(bean.getRemarkName(), bean.getUserNick(),
+                                            bean.getUserId()));//初始化昵称
+                                } else {
+                                    msg.setNick(ChatHelper
+                                        .getUserRemarkName("", getUserInfo().getUsernick(),
+                                            getUserInfo().getUserid()));//初始化昵称
+                                }
+                                ProviderChat
+                                    .insertAndUpdateMessage(ContextHelper.getContext(), msg);
                                 RecentMessage recent = ProviderChat
                                     .selectSingeRecent(ContextHelper.getContext(), msg.getTo());
                                 if (recent != null) {
@@ -404,10 +459,7 @@ public class MessageManager {
                                         ESureType.NO.ordinal(), EChatBgId.DEFAULT.id,
                                         ESureType.NO.ordinal(), !isCurrentChat(msg.getTo()));
                                 }
-                                msg.setNick(ChatHelper
-                                    .getUserRemarkName(bean.getRemarkName(), bean.getUserNick(),
-                                        bean.getUserId()));
-                                notifyMotification(canNotify(msg.getTo()), msg);
+                                notifyMotification(canNotify(msg, isAtMessage(msg)), msg);
                             }
                             notifyDataChange(msg);
                             L.i(MessageManager.class.getSimpleName() + ": 接受到私聊消息");
@@ -422,12 +474,14 @@ public class MessageManager {
                     EMessageType type = ChatHelper.getMessageType(roomMessage.getType());
                     if (type == EMessageType.ERROR) {
                         doSendFailed(roomMessage.getId());
-                    } else if (type == EMessageType.NOTICE) {
-                        if (roomMessage.getCancel() == 1) {//是cancel消息
-                            doCancel(roomMessage.getMucid(), roomMessage.getId());
-                        }
+                    } else if (type == EMessageType.NOTICE
+                        && roomMessage.getCancel() == 1) {//是cancel消息
+                        doCancel(roomMessage.getMucid(), roomMessage.getId());
                     } else {
-                        MessageBean group = createMessageBean(roomMessage);
+                        if (checkFromSelf(roomMessage.getUsername())) {
+                            isFromMySelf = true;
+                        }
+                        MessageBean group = createMessageBean(roomMessage, isFromMySelf);
                         if (group != null) {
                             String mucId = mucChatMessage.message.getMucid();
                             int disturb = MucInfo
@@ -438,7 +492,7 @@ public class MessageManager {
 
                             if (!isDoingMessage(group.getMsgType())) {
                                 ProviderChat
-                                    .insertPrivateMessage(ContextHelper.getContext(), group);
+                                    .insertAndUpdateMessage(ContextHelper.getContext(), group);
                                 saveRecent(group, group.getAvatarUrl(), StringUtils
                                         .getUserNick(group.getNick(), group.getFrom()),
                                     disturb, backId, topFlag, !isCurrentChat(group.getTo()));
@@ -446,7 +500,7 @@ public class MessageManager {
                                 String mucName = MucInfo.getMucName(ContextHelper.getContext(),
                                     mucChatMessage.message.getMucid());
                                 group.setGroupName(mucName);
-                                notifyMotification(canNotify(group.getTo()), group);
+                                notifyMotification(canNotify(group, isAtMessage(group)), group);
                             }
                             notifyDataChange(group);
                         }
@@ -473,9 +527,9 @@ public class MessageManager {
                     }
                 }
             } else if (message instanceof FGPushMessage) {
-                MessageBean msg = createMessageBean(message);
+                MessageBean msg = createMessageBean(message, false);
                 if (!isDoingMessage(msg.getMsgType())) {
-                    ProviderChat.insertPrivateMessage(ContextHelper.getContext(), msg);
+                    ProviderChat.insertAndUpdateMessage(ContextHelper.getContext(), msg);
                     saveRecent(msg, "", msg.getNick(),
                         ESureType.NO.ordinal(), EChatBgId.DEFAULT.id,
                         ESureType.NO.ordinal(), !isCurrentChat(msg.getTo()));
@@ -483,150 +537,262 @@ public class MessageManager {
                     notifyMotification(true, msg);
                 }
                 notifyDataChange(msg);
-            }
-        }
-    }
+            } else if (message instanceof ReadAckMessage) {
+                ReadAckMessage ackMessage = (ReadAckMessage) message;
+                ReadedMessageList messageList = ackMessage.message;
+                if (messageList != null) {
+                    List<ReadedMessage> readedList = messageList.getReadedListList();
+                    if (readedList != null) {
+                        int len = readedList.size();
+                        if (len > 0) {
+                            for (int i = 0; i < len; i++) {
+                                ReadedMessage readedMessage = readedList.get(i);
+                                if (readedMessage.getSynchro() == 1) {//同步消息或者回执
+                                    System.out.println("已读消息回执--" + readedMessage.getOid());
+                                    ProviderChat.updateServerReaded(readedMessage.getOid());
+                                    notifyDataChange(EActivityNum.CHAT, null);
+                                } else if (readedMessage.getSynchro() == 0) {//对方已读消息
+                                    System.out.println(
+                                        "对方已读消息--" + readedMessage.getOid() + "--mucId="
+                                            + readedMessage.getMucId() + "--to=" + readedMessage
+                                            .getTo() + "--from=" + readedMessage.getFrom());
+                                    String from = readedMessage
+                                        .getTo();//readedMessage.getTo() 源消息接受者，即已读消息的发送者
+                                    String mucId = readedMessage.getMucId();
+                                    boolean isGroup = false;
+                                    if (!TextUtils.isEmpty(mucId)) {
+                                        isGroup = true;
+                                    }
+                                    String messageId = readedMessage.getOid();
+                                    String readedUserIds = ProviderChat.getReadedUserIds(messageId);
+                                    List<String> userIds = null;
+                                    if (!TextUtils.isEmpty(readedUserIds)) {
+                                        userIds = StringUtils.getUserIds(readedUserIds);
+                                    } else {
+                                        userIds = new ArrayList<>();
+                                        userIds.add(from);
+                                    }
 
-    public MessageBean createMessageBean(Object message) {
-        MessageBean bean = null;
-        if (message instanceof PrivateMessage) {
-            PrivateMessage privateMessage = (PrivateMessage) message;
-            PrivateMessage.Builder builder = privateMessage.toBuilder();
-            bean = new MessageBean();
-            bean.setMessageType(ChatHelper.getMessageType(builder.getType()));
-            bean.setMsgId(builder.getId());
-            bean.setContent(builder.getContent());
-            bean.setAvatarUrl(builder.getAvatar());
-            bean.setCancel(builder.getCancel());
-            bean.setCode(builder.getCode());
-            bean.setTime(builder.getTime());
-            bean.setFrom(builder.getTo());
-            bean.setTo(builder.getFrom());
-            BodyEntity entity = bean.getBodyEntity();
-            if (entity != null) {
-                bean.setSecret(entity.isSecret());
-            }
-            bean.setSendType(ESendType.MSG_SUCCESS);
-            bean.setIncoming(true);
-            bean.setGroupChat(false);
-            bean.setPlayStatus(EPlayType.NOT_DOWNLOADED);
-        } else if (message instanceof RoomMessage) {
-            RoomMessage roomMessage = (RoomMessage) message;
-            RoomMessage.Builder builder = roomMessage.toBuilder();
-            bean = new MessageBean();
-            bean.setMessageType(ChatHelper.getMessageType(builder.getType()));
-            bean.setMsgId(builder.getId());
-            bean.setContent(builder.getContent());
-            bean.setCancel(builder.getCancel());
-            bean.setCode(builder.getCode());
-            bean.setTime(builder.getTime());
-            bean.setFrom(builder.getUsername());
-            bean.setTo(builder.getMucid());
-            BodyEntity entity = bean.getBodyEntity();
-            if (entity != null) {
-                bean.setSecret(entity.isSecret());
-            }
-            bean.setSendType(ESendType.MSG_SUCCESS);
-            bean.setIncoming(true);
-            bean.setGroupChat(true);
-            bean.setPlayStatus(EPlayType.NOT_DOWNLOADED);
-            bean.setAvatarUrl(bean.getBodyEntity().getSenderAvatar());
-            bean.setNick(StringUtils
-                .getUserNick(bean.getBodyEntity().getMucNickName(), builder.getUsername()));
-        } else if (message instanceof FGPushMessage) {
-            FGPushMessage pushMessage = (FGPushMessage) message;
-            PushMessage pMsg = pushMessage.message;
-            bean = new MessageBean();
-            bean.setMsgId(pMsg.getMessageId());
-            bean.setContent(pMsg.getContent());
-            bean.setCancel(0);
-            bean.setCode(0);
-            bean.setTime(pMsg.getTime());
+                                    ProviderChat.updateServerReaded(messageId);
 
-            String content = pMsg.getContent();
-            try {
-                JSONObject object = new JSONObject(content);
-                if (object != null) {
-                    String type = object.optString("type");
-                    if (!TextUtils.isEmpty(type)) {
-                        if (type.equalsIgnoreCase("OA")) {
-                            PushEntity entity = GsonHelper
-                                .getObject(pMsg.getContent(), PushEntity.class);
-                            bean.setTo(entity.getFrom());
-                            bean.setNick(entity.getFrom());
-                            bean.setMessageType(EMessageType.OA);
-                        } else {
-                            String from = object.optString("from");
-                            if (!TextUtils.isEmpty(from)) {
-                                bean.setTo(from);
-                                bean.setNick(from);
-                            } else {
-                                bean.setTo(type);
-                                bean.setNick(type);
+                                    readedUserIds = StringUtils.getStringByList(userIds);
+                                    if (!TextUtils.isEmpty(readedUserIds)) {
+                                        ProviderChat.updateReadedUserIds(messageId, readedUserIds);
+                                    }
+                                    if (isGroup) {
+                                        if (mucId.equals(currentChatId)) {
+                                            notifyDataChange(EActivityNum.CHAT, null);
+                                        }
+                                    } else {
+                                        if (from.equals(currentChatId)) {
+                                            notifyDataChange(EActivityNum.CHAT, null);
+                                        }
+                                    }
+
+                                }
                             }
-                            bean.setMessageType(EMessageType.SYSTEM);
-
                         }
                     }
                 }
-            } catch (JSONException e) {
-                bean.setTo("系统");
-                bean.setNick("系统");
-                bean.setMessageType(EMessageType.SYSTEM);
             }
-
-            bean.setFrom(getUserInfo().getUserid());
-            bean.setSecret(false);
-            bean.setSendType(ESendType.MSG_SUCCESS);
-            bean.setIncoming(true);
-            bean.setGroupChat(false);
-            bean.setPlayStatus(EPlayType.NOT_DOWNLOADED);
-            bean.setAvatarUrl(bean.getBodyEntity().getSenderAvatar());
         }
-        return bean;
     }
 
-    /*
-    * @params content 消息内容
-    * @user 消息接受者userId
-    * */
-    private IChatRoomModel createTransforMessage(String content, String user, boolean isGroup,
-        boolean isSecret, EMessageType type) {
-        MessageBean message = new MessageBean();
-
-        if (!TextUtils.isEmpty(content) && !TextUtils.isEmpty(user) && !TextUtils
-            .isEmpty(getUserInfo().getUserid())) {
-            if (type == EMessageType.MAP || type == EMessageType.VOTE) {
-                message.setContent(content);
-            } else {
-                BodyEntity entity;
-                if (isGroup) {
-                    entity = MessageManager.getInstance()
-                        .createBody(content, isSecret, type, getUserInfo().getImage(),
-                            getUserInfo().getUsernick());
+    public MessageBean createMessageBean(Object message, boolean isFromMySelf) {
+        MessageBean bean = null;
+        try {
+            if (message instanceof PrivateMessage) {
+                PrivateMessage privateMessage = (PrivateMessage) message;
+                PrivateMessage.Builder builder = privateMessage.toBuilder();
+                bean = new MessageBean();
+                bean.setMessageType(ChatHelper.getMessageType(builder.getType()));
+                bean.setMsgId(builder.getId());
+                bean.setContent(builder.getContent());
+                bean.setAvatarUrl(builder.getAvatar());
+                bean.setCancel(builder.getCancel());
+                bean.setCode(builder.getCode());
+                bean.setTime(builder.getTime());
+                if (isFromMySelf) {
+                    bean.setFrom(builder.getFrom());
+                    bean.setTo(builder.getTo());
                 } else {
-                    entity = MessageManager.getInstance()
-                        .createBody(content, isSecret, type);
+                    bean.setFrom(builder.getTo());
+                    bean.setTo(builder.getFrom());
                 }
-                message.setContent(BodyEntity.toJson(entity));
+                bean.setServerReaded(1);//服务器未读
+                BodyEntity entity = bean.getBodyEntity();
+                if (entity != null) {
+                    bean.setSecret(entity.isSecret());
+                    if (!isFromMySelf) {
+                        ProviderUser.updateSenderAvatar(builder.getFrom(), builder.getAvatar(),
+                            entity.getMucNickName());
+                        if (getCacheUserBean(builder.getFrom()) != null) {
+                            getCacheUserBean(builder.getFrom()).setAvatarUrl(builder.getAvatar());
+                            getCacheUserBean(builder.getFrom())
+                                .setUserNick(entity.getMucNickName());
+                        }
+                    }
+                } else {
+                    ProviderUser.updateSenderAvatar(builder.getFrom(), builder.getAvatar(),
+                        "");
+                    if (getCacheUserBean(builder.getFrom()) != null) {
+                        getCacheUserBean(builder.getFrom()).setAvatarUrl(builder.getAvatar());
+                    }
+                }
+                bean.setSendType(ESendType.MSG_SUCCESS);
+                if (checkMeToMe(builder.getFrom(), builder.getTo())) {
+                    bean.setIncoming(true);
+                } else {
+                    bean.setIncoming(!isFromMySelf);
+                }
+                bean.setGroupChat(false);
+                bean.setPlayStatus(EPlayType.NOT_DOWNLOADED);
+                bean.setHasReaded(0);
+            } else if (message instanceof RoomMessage) {
+                RoomMessage roomMessage = (RoomMessage) message;
+                RoomMessage.Builder builder = roomMessage.toBuilder();
+                bean = new MessageBean();
+                bean.setMessageType(ChatHelper.getMessageType(builder.getType()));
+                bean.setMsgId(builder.getId());
+                bean.setContent(builder.getContent());
+                bean.setCancel(builder.getCancel());
+                bean.setCode(builder.getCode());
+                bean.setTime(builder.getTime());
+                bean.setFrom(builder.getUsername());
+                bean.setTo(builder.getMucid());
+                BodyEntity entity = bean.getBodyEntity();
+                if (entity != null) {
+                    bean.setSecret(entity.isSecret());
+                    bean.setAvatarUrl(entity.getSenderAvatar());
+                    bean.setNick(StringUtils
+                        .getUserNick(entity.getMucNickName(), builder.getUsername()));
+                    if (!isFromMySelf) {
+                        //更新群备注名和群头像
+                        MucUser.updateMemberNickAndAvatar(builder.getMucid(), builder.getUsername(),
+                            entity.getMucNickName(), entity.getSenderAvatar());
+                    }
+                } else {
+                    bean.setAvatarUrl("");
+                    bean.setNick(builder.getUsername());
+                }
+                bean.setSendType(ESendType.MSG_SUCCESS);
+                bean.setIncoming(!isFromMySelf);
+                bean.setGroupChat(true);
+                bean.setPlayStatus(EPlayType.NOT_DOWNLOADED);
+                bean.setHasReaded(0);
+                bean.setServerReaded(1);//服务器未读
+            } else if (message instanceof FGPushMessage) {
+                FGPushMessage pushMessage = (FGPushMessage) message;
+                PushMessage pMsg = pushMessage.message;
+                bean = new MessageBean();
+                bean.setMsgId(pMsg.getMessageId());
+                bean.setContent(pMsg.getContent());
+                bean.setCancel(0);
+                bean.setCode(0);
+                bean.setTime(pMsg.getTime());
+                bean.setHasReaded(0);
+                bean.setServerReaded(1);//服务器未读
+                String content = pMsg.getContent();
+                try {
+                    JSONObject object = new JSONObject(content);
+                    if (object != null) {
+                        String type = object.optString("type");
+                        if (!TextUtils.isEmpty(type)) {
+                            String userName = object.optString("username");
+                            if (!TextUtils.isEmpty(userName)) {
+                                bean.setTo(userName);
+                            }
+                            if (type.equalsIgnoreCase("OA")) {
+                                PushEntity entity = GsonHelper
+                                    .getObject(pMsg.getContent(), PushEntity.class);
+                                if (TextUtils.isEmpty(bean.getTo())) {
+                                    bean.setTo(ChatHelper.MYTIP);
+                                }
+                                bean.setNick(entity.getFrom());
+                                bean.setMessageType(EMessageType.OA);
+                            } else {
+                                String from = object.optString("from");
+                                if (!TextUtils.isEmpty(from)) {
+                                    bean.setNick(from);
+                                    if (TextUtils.isEmpty(bean.getTo())) {
+                                        bean.setTo(ChatHelper.MYTIP_SYS);
+                                    }
+                                }
+                                bean.setMessageType(EMessageType.SYSTEM);
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    bean.setTo(ChatHelper.MYTIP_SYS);
+                    bean.setNick("系统");
+                    bean.setMessageType(EMessageType.SYSTEM);
+                }
+
+                bean.setFrom(getUserInfo().getUserid());
+                bean.setSecret(false);
+                bean.setSendType(ESendType.MSG_SUCCESS);
+                bean.setIncoming(true);
+                bean.setGroupChat(false);
+                bean.setPlayStatus(EPlayType.NOT_DOWNLOADED);
+                bean.setAvatarUrl(bean.getBodyEntity().getSenderAvatar());
+            } else if (message instanceof PushMessage) {
+                PushMessage pMsg = (PushMessage) message;
+                bean = new MessageBean();
+                bean.setMsgId(pMsg.getMessageId());
+                bean.setContent(pMsg.getContent());
+                bean.setCancel(0);
+                bean.setCode(0);
+                bean.setTime(pMsg.getTime());
+                bean.setHasReaded(0);
+                bean.setServerReaded(0);//服务器已读
+                String content = pMsg.getContent();
+                try {
+                    JSONObject object = new JSONObject(content);
+                    if (object != null) {
+                        String type = object.optString("type");
+                        if (!TextUtils.isEmpty(type)) {
+                            String userName = object.optString("username");
+                            if (!TextUtils.isEmpty(userName)) {
+                                bean.setTo(userName);
+                            }
+                            if (type.equalsIgnoreCase("OA")) {
+                                PushEntity entity = GsonHelper
+                                    .getObject(pMsg.getContent(), PushEntity.class);
+                                if (TextUtils.isEmpty(bean.getTo())) {
+                                    bean.setTo(ChatHelper.MYTIP);
+                                }
+                                bean.setNick(entity.getFrom());
+                                bean.setMessageType(EMessageType.OA);
+                            } else {
+                                String from = object.optString("from");
+                                if (!TextUtils.isEmpty(from)) {
+                                    if (TextUtils.isEmpty(bean.getTo())) {
+                                        bean.setTo(ChatHelper.MYTIP_SYS);
+                                    }
+                                    bean.setNick(from);
+                                }
+                                bean.setMessageType(EMessageType.SYSTEM);
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    bean.setTo(ChatHelper.MYTIP_SYS);
+                    bean.setNick("系统");
+                    bean.setMessageType(EMessageType.SYSTEM);
+                }
+
+                bean.setFrom(getUserInfo().getUserid());
+                bean.setSecret(false);
+                bean.setSendType(ESendType.MSG_SUCCESS);
+                bean.setIncoming(true);
+                bean.setGroupChat(false);
+                bean.setPlayStatus(EPlayType.NOT_DOWNLOADED);
+                bean.setAvatarUrl(bean.getBodyEntity().getSenderAvatar());
             }
-            message.setMessageType(type);
-            message.setMsgId(UUID.randomUUID().toString());
-            message.setAvatarUrl(getUserInfo().getImage());
-            message.setTime(System.currentTimeMillis());
-            message.setFrom(getUserInfo().getUserid());
-            message.setTo(user);
-            message.setSecret(isSecret);
-            message.setSendType(ESendType.SENDING);
-            message.setIncoming(false);
-            message.setNick(getUserInfo().getUsernick());
-            if (isGroup) {
-                message.setGroupChat(false);
-            } else {
-                message.setGroupChat(true);
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return message;
+        return bean;
     }
 
     /*
@@ -644,10 +810,17 @@ public class MessageManager {
     /*
     * 能否通知
     * */
-    public boolean canNotify(String userId) {
-        int disturb = ProviderChat.getNoDisturb(ContextHelper.getContext(), userId);
-        if (!isCurrentChat(userId) && disturb == ESureType.NO.ordinal()) {
-            return true;
+    public boolean canNotify(IChatRoomModel model, boolean isAt) {
+        int disturb = ProviderChat.getNoDisturb(ContextHelper.getContext(), model.getTo());
+        if (!isCurrentChat(model.getTo())) {
+            if (disturb == ESureType.NO.ordinal()) {
+                return true;
+            } else {
+                if (isAt) {
+                    return true;
+                }
+                return false;
+            }
         } else {
             return false;
         }
@@ -663,6 +836,15 @@ public class MessageManager {
                 userMap.put(userId, bean);
             }
             return bean;
+        }
+    }
+
+    public void updateCacheUserBean(UserBean bean) {
+        if (userMap != null) {
+            if (userMap.containsKey(bean.getUserId())) {
+                userMap.remove(bean.getUserId());
+            }
+            userMap.put(bean.getUserId(), bean);
         }
     }
 
@@ -689,6 +871,24 @@ public class MessageManager {
         }
     }
 
+    public boolean checkFromSelf(String from) {
+        if (!TextUtils.isEmpty(from) && from.equalsIgnoreCase(UserInfoRepository.getUserId())) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean checkMeToMe(String from, String to) {
+        if (!TextUtils.isEmpty(from) && !TextUtils.isEmpty(to)) {
+            if (from.equalsIgnoreCase(to) && from
+                .equalsIgnoreCase(UserInfoRepository.getUserId())) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
 
     /*
     * 通知通知栏
@@ -701,6 +901,9 @@ public class MessageManager {
 
     //通知消息更新(单条)
     public void notifyDataChange(IChatRoomModel msg) {
+        if (!TextUtils.isEmpty(currentChatId) && !isCurrentChat(msg.getTo())) {
+            return;
+        }
         if (chatMessageEvent == null) {
             chatMessageEvent = (ChatMessageEvent) EventFactory.INSTANCE
                 .create(EventEnum.CHAT_MESSAGE, msg);
@@ -728,12 +931,37 @@ public class MessageManager {
         }
     }
 
-    //保存recent
+    public void notifyDataChange(EActivityNum activity, EFragmentNum fragment, int type) {
+        if (activity != null) {
+            RefreshEntity entity = new RefreshEntity();
+            entity.setActivity(activity.value);
+            if (fragment != null) {
+                entity.setFragment(fragment.value);
+            }
+
+            entity.setType(type);
+
+            RefreshEvent event = (RefreshEvent) EventFactory.INSTANCE
+                .create(EventEnum.MAIN_REFRESH, entity);
+            EventBus.getDefault().post(event);
+        }
+    }
+
+    //保存私聊recent
     public void saveRecent(IChatRoomModel model, String avatar, String userNick, int noDisturb,
         int backId, int topFlag, boolean isNew) {
         RecentMessage message = createRecentMessage(model, avatar, userNick, noDisturb, backId,
             topFlag, isNew);
-        ProviderChat.updateRecentMessage(ContextHelper.getContext(), message);
+        ProviderChat.updateRecentMessageAsyn(ContextHelper.getContext(), message);
+    }
+
+
+    public boolean saveRecentOfflineAsyn(IChatRoomModel model, String avatar, String userNick,
+        int noDisturb, int backId, int topFlag, boolean isNew, int unreadCount) {
+        RecentMessage message = createRecentMessage(model, avatar, userNick, noDisturb, backId,
+            topFlag, isNew);
+        return ProviderChat
+            .updateRecentMessageAsyn(ContextHelper.getContext(), message, unreadCount);
     }
 
     /*
@@ -744,7 +972,7 @@ public class MessageManager {
         int backId, int topFlag) {
         boolean flag = ProviderChat.updateMessage(ContextHelper.getContext(), message);
         if (!flag) {
-            ProviderChat.insertPrivateMessage(ContextHelper.getContext(), message);
+            ProviderChat.insertAndUpdateMessage(ContextHelper.getContext(), message);
             saveRecent(message, avatar, nick, disturb, backId, topFlag, false);
         }
     }
@@ -758,7 +986,7 @@ public class MessageManager {
         boolean isNew) {
         boolean flag = ProviderChat.updateMessage(ContextHelper.getContext(), message);
         if (!flag) {
-            ProviderChat.insertPrivateMessage(ContextHelper.getContext(), message);
+            ProviderChat.insertAndUpdateMessage(ContextHelper.getContext(), message);
             RecentMessage recent = ProviderChat
                 .selectSingeRecent(ContextHelper.getContext(), message.getTo());
             if (recent != null) {
@@ -782,25 +1010,21 @@ public class MessageManager {
     public RecentMessage createRecentMessage(IChatRoomModel msg, String avatar, String userNick,
         int noDisturb, int backId, int topFlag, boolean isNew) {
         RecentMessage message = new RecentMessage();
-        message.setMsg(msg.getContent());
-        if (msg.getMsgType() != null) {
-            message.setMsgType(msg.getMsgType());
-        }
         message.setNotDisturb(noDisturb);
-        message.setUnreadCount(0);
         message.setTime(msg.getTime());
         message.setBackgroundId(backId);
         message.setTopFlag(topFlag);
         message.setChatType(
             msg.isGroupChat() ? EChatType.GROUP.ordinal() : EChatType.PRIVATE.ordinal());
-        if (msg.isIncoming()) {
-            message.setHint(ChatHelper.getHint(msg.getMsgType(), msg.getContent(), msg.isSecret()));
-        }
         if (msg.isGroupChat()) {
             message.setUserId(msg.getFrom());
             message.setChatId(msg.getTo());
-            String mucName = MucInfo.getMucName(ContextHelper.getContext(), msg.getTo());
-            message.setGroupName(mucName);
+            if (!TextUtils.isEmpty(msg.getGroupName())) {
+                message.setGroupName(msg.getGroupName());
+            } else {
+                String mucName = MucInfo.getMucName(ContextHelper.getContext(), msg.getTo());
+                message.setGroupName(mucName);
+            }
             message.setNick(
                 StringUtils.getUserNick(msg.getNick(), msg.getFrom()));
         } else {
@@ -809,24 +1033,13 @@ public class MessageManager {
             message.setAvatarUrl(avatar);
             message.setNick(userNick);
         }
-        if (msg.getMsgType() == EMessageType.TEXT) {
-            if (checkAt(msg.getContent())) {
-                message.setAt(true);
-            } else {
-                message.setAt(false);
-            }
+        if (isAtMessage(msg)) {
+            message.setAt(true);
         } else {
             message.setAt(false);
         }
         message.setNew(isNew);
         return message;
-    }
-
-    public boolean checkAt(String msg) {
-        if (msg.contains("@" + AppConfig.INSTANCE.get(AppConfig.ACCOUT))) {
-            return true;
-        }
-        return false;
     }
 
     /*
@@ -844,15 +1057,21 @@ public class MessageManager {
             entity.setFriendId(userBean.getUserId());
             entity.setFriendHeader(userBean.getAvatarUrl());
             entity.setFriendName(userBean.getUserNick());
-            entity.setEnable(userBean.isQuit());
-            entity.setValid(userBean.isValid());
+            entity.setEnable(userBean.getQuit());
+            entity.setValid(userBean.getValid());
             if (!ChatHelper.isGroupChat(chatType)) {
-                entity.setSecret(false);
+                entity.setSecret(0);
                 bean.setGroupChat(false);
-            } else {
-                entity.setSecret(false);
-                entity.setSenderAvatar(getUserInfo().getImage());
                 entity.setMucNickName(getUserInfo().getUsernick());
+            } else {
+                entity.setSecret(0);
+                entity.setSenderAvatar(getUserInfo().getImage());
+                String mucUserNick = MucUser
+                    .getMucUserNick(ContextHelper.getContext(), user, getUserInfo().getUserid());
+                entity.setMucNickName(ChatHelper
+                    .getUserRemarkName(mucUserNick, getUserInfo().getUsernick(),
+                        getUserInfo().getUserid()));
+                entity.setGroupName(MucInfo.getMucName(ContextHelper.getContext(), user));
                 bean.setGroupName(nick);
                 bean.setGroupChat(true);
             }
@@ -873,6 +1092,8 @@ public class MessageManager {
 
 
     /*
+    * @param account 发送者userId
+    * @param user 接收者者userId
     * @param nick 发送者昵称
     * @param avatar 发送者头像
     * */
@@ -886,13 +1107,41 @@ public class MessageManager {
         if (type == EMessageType.TEXT) {
             BodyEntity bodyEntity = new BodyEntity();
             bodyEntity.setBody(content);
-            bodyEntity.setSecret(isSecret);
+            bodyEntity.setSecret(isSecret ? 1 : 0);
             if (isGroupChat) {
+                bodyEntity.setMucNickName(nick);
+                bodyEntity.setSenderAvatar(avatar);
+                String mucUserNick = MucUser
+                    .getMucUserNick(ContextHelper.getContext(), user, account);
+                bodyEntity.setGroupName(ChatHelper.getUserRemarkName(mucUserNick, nick, account));
+            } else {
                 bodyEntity.setMucNickName(nick);
             }
             bean.setContent(BodyEntity.toJson(bodyEntity));
         } else {
-            bean.setContent(content);
+            if (isGroupChat) {//群聊更换发送者头像，昵称
+                try {
+                    JSONObject object = new JSONObject(content);
+                    if (object != null) {
+                        if (object.has("mucNickName")) {
+                            object.remove("mucNickName");
+                            object.put("mucNickName", nick);
+                        }
+                        if (object.has("senderAvatar")) {
+                            object.remove("senderAvatar");
+                            object.put("senderAvatar", avatar);
+                        }
+                        bean.setContent(object.toString());
+                    } else {
+                        bean.setContent(content);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    bean.setContent(content);
+                }
+            } else {
+                bean.setContent(content);
+            }
         }
         bean.setMessageType(type);
         bean.setTime(System.currentTimeMillis());
@@ -902,6 +1151,8 @@ public class MessageManager {
         bean.setIncoming(isInconming);
         bean.setGroupChat(isGroupChat);
         bean.setSecret(isSecret);
+        bean.setHasReaded(1);
+        bean.setServerReaded(0);//未读
         return bean;
     }
 
@@ -957,10 +1208,11 @@ public class MessageManager {
             model.setFrom(creator);
             model.setTime(time);
             model.setGroupName(groupName);
-            model.setSendType(ESendType.ERROR);
+            model.setSendType(ESendType.ACK_ERROR);
             model.setNick(nick);
             model.setMessageType(EMessageType.ACTION);
             model.setActionType(EActionType.NONE);
+            model.setIncoming(true);
         }
         return model;
     }
@@ -969,7 +1221,7 @@ public class MessageManager {
     * 获取所有未读消息总数
     * */
     public int getTotalUnreadMessageCount() {
-        return ProviderChat.selectTotalUnreadMessageCount(ContextHelper.getContext());
+        return ProviderChat.selectTotalUnreadMessageCount();
     }
 
 
@@ -983,7 +1235,8 @@ public class MessageManager {
     }
 
     //私聊body
-    public BodyEntity createBody(String content, boolean secret, EMessageType type) {
+    public BodyEntity createBody(String content, boolean secret, EMessageType type,
+        String sendNick) {
         BodyEntity entity = new BodyEntity();
 
         switch (type) {
@@ -1011,7 +1264,8 @@ public class MessageManager {
                 entity.setTimeLength(0);
                 break;
         }
-        entity.setSecret(secret);
+        entity.setSecret(secret ? 1 : 0);
+        entity.setMucNickName(sendNick);
         entity.setBubbleHeight(0);
         entity.setBubbleWidth(0);
         return entity;
@@ -1019,7 +1273,7 @@ public class MessageManager {
 
     //群聊body
     public BodyEntity createBody(String content, boolean secret, EMessageType type, String avatar,
-        String nick) {
+        String nick, String mucName) {
         BodyEntity entity = new BodyEntity();
 
         switch (type) {
@@ -1047,11 +1301,12 @@ public class MessageManager {
                 entity.setTimeLength(0);
                 break;
         }
-        entity.setSecret(secret);
+        entity.setSecret(secret ? 1 : 0);
         entity.setBubbleHeight(0);
         entity.setBubbleWidth(0);
         entity.setSenderAvatar(avatar);
         entity.setMucNickName(nick);
+        entity.setGroupName(mucName);
         return entity;
     }
 
@@ -1083,7 +1338,7 @@ public class MessageManager {
     }
 
     /*
-    * activityChat2销毁的时候，将发送队列中未发送成功的清除掉，并且置为发送失败
+    * activityChat销毁的时候，将发送队列中未发送成功的清除掉
     * */
     public void clearSequenceMap() {
         if (sequenceMap != null && sequenceMap.size() > 0) {
@@ -1092,8 +1347,10 @@ public class MessageManager {
             while (iterator.hasNext()) {
                 Map.Entry<String, IChatRoomModel> m = iterator.next();
                 IChatRoomModel message = m.getValue();
+//                if (message.getMsgType() != EMessageType.TEXT) {//非文本消息置为发送失败
                 ProviderChat.updateSendStatus(ContextHelper.getContext(), message.getMsgId(),
-                    ESendType.ERROR);
+                    ESendType.NET_ERROR);
+//                }
             }
             if (sequenceMap != null) {
                 sequenceMap.clear();
@@ -1149,6 +1406,115 @@ public class MessageManager {
             content = model.getBody();
         }
         return content;
+    }
+
+    public ExcuteMessage createExcuteBody(ExcuteType type, String param) {
+        switch (type) {
+            case QUER_USER_PHONE:
+                if (!TextUtils.isEmpty(param)) {
+                    ExcuteMessage.Builder builder = ExcuteMessage.newBuilder();
+                    builder.setExcuteType(ExcuteType.QUER_USER_PHONE);
+                    builder.setParam(param);
+                    return builder.build();
+                }
+                break;
+            case QUERY_OFFLINE:
+                ExcuteMessage.Builder builder = ExcuteMessage.newBuilder();
+                builder.setExcuteType(ExcuteType.QUERY_OFFLINE);
+                if (param != null && !param.equals("")) {
+                    builder.setParam(param);
+                }
+                return builder.build();
+            case CHECK_VALIDATECODE:
+                //{"user":"用户名","code":"短信验证码"}
+                if (!TextUtils.isEmpty(param)) {
+                    ExcuteMessage.Builder checkCodeBuild = ExcuteMessage.newBuilder();
+                    checkCodeBuild.setExcuteType(ExcuteType.CHECK_VALIDATECODE);
+                    checkCodeBuild.setParam(param);
+                    return checkCodeBuild.build();
+                }
+                break;
+            case EMOTICON_SAVE:
+            case EMOTICON_QUERY:
+            case EMOTICON_DELETE:
+            case EMOTICON_TOFIRST:
+                if (!TextUtils.isEmpty(param)) {
+                    ExcuteMessage.Builder checkCodeBuild = ExcuteMessage.newBuilder();
+                    checkCodeBuild.setExcuteType(type);
+                    checkCodeBuild.setParam(param);
+                    return checkCodeBuild.build();
+                }
+                break;
+            default:
+                return null;
+        }
+        return null;
+    }
+
+    //退出登录后，清除缓存数据
+    public void clearLoginData() {
+        DaoManager.clearUserId();
+        PasswordRespository.cleanPassword();
+        SSOTokenRepository.getInstance().clearSSOToken();
+        AppConfig.INSTANCE.remove(AppConfig.ACCOUT);
+        AppConfig.INSTANCE.remove(AppConfig.PASSWORD);
+        AppConfig.INSTANCE.remove(AppConfig.PHONE);
+    }
+
+    public void registerAckListener() {
+        ClientConfig.I.registerListener(AckListener.class, this);
+    }
+
+    public void removeAckListener() {
+        ClientConfig.I.removeListener(AckListener.class, this);
+    }
+
+    @Override
+    public void onAck(AckMessage message) {
+        if (message != null) {
+            //成功逻辑
+            String msgId = message.ack.getIdList().get(0);
+            long time = message.ack.getTime();
+            doSendSuccess(msgId, time);
+        }
+    }
+
+    public boolean isAtMessage(IChatRoomModel model) {
+        if (model.isGroupChat() && model.isIncoming() && model.getMsgType() == EMessageType.TEXT) {
+            BodyEntity entity = model.getBodyEntity();
+            if (entity != null && !TextUtils.isEmpty(entity.getBody())) {
+                String mucUserNick = MucUser
+                    .getMucUserNick(ContextHelper.getContext(), model.getTo(),//群备注名
+                        getUserInfo().getUserid());
+                if (entity.getBody().contains("@" + mucUserNick) || entity.getBody()
+                    .contains("@" + getUserInfo().getUsernick()) || entity.getBody()
+                    .contains("@" + getUserInfo().getUserid())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public Map<String, IChatRoomModel> getSequenceReadedChatMap() {
+        return sequenceReadedChatMap;
+    }
+
+    public Map<String, ReadedMessageList> getSequenceReadedMessageMap() {
+        return sequenceReadedMap;
+    }
+
+    public ReadedMessage createReadedMessage(IChatRoomModel model) {
+        ReadedMessage.Builder builder = ReadedMessage.newBuilder();
+        builder.setOid(model.getMsgId());
+        if (model.isGroupChat()) {
+            builder.setFrom(model.getFrom());
+            builder.setMucId(model.getTo());
+        } else {
+            builder.setFrom(model.getTo());
+        }
+        return builder.build();
+
     }
 }
 

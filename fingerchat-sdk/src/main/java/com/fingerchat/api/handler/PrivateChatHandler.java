@@ -3,6 +3,7 @@ package com.fingerchat.api.handler;
 import com.fingerchat.api.ClientListener;
 import com.fingerchat.api.Logger;
 import com.fingerchat.api.client.ClientConfig;
+import com.fingerchat.api.client.FingerClient;
 import com.fingerchat.api.connection.Connection;
 import com.fingerchat.api.listener.ChatListener;
 import com.fingerchat.api.message.AckMessage;
@@ -31,6 +32,8 @@ public class PrivateChatHandler extends BaseMessageHandler<PrivateChatMessage> {
         AckMessage ackMessage = AckMessage.from(message);
         BaseChat.SysAck.Builder builder = BaseChat.SysAck.newBuilder();
         builder.addId(message.message.getId());
+        System.out.println(FingerClient.class.getSimpleName() +" 私聊回执消息Id"+ message.message.getId());
+
         ackMessage.setAck(builder.build());
         ackMessage.sendRaw();
         ClientListener listener = ClientConfig.I.getClientListener();

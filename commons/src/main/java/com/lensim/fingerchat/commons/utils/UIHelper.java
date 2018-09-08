@@ -15,6 +15,8 @@ import java.lang.reflect.Field;
 
 public class UIHelper {
 
+    public static final int MIN_TEXT_SIZE = 12;
+
     public static void setCursorColor(EditText editText, int color) {
         try {
             final Field drawableResField = TextView.class.getDeclaredField("mCursorDrawableRes");

@@ -31,6 +31,7 @@ import com.lensim.fingerchat.components.springview.widget.SpringView;
 import com.lensim.fingerchat.data.hexmeet.VideoMeeting;
 import com.lensim.fingerchat.data.login.SSOTokenRepository;
 import com.lensim.fingerchat.data.response.ret.RetArrayResponse;
+import com.lensim.fingerchat.data.response.ret.RetObjectResponse;
 import com.lensim.fingerchat.hexmeet.App;
 import com.lensim.fingerchat.hexmeet.R;
 import com.lensim.fingerchat.hexmeet.RuntimeData;
@@ -51,8 +52,10 @@ import com.lensim.fingerchat.hexmeet.utils.AvatarLoader;
 import com.lensim.fingerchat.hexmeet.utils.NetworkUtil;
 import com.lensim.fingerchat.hexmeet.utils.Utils;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONException;
 import org.json.JSONObject;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -302,15 +305,17 @@ public class HexMeetListActivity extends BaseActivity {
         String ssoToken = SSOTokenRepository.getToken();
         String userName = SSOTokenRepository.getUserName();
         Http.getHexMeetingList(ssoToken, "2", userName, PAGE_SIZE, PAGE_NUM + "")
-            .compose(RxSchedulers.<RetArrayResponse<VideoMeeting>>compose())
-            .subscribe(new BaseObserver<RetArrayResponse<VideoMeeting>>() {
+            .compose(RxSchedulers.<RetObjectResponse<String>>compose())
+            .subscribe(new BaseObserver<RetObjectResponse<String>>() {
                 @Override
-                public void onNext(RetArrayResponse<VideoMeeting> response) {
-                    Log.e("getHexMeetingList","" +response.retCode);
+                public void onNext(RetObjectResponse<String> response) {
+                    Gson gson = new Gson();
                     if (1 == response.retCode) {
                         PAGE_NUM++;
-                        items = response.retData;
+                        Type type = new TypeToken<List<VideoMeeting>>() {}.getType();
+                        items = gson.fromJson(response.retData, type);
                     }
+
 
                     if (!StringUtils.isEmpty(response.retMsg) && !response.retMsg.equals("null")) {
                             Utils.showToast(HexMeetListActivity.this, response.retMsg);

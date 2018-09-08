@@ -42,6 +42,15 @@ public class NewComment implements Parcelable {
     private int PHC_ID;
     private String PHC_Serno;
     private int PHO_ID;
+    private long time;
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
 
     public String getPHO_Serno() {
         return PHO_Serno;

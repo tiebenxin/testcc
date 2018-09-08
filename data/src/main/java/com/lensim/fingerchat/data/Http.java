@@ -16,18 +16,15 @@ import com.lensim.fingerchat.data.hexmeet.LockUser;
 import com.lensim.fingerchat.data.hexmeet.RoomInfo;
 import com.lensim.fingerchat.data.hexmeet.VideoMeeting;
 import com.lensim.fingerchat.data.hrcs.HRCS;
-import com.lensim.fingerchat.data.login.SSOToken;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
-import com.lensim.fingerchat.data.me.CircleItem;
 import com.lensim.fingerchat.data.me.NewComment;
 import com.lensim.fingerchat.data.me.circle_friend.FriendCircleEntity;
 import com.lensim.fingerchat.data.me.content.FavJson;
 import com.lensim.fingerchat.data.request.MomentsRequest;
-import com.lensim.fingerchat.data.response.ResponseObject;
+import com.lensim.fingerchat.data.response.response.FGObjectResponse;
 import com.lensim.fingerchat.data.response.ret.RetArrayResponse;
 import com.lensim.fingerchat.data.response.ret.RetObjectResponse;
 import com.lensim.fingerchat.data.response.ret.RetResponse;
-import com.lensim.fingerchat.data.work_center.OAToken;
 import com.lensim.fingerchat.data.work_center.SignInJson;
 import com.lensim.fingerchat.data.work_center.identify.UserIdentify;
 import com.lensim.fingerchat.data.work_center.sign.SPListResponse;
@@ -86,23 +83,6 @@ public class Http {
 //    }
 
 
-    /**
-     * 获取OAtoken
-     * @param userid 用户ID
-     * @param token 令牌
-     * @param clientType 令牌(*string, clientType=webpage/android/ios/windows/macos)
-     * @param appid 业务系统ID
-     */
-    public static Observable<ResponseObject<OAToken>> getOAToken(String userid, String token, String clientType, String appid){
-        Map<String, String> map = new HashMap<>();
-        map.put("userid", userid);
-        map.put("token", token);
-        map.put("clientType", clientType);
-        map.put("appid", appid);
-
-        return httpChannel.getRetrofitService().getOAToken(getRequestBody(map));
-    }
-
 
     /**
      * 工作中心获取子项目
@@ -130,7 +110,7 @@ public class Http {
     /**
      * 获取会议列表
      */
-    public static Observable<RetArrayResponse<VideoMeeting>> getHexMeetingList(String token, String type, String user, String pageSize, String pageNum) {
+    public static Observable<RetObjectResponse<String>> getHexMeetingList(String token, String type, String user, String pageSize, String pageNum) {
         return mgsonHttpChannel.getRetrofitService().getHexMeetingList(token, type, user, pageSize, pageNum);
 
     }
@@ -175,8 +155,8 @@ public class Http {
     /**
      * 签到
      */
-    public static Observable<RetObjectResponse<String>> signIn(SignInJson signInJson) {
-        return mgsonHttpChannel.getRetrofitService().signIn(getRequestBody(signInJson));
+    public static Observable<FGObjectResponse<String>> signIn(SignInJson signInJson) {
+        return httpChannel.getRetrofitService().signIn(getRequestBody(signInJson));
 
     }
 
@@ -314,7 +294,7 @@ public class Http {
     /**
      * 朋友圈——点赞
      */
-    public static Flowable<ResponseBody> likeCircleFriends(CircleItem item){
+    public static Flowable<ResponseBody> likeCircleFriends(String id, String userId, String userName){
         Map<String, String> params = new HashMap<>();
         params.put("fun", "zambia");
         params.put("CommentUserid", UserInfoRepository.getUserName().toLowerCase());
@@ -326,10 +306,10 @@ public class Http {
             username = username.replace("+", "%2B");
         }
         params.put("CommentUsername", username);
-        params.put("photoserno", item.id);
-        params.put("CreateUserid", item.userid);
+        params.put("photoserno", id);
+        params.put("CreateUserid", userId);
         params.put("CreateUsername",
-            StringUtils.isEmpty(item.username) ? item.userid : item.username);
+            StringUtils.isEmpty(userName) ? userId : userName);
         return httpChannel.getRetrofitService().like(params);
     }
 
@@ -440,19 +420,6 @@ public class Http {
      */
     public static Flowable<RetResponse> removeFavItem(String msgId, String username) {
         return mgsonHttpChannel.getRetrofitService().removeFavItem(msgId, username);
-    }
-
-    /**
-     * 上传日志
-     */
-    public static Flowable<ResponseBody> uploadLog(String json){
-        return httpChannel.getRetrofitService()
-            .uploadLog(RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json));
-    }
-
-    public static Observable<ResponseBody> uploadLogger(Map<String, String> params) {
-        return httpChannel.getRetrofitService()
-            .uploadlogger(getRequestBody(params));
     }
 
     /**

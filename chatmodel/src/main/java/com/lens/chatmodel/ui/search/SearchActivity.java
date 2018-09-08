@@ -241,7 +241,8 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void filterByType(Editable s) {
-        subscription = Observable.just(s.toString())
+        String value = s.toString();
+        subscription = Observable.just(value)
             .map(new Function<String, AllResult>() {
                 @Override
                 public AllResult apply(@NonNull String s) throws Exception {
@@ -282,7 +283,8 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void filterAll(Editable s) {
-        subscription = Observable.just(s.toString())
+        String value = s.toString();
+        subscription = Observable.just(value)
             .map(new Function<String, List<AllResult>>() {
                 @Override
                 public List<AllResult> apply(@NonNull String s) throws Exception {

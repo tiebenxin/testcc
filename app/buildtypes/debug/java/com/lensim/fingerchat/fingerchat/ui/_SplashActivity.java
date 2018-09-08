@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.lensim.fingerchat.commons.utils.AppHostUtil;
 import com.lensim.fingerchat.fingerchat.BuildConfig;
 import com.lensim.fingerchat.fingerchat.R;
 
@@ -36,7 +37,7 @@ public class _SplashActivity extends SplashActivity {
         TextView tvVersionName = view.findViewById(R.id.tv_version_name);
         TextView tvChannel = view.findViewById(R.id.tv_channel);
 
-        tvServiceLink.setText(BuildConfig.API_HOST);
+        tvServiceLink.setText(AppHostUtil.getHttpConnectHostApi());
         tvChannel.setText(BuildConfig.CHANNEL);
         tvVersionName.setText(BuildConfig.VERSION_NAME);
     }

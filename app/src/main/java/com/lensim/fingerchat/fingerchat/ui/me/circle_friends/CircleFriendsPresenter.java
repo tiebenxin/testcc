@@ -2,22 +2,34 @@ package com.lensim.fingerchat.fingerchat.ui.me.circle_friends;
 
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
-
-import com.lensim.fingerchat.commons.utils.L;
+import com.lens.chatmodel.bean.body.ImageUploadEntity;
+import com.lens.chatmodel.net.HttpUtils;
+import com.lens.core.componet.log.DLog;
+import com.lensim.fingerchat.commons.app.AppConfig;
+import com.lensim.fingerchat.commons.base.BaseResponse;
+import com.lensim.fingerchat.commons.global.CommonEnum;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
+import com.lensim.fingerchat.commons.utils.CyptoUtils;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.data.Http;
 import com.lensim.fingerchat.data.RxSchedulers;
+import com.lensim.fingerchat.data.help_class.IUploadListener;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.CircleItem;
-import com.lensim.fingerchat.data.me.ZambiaEntity;
 import com.lensim.fingerchat.data.me.circle_friend.CommentConfig;
-import com.lensim.fingerchat.data.me.circle_friend.ContentEntity;
 import com.lensim.fingerchat.data.me.circle_friend.FriendCircleEntity;
-import com.lensim.fingerchat.fingerchat.ui.me.utils.DatasUtil;
-
-import java.io.File;
+import com.lensim.fingerchat.data.repository.SPSaveHelper;
+import com.lensim.fingerchat.fingerchat.api.CirclesFriendsApi;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentBean;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentResponse;
+import com.lensim.fingerchat.fingerchat.model.bean.PhotoBean;
+import com.lensim.fingerchat.fingerchat.model.bean.ThumbsBean;
+import com.lensim.fingerchat.fingerchat.model.bean.UpdateBgImgResponse;
+import com.lensim.fingerchat.fingerchat.model.requestbody.CommentTalkRequestBody;
+import com.lensim.fingerchat.fingerchat.model.requestbody.RevertCommentRequestBody;
+import com.lensim.fingerchat.fingerchat.model.requestbody.ThumbsUpRequestBody;
+import com.lensim.fingerchat.fingerchat.model.result.GetPhotoResult;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +46,13 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
     private List<CircleItem> circleItems = new ArrayList<>();
     private List<FriendCircleEntity> entities;
     private CommentConfig mCommentConfig;
+
+    private CirclesFriendsApi circlesFriendsApi;
+    private List<PhotoBean> photoBeanList = new ArrayList<>();
+
+    public CirclesFriendsApi getCirclesFriendsApi() {
+        return circlesFriendsApi == null ? new CirclesFriendsApi() : circlesFriendsApi;
+    }
 
     @Override
     public CommentConfig getCommentConfig() {
@@ -53,20 +72,17 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
         if (type == CircleFriendsActivity.TYPE_LOADMORE) {
             loadMoreCircleData(type);
         } else {
-            mCompositeSubscription
-                .add(Http.UpdateFriendCircle("getfriendphotopg", UserInfoRepository.getUserName())
-                    .compose(RxSchedulers.io_main())
-                    .subscribe(
-                        friendCircleEntities -> {
-                            entities = friendCircleEntities;
-                            circleItems = DatasUtil.createCircleDatas(entities);
-                            getMvpView().updateFriendCircle(type, circleItems);
-                        },
-                        throwable -> {
-                            Log.e("updateFriendCircle", throwable.getMessage());
-//                        getMvpView().updateFriendCircle(type, null);
-                        }
-                    ));
+            getCirclesFriendsApi().getPhotos(UserInfoRepository.getUserName(), "0", new FXRxSubscriberHelper<GetPhotoResult>() {
+                @Override
+                public void _onNext(GetPhotoResult getPhotoResult) {
+                    GetPhotoResult.Data data = getPhotoResult.getContent();
+                    if (data != null) {
+                        photoBeanList.clear();
+                        photoBeanList.addAll(data.getFxNewPhotos());
+                        getMvpView().updateFriendCircle(type, data.getFxNewPhotos());
+                    }
+                }
+            });
         }
     }
 
@@ -75,20 +91,17 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      * 发起网络请求——上拉加载
      */
     private void loadMoreCircleData(final int type) {
-        mCompositeSubscription
-            .add(Http
-                .loadMoreCircleData((entities.size() + 4) / 5, UserInfoRepository.getUserName())
-                .compose(RxSchedulers.io_main())
-                .subscribe(
-                    friendCircleEntities -> {
-                        entities.addAll(friendCircleEntities);
-                        circleItems = DatasUtil.createCircleDatas(entities);
-                        getMvpView().updateFriendCircle(type, circleItems);
-                    },
-                    throwable -> {
-//                        getMvpView().updateFriendCircle(type, null);
-                    }
-                ));
+        getCirclesFriendsApi().getPhotos(UserInfoRepository.getUserName(), photoBeanList.size() + "", new FXRxSubscriberHelper<GetPhotoResult>() {
+            @Override
+            public void _onNext(GetPhotoResult getPhotoResult) {
+                GetPhotoResult.Data data = getPhotoResult.getContent();
+                if (data != null) {
+                    photoBeanList.addAll(data.getFxNewPhotos());
+                    getMvpView().updateFriendCircle(type, photoBeanList);
+                }
+            }
+        });
+
     }
 
     /**
@@ -96,20 +109,12 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      */
     @Override
     public void deleteCircle(final String circleId) {
-        mCompositeSubscription
-            .add(Http.deleteCircle(circleId, UserInfoRepository.getUserName())
-                .compose(RxSchedulers.io_main())
-                .subscribe(
-                    stringRetObjectResponse -> {
-                        if (1 == stringRetObjectResponse.retCode) {
-                            updateItems(circleId);
-                            updateDeleteCircle(circleId);
-                        }
-
-                    },
-                    throwable -> {
-                    }
-                ));
+        getCirclesFriendsApi().deletePhoto(circleId, new FXRxSubscriberHelper<BaseResponse>() {
+            @Override
+            public void _onNext(BaseResponse baseResponse) {
+                updateDeleteCircle(circleId);
+            }
+        });
     }
 
 
@@ -117,13 +122,13 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      * 删除动态
      */
     private void updateDeleteCircle(String circleId) {
-        if (circleItems == null) {
+        if (photoBeanList == null) {
             return;
         }
-        for (int i = 0; i < circleItems.size(); i++) {
-            if (circleId.equals(circleItems.get(i).id)) {
-                circleItems.remove(i);
-                getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, circleItems);
+        for (int i = 0; i < photoBeanList.size(); i++) {
+            if (circleId.equals(photoBeanList.get(i).getPhotoSerno())) {
+                photoBeanList.remove(i);
+                getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, photoBeanList);
                 return;
             }
         }
@@ -131,15 +136,15 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
 
 
     private void updateItems(@NonNull String circleId) {
-        FriendCircleEntity e = null;
-        for (FriendCircleEntity entity : entities) {
-            if (entity.getPHO_Serno().equals(circleId)) {
-                e = entity;
+        PhotoBean e = null;
+        for (PhotoBean photoBean : photoBeanList) {
+            if (photoBean.getPhotoSerno().equals(circleId)) {
+                e = photoBean;
                 break;
             }
         }
         if (e != null) {
-            entities.remove(e);
+            photoBeanList.remove(e);
         }
     }
 
@@ -147,19 +152,27 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      * 发起网络请求——点赞
      */
     @Override
-    public void addFavort(CircleItem circleItem, final int circlePosition) {
-        mCompositeSubscription
-            .add(Http.likeCircleFriends(circleItem)
-                .compose(RxSchedulers.io_main())
-                .subscribe(
-                    string -> {
-                        if ("OK".equals(string.string())) {
-                            ZambiaEntity item = DatasUtil.createCurUserFavortItem();
-                            updateAddFavorite(circlePosition, item);
-                        }
-                    },
-                    throwable -> Log.e("throwable", throwable.getMessage())
-                ));
+    public void addFavort(PhotoBean circleItem, final int circlePosition) {
+        ThumbsUpRequestBody requestBody = new ThumbsUpRequestBody.Builder()
+            .photoSerno(circleItem.getPhotoSerno())
+            .photoUserId(circleItem.getPhotoCreator())
+            .photoUserName(circleItem.getUserName())
+            .thumbsUserId(UserInfoRepository.getUserId())
+            .thumbsUserName(CyptoUtils.encrypt(UserInfoRepository.getUsernick())).build();
+        getCirclesFriendsApi().thumbsUp(requestBody, new FXRxSubscriberHelper<BaseResponse>() {
+            @Override
+            public void _onNext(BaseResponse baseResponse) {
+                ThumbsBean item = new ThumbsBean();
+                item.setPhotoSerno(circleItem.getPhotoSerno());
+                item.setPhotoUserId(circleItem.getPhotoCreator());
+                item.setPhotoUserName(circleItem.getUserName());
+//                item.setThumbsTime();
+                item.setThumbsUserId(UserInfoRepository.getUserId());
+                item.setThumbsUserName(UserInfoRepository.getUsernick());
+                item.setThumbsSerno(circleItem.getPhotoSerno());
+                updateAddFavorite(circlePosition, item);
+            }
+        });
 
     }
 
@@ -167,14 +180,11 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
     /**
      * 点赞
      */
-    private void updateAddFavorite(int circlePosition, ZambiaEntity addItem) {
-        if (addItem != null && circleItems != null) {
-            CircleItem item = circleItems.get(circlePosition);
-            if (item.favorters == null) {
-                item.favorters = new ArrayList<>();
-            }
-            item.favorters.add(addItem);
-            getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, circleItems);
+    private void updateAddFavorite(int circlePosition, ThumbsBean addItem) {
+        if (addItem != null && photoBeanList != null) {
+            PhotoBean item = photoBeanList.get(circlePosition);
+            item.getThumbsUps().add(addItem);
+            getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, photoBeanList);
         }
     }
 
@@ -182,31 +192,33 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      * 发起网络请求——取消点赞
      */
     @Override
-    public void deleteFavort(final CircleItem item, final int circlePosition) {
-        mCompositeSubscription
-            .add(Http.cancelLike(UserInfoRepository.getUserName().toLowerCase(), item.id, item.userid)
-                .compose(RxSchedulers.io_main())
-                .subscribe(
-                    string -> {
-                        if ("OK".equals(string.string())) {
-                            updateDeleteFavort(circlePosition, item
-                                .getCurUserFavortId(UserInfoRepository.getUserName()));
-                        }
-                    },
-                    throwable -> Log.e("throwable", throwable.getMessage())
-                ));
+    public void deleteFavort(final PhotoBean item, final int circlePosition) {
+        getCirclesFriendsApi().cancelThumbsUp(item.getPhotoCreator(), item.getPhotoSerno(),
+            UserInfoRepository.getUserId(),
+            new FXRxSubscriberHelper<BaseResponse>() {
+                @Override
+                public void _onNext(BaseResponse baseResponse) {
+                    if ("Ok".equals(baseResponse.getMessage())) {
+                        updateDeleteFavort(circlePosition, item);
+                    }
+
+                }
+            });
+
     }
-    
+
     /**
      * 取消赞
      */
-    private void updateDeleteFavort(int circlePosition, String favortId) {
-        CircleItem item = circleItems.get(circlePosition);
-        List<ZambiaEntity> lists = item.favorters;
-        for (int i = 0; i < lists.size(); i++) {
-            if (favortId.equals(lists.get(i).PHC_CommentUserid)) {
+    private void updateDeleteFavort(int circlePosition, PhotoBean photoBean) {
+        PhotoBean item = photoBeanList.get(circlePosition);
+        List<ThumbsBean> lists = item.getThumbsUps();
+        for (int i = 0; i < photoBean.getThumbsUps().size(); i++) {
+            if (UserInfoRepository.getUserId().equals(lists.get(i).getThumbsUserId())) {
                 lists.remove(i);
-                getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, circleItems);
+                item.setThumbsUps(lists);
+                photoBeanList.add(item);
+                getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, photoBeanList);
                 return;
             }
         }
@@ -218,67 +230,72 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
     @Override
     public void addComment(String content) {
 
-        ContentEntity entity = new ContentEntity();
-        entity.setPHC_CommentUserid(UserInfoRepository.getUserName());
-        entity.setPHC_CommentUsername(UserInfoRepository.getUsernick());
-        entity.setPHC_Content(content);
-        entity.setPHC_SecondUserid(mCommentConfig.replyUserid);
-        entity.setPHC_SecondUsername(mCommentConfig.replyUsername);
-
         if (mCommentConfig.commentType == CommentConfig.Type.PUBLIC) {
-            comment(mCommentConfig, entity);
+            CommentTalkRequestBody requestBody = new CommentTalkRequestBody();
+            requestBody.setCommentUserId(UserInfoRepository.getUserName());
+            requestBody.setCommentUserName(CyptoUtils.encrypt(UserInfoRepository.getUsernick()));
+            requestBody.setContent(CyptoUtils.encrypt(content));
+            requestBody.setCreatorUserId(mCommentConfig.replyUserid);
+            requestBody.setCreatorUserName(mCommentConfig.replyUsername);
+            requestBody.setPhotoSerno(photoBeanList.get(mCommentConfig.circlePosition).getPhotoSerno());
+            comment(mCommentConfig,requestBody);
         } else {
-            reComment(mCommentConfig, entity);
+            RevertCommentRequestBody revertCommentRequestBody = new RevertCommentRequestBody.Builder()
+                .commentUserId(UserInfoRepository.getUserName())
+                .commentUserId2(mCommentConfig.replyUserid)
+                .commentUserName(CyptoUtils.encrypt(UserInfoRepository.getUsernick()))
+                .commentUserName2(CyptoUtils.encrypt(mCommentConfig.replyUsername))
+                .creatorUserId(mCommentConfig.replyUserid)
+                .creatorUserName(mCommentConfig.replyUsername)
+                .content(CyptoUtils.encrypt(content))
+                .photoSerno(photoBeanList.get(mCommentConfig.circlePosition).getPhotoSerno())
+                .build();
+
+            reComment(mCommentConfig, revertCommentRequestBody);
         }
+
     }
 
-    private void comment(final CommentConfig config, ContentEntity entity) {
-        mCompositeSubscription
-            .add(Http.comment(UserInfoRepository.getUserName().toLowerCase(),
-                UserInfoRepository.getUsernick(), config.id, config.replyUserid,
-                config.replyUsername, entity.getPHC_Content())
-                .compose(RxSchedulers.io_main())
-                .subscribe(
-                    stringRetObjectResponse ->
-                        updateAddComment(config, stringRetObjectResponse.retMsg, entity),
-                    throwable -> {
+    private void comment(final CommentConfig config, CommentTalkRequestBody entity) {
+        getCirclesFriendsApi().commentTalk(entity,
+            new FXRxSubscriberHelper<BaseResponse<CommentResponse>>() {
+                @Override
+                public void _onNext(BaseResponse<CommentResponse> baseResponse) {
+                    if (null != baseResponse && "Ok".equals(baseResponse.getMessage())){
+                        updateAddComment(config, baseResponse.getMessage(),baseResponse.getContent().getComment());
                     }
-                ));
+                }
+            });
     }
 
 
-    private void reComment(final CommentConfig config, ContentEntity entity) {
-        mCompositeSubscription
-            .add(Http.reComment(config.id, config.createdid,
-                config.createdName, entity.getPHC_Content(),
-                config.replyUserid, config.replyUsername)
-                .compose(RxSchedulers.io_main())
-                .subscribe(
-                    stringRetObjectResponse ->
-                        updateAddComment(config, stringRetObjectResponse.retMsg, entity),
-                    throwable -> {
+    private void reComment(final CommentConfig config, RevertCommentRequestBody revertCommentRequestBody) {
+
+        getCirclesFriendsApi().revertComment(revertCommentRequestBody,
+            new FXRxSubscriberHelper<BaseResponse<CommentResponse>>() {
+                @Override
+                public void _onNext(BaseResponse<CommentResponse> baseResponse) {
+                    if (null != baseResponse && "Ok".equals(baseResponse.getMessage())){
+                        updateAddComment(config, baseResponse.getMessage(), baseResponse.getContent().getComment());
                     }
-                ));
+                }
+            });
     }
 
     /**
      * 添加评论
      */
-    private void updateAddComment(final CommentConfig config, String msg, ContentEntity entity) {
+    private void updateAddComment(final CommentConfig config, String msg, CommentBean entity) {
 
         if (config.commentType == CommentConfig.Type.PUBLIC) {
-            entity.setPHC_SecondUserid("");
-            entity.setPHC_SecondUsername("");
+            entity.setCreatorUserid("");
+            entity.setCreatorUsername("");
         }
-
-        entity.setPHC_Serno(msg);
-        CircleItem item = circleItems.get(config.circlePosition);
+        //entity.setPHC_Serno(msg);
+        PhotoBean item = photoBeanList.get(config.circlePosition);
         if (item == null) return;
-        if (item.comments == null) {
-            item.comments = new ArrayList<>();
-        }
-        item.comments.add(entity);
-        getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, circleItems);
+        item.getComments().add(entity);
+        getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, photoBeanList);
 
     }
 
@@ -287,20 +304,15 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      * 发起网络请求——删除评论
      */
     @Override
-    public void deleteComment(final int mCirclePosition, String userid, String PHC_Serno) {
-        mCompositeSubscription
-            .add(Http.deleteComment(PHC_Serno, userid)
-                .compose(RxSchedulers.io_main())
-                .subscribe(
-                    stringRetObjectResponse -> {
-                        if (1 == stringRetObjectResponse.retCode) {
-                            updateDeleteComment(mCirclePosition, PHC_Serno);
-                        }
-                    },
-                    throwable -> {
-//                    T.showShort(MyApplication.getInstance().getApplication(), "删除失败");
-                    }
-                ));
+    public void deleteComment(final int mCirclePosition, String userid, String commentSerno) {
+        getCirclesFriendsApi().deleteComment(commentSerno, new FXRxSubscriberHelper<BaseResponse>() {
+            @Override
+            public void _onNext(BaseResponse baseResponse) {
+                if ("Ok".equals(baseResponse.getMessage())){
+                    updateDeleteComment(mCirclePosition, commentSerno);
+                }
+            }
+        });
     }
 
 
@@ -309,12 +321,12 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      */
     private void updateDeleteComment(int circlePosition, String commentId) {
 
-        CircleItem item = circleItems.get(circlePosition);
-        List<ContentEntity> lists = item.comments;
+        PhotoBean item = photoBeanList.get(circlePosition);
+        List<CommentBean> lists = item.getComments();
         for (int i = 0; i < lists.size(); i++) {
-            if (commentId.equals(lists.get(i).getPHC_Serno())) {
+            if (commentId.equals(lists.get(i).getCommentSerno())) {
                 lists.remove(i);
-                getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, circleItems);
+                getMvpView().updateFriendCircle(CircleFriendsActivity.TYPE_OTHERREFRESH, photoBeanList);
                 return;
             }
         }
@@ -325,7 +337,7 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      */
     @Override
     public void uploadThemeImg(@NonNull String imagePath) {
-//        MyApplication.getInstance()
+/*//        MyApplication.getInstance()
 //            .saveString(LensImUtil.getUserName() + AppConfig.CIRCLE_THEME_PATH, imagePath);
         compressionPicture();
         File file = new File(imagePath);
@@ -344,26 +356,65 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
 //                    MyApplication.getInstance()
 //                        .saveString(LensImUtil.getUserName() + AppConfig.CIRCLE_THEME_PATH, "");
                     }
-                ));
+                ));*/
+
+        HttpUtils.getInstance()
+            .uploadFileProgress(imagePath,CommonEnum.EUploadFileType.JPG,
+                new IUploadListener() {
+                    @Override
+                    public void onSuccess(Object result) {
+
+                        if (result != null && result instanceof ImageUploadEntity) {
+                            ImageUploadEntity entity = (ImageUploadEntity) result;
+                            getCirclesFriendsApi().updateBackgroundImage(UserInfoRepository.getUserId(),entity.getOriginalUrl(),
+                                new FXRxSubscriberHelper<BaseResponse<UpdateBgImgResponse>>() {
+                                    @Override
+                                    public void _onNext(BaseResponse<UpdateBgImgResponse> baseResponse) {
+                                        SPSaveHelper.setValue(UserInfoRepository.getUserName() + AppConfig.CIRCLE_THEME_PATH,baseResponse.getContent().getRecord().getBgImageUrl());
+                                    mView.updateBackgroundImg();
+                                    }
+                                });
+                        }
+                    }
+
+                    @Override
+                    public void onFailed() {
+
+                    }
+
+                    @Override
+                    public void onProgress(int progress) {
+                        DLog.d("上传进度" + progress);
+                    }
+
+                });
+       /* getCirclesFriendsApi().updateBackgroundImage(imagePath,
+                new FXRxSubscriberHelper<BaseResponse>() {
+                    @Override
+                    public void _onNext(BaseResponse baseResponse) {
+                        //SPSaveHelper.setValue(UserInfoRepository.getUserName() + AppConfig.CIRCLE_THEME_PATH,"");
+                    }
+                });*/
+
     }
 
     /**
      * 回复评论
      */
     @Override
-    public void replyComment(int circlePosition, CircleItem circleItem, ContentEntity commentItem,
+    public void replyComment(int circlePosition, PhotoBean circleItem, CommentBean commentItem,
                              int commentPosition) {
         CommentConfig config = new CommentConfig();
-        config.id = circleItem.id;
+        config.id = circleItem.getPhotoId() + "";
         config.circlePosition = circlePosition;
-        config.createdid = circleItem.userid;
-        config.createdName = circleItem.username;
+        config.createdid = circleItem.getPhotoCreator();
+        config.createdName = circleItem.getUserName();
         config.commentPosition = commentPosition;
         config.commentType = CommentConfig.Type.REPLY;
-        config.replyUserid = commentItem.getPHC_CommentUserid();
+        config.replyUserid = commentItem.getCommentUserid();
         config.replyUsername =
-            StringUtils.isEmpty(commentItem.getPHC_CommentUsername())
-                ? commentItem.getPHC_CommentUserid() : commentItem.getPHC_CommentUsername();
+            StringUtils.isEmpty(commentItem.getCommentUsername())
+                ? commentItem.getCommentUserid() : commentItem.getCommentUsername();
 
         showEditTextBody(config);
     }
@@ -373,14 +424,14 @@ public class CircleFriendsPresenter extends CircleFirendsContract.Presenter {
      * 编写评论
      */
     @Override
-    public void writeCommen(CircleItem circleItem, int circlePosition) {
+    public void writeCommen(PhotoBean circleItem, int circlePosition) {
         CommentConfig config = new CommentConfig();
-        config.id = circleItem.id;
+        config.id = circleItem.getPhotoId() + "";
         config.circlePosition = circlePosition;
         config.commentType = CommentConfig.Type.PUBLIC;
-        config.replyUserid = circleItem.userid;
-        config.replyUsername = StringUtils.isEmpty(circleItem.username) ?
-            circleItem.userid : circleItem.username;
+        config.replyUserid = circleItem.getPhotoId() + "";
+        config.replyUsername = StringUtils.isEmpty(circleItem.getUserName()) ?
+            circleItem.getPhotoCreator() : circleItem.getUserName();
 
         showEditTextBody(config);
     }

@@ -20,8 +20,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.lens.chatmodel.helper.FileCache;
-import com.lensim.fingerchat.data.Http;
-import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.commons.global.Route;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.utils.CyptoConvertUtils;
@@ -29,21 +27,19 @@ import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.TDevice;
+import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.commons.utils.UIHelper;
 import com.lensim.fingerchat.components.adapter.multitype.ItemViewBinder;
 import com.lensim.fingerchat.components.widget.CircleProgress;
-import com.lensim.fingerchat.data.me.circle_friend.FriendCircleEntity;
+import com.lensim.fingerchat.data.me.circle_friend.FxPhotosBean;
 import com.lensim.fingerchat.fingerchat.R;
-import com.lensim.fingerchat.fingerchat.component.download.DownloadApi;
-import com.lensim.fingerchat.fingerchat.component.download.progress.DownloadProgressListener;
+import com.lensim.fingerchat.fingerchat.api.DownloadApi;
+import com.lensim.fingerchat.fingerchat.component.download.DownloadProgressListener;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import io.reactivex.functions.Consumer;
 import me.jessyan.progressmanager.ProgressListener;
 import me.jessyan.progressmanager.ProgressManager;
 import me.jessyan.progressmanager.body.ProgressInfo;
@@ -54,7 +50,7 @@ import me.jessyan.progressmanager.body.ProgressInfo;
  * describe
  */
 
-public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosViewHolder.ViewHolder> {
+public class PhotosViewHolder extends ItemViewBinder<FxPhotosBean, PhotosViewHolder.ViewHolder> {
 
     private OnItemClickListener onItemClickListener;
     private LinearLayout.LayoutParams P1;
@@ -68,7 +64,7 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
     private boolean isToday;
     private int mHeaderCount = 1;//头部View个数，先固定为一个
     private boolean isMyPhoto;//是不是我本人的相册
-    private List<FriendCircleEntity> entities;
+    private List<FxPhotosBean> entities;
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
@@ -76,7 +72,7 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
 
     public interface OnItemClickListener {
 
-        void onclick(FriendCircleEntity entity, int position);
+        void onclick(FxPhotosBean entity, int position);
     }
 
     public PhotosViewHolder(Context ctx, boolean isMyPhoto) {
@@ -99,7 +95,7 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull FriendCircleEntity item) {
+    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull FxPhotosBean item) {
         holder.itemView.setOnClickListener(v -> {
             int position = (int) holder.tvDate.getTag();
             if (onItemClickListener != null) {
@@ -109,8 +105,8 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
 
         int position = holder.getAdapterPosition();
         int realPosition = isMyPhoto ? position - mHeaderCount : position;
-//        final FriendCircleEntity entity = entities.get(realPosition);
-        final FriendCircleEntity entity = item;
+//        final FxPhotosBean entity = entities.get(realPosition);
+        final FxPhotosBean entity = item;
 
         if (position == 0) {
             holder.head.setVisibility(View.VISIBLE);
@@ -118,7 +114,7 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
             holder.head.setVisibility(View.GONE);
         }
 
-        SpannableStringBuilder sb = getMonthAndDay(entity.getPHO_CreateDT());
+        SpannableStringBuilder sb = getMonthAndDay(TimeUtils.timeFormat(entity.getCreateDatetime()));
         holder.tvDate.setText(sb, TextView.BufferType.SPANNABLE);
         holder.tvDate.setTag(realPosition);
         holder.tvDate.setVisibility(isToday ? View.INVISIBLE : View.VISIBLE);
@@ -127,24 +123,30 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
         }
 
         //显示状态内容
-        holder.tvMsg.setText(CyptoConvertUtils.decryptString(entity.getPHO_Content()));
+        holder.tvMsg.setText(CyptoConvertUtils.decryptString(entity.getPhotoContent()));
 
         //显示图片数量
-        holder.tvCount.setText("共" + entity.getPHO_ImageNUM() + "张");
+        holder.tvCount.setText("共" + entity.getPhotoFileNum() + "张");
         holder.videoImage.setVisibility(View.GONE);
         holder.cirleProgress.setVisibility(View.GONE);
         //显示图片，一张占满，两张横向排列，三张第二列分开，四张分开
-        String nameStr = entity.getPHO_ImageName();
-        String pathStr = entity.getPHO_ImagePath();
+        String nameStr = entity.getPhotoFilenames();
+        String pathStr = entity.getPhotoUrl();
         if (!StringUtils.isEmpty(nameStr)) {
             holder.imgContainer.removeAllViews();
-            showImage(holder, nameStr, pathStr);
+            showImage(holder,nameStr,pathStr);
         }
     }
 
     private void showImage(ViewHolder holder, String nameStr, String pathStr) {
         String[] names = nameStr.split(";");
-        int count = names.length;
+        String[] paths = pathStr.split(",");
+        int count = 0;
+        if (names[0].contains(".mp4")){
+            count = names.length;
+        }else {
+            count = paths.length;
+        }
         if (count > 4) {
             count = 4;
         }
@@ -157,19 +159,18 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
                 final ImageView iv1 = new ImageView(context);
                 iv1.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 iv1.setAdjustViewBounds(true);
-                String url = (pathStr.replace("C:\\HnlensWeb\\", Route.Host) + names[0])
-                    .replace("\\", "/");
 
                 if (names[0].endsWith(".mp4")) {
                     holder.videoImage.setVisibility(View.VISIBLE);
-                    String path = FileCache.getInstance().getVideoPath(url);
+                    String path = FileCache.getInstance().getVideoPath(paths[0]);
                     if (FileUtil.checkFilePathExists(path)) {
-                        Glide.with(context).load(url.replace(".mp4", ".jpg")).centerCrop().into(iv1);
+                        //Glide.with(context).load(url.replace(".mp4", ".jpg")).centerCrop().into(iv1);
+                        Glide.with(context).load(paths[1]).centerCrop().into(iv1);
                     } else {
                         holder.cirleProgress.setVisibility(View.VISIBLE);
 
                         ProgressManager
-                            .getInstance().addResponseListener(url, new ProgressListener() {
+                            .getInstance().addResponseListener(paths[0], new ProgressListener() {
                             @Override
                             public void onError(long id, Exception e) {
 
@@ -180,9 +181,11 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
                                 holder.cirleProgress.setPercent(progressInfo.getPercent());
                             }
                         });
-                        downloadFileWithDynamicUrlAsync(url, holder, iv1);
+                        downloadFileWithDynamicUrlAsync(paths[0], holder, iv1);
                     }
                 } else {
+                    String url = (pathStr.replace("C:\\HnlensWeb\\", Route.Host)/* + names[0]*/)
+                        .replace("\\", "/");
                     if (ContextHelper.isGif(url)) {
                         Glide.with(context).load(url)
                             .placeholder(R.drawable.ease_default_image)
@@ -206,7 +209,7 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
                 }
                 for (int i = 0; i < 2; i++) {
                     ImageView iv2 = new ImageView(context);
-                    addImageView(iv2, names, i, pathStr);
+                    addImageView(iv2, paths, i, pathStr);
                     holder.imgContainer.addView(iv2, P2);
                 }
                 break;
@@ -225,7 +228,7 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
                 rightContainer.setOrientation(LinearLayout.VERTICAL);
                 for (int i = 0; i < 2; i++) {
                     ImageView iv3 = new ImageView(context);
-                    addImageView(iv3, names, i, pathStr);
+                    addImageView(iv3, paths, i, pathStr);
                     if (i == 0) {
                         holder.imgContainer.addView(iv3, P3_1);
                         holder.imgContainer.addView(rightContainer, P3_1);
@@ -252,7 +255,7 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
                 holder.imgContainer.addView(RContainer, LP4);
                 for (int i = 0; i < count; i++) {
                     ImageView iv4 = new ImageView(context);
-                    addImageView(iv4, names, i, pathStr);
+                    addImageView(iv4, paths, i, pathStr);
                     if (i < 2) {
                         LContainer.addView(iv4, P4);
                     } else {
@@ -266,8 +269,9 @@ public class PhotosViewHolder extends ItemViewBinder<FriendCircleEntity, PhotosV
     private void addImageView(ImageView iv, String[] names, int i, String pathStr) {
         iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
         String url;
-        url = pathStr.replace("C:\\HnlensWeb\\", Route.Host) + names[i];
-        url = url.replace("\\", "/");
+        /*url = pathStr.replace("C:\\HnlensWeb\\", Route.Host) + names[i];
+        url = url.replace("\\", "/");*/
+        url = names[i];
         L.d(TAG, url);
         Glide.with(context)
             .load(url)

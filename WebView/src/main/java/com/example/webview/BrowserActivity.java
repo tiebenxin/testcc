@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.JsResult;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
@@ -18,11 +20,16 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 import com.example.webview.databinding.ActivityRecommendBinding;
 import com.example.webview.sonic.SonicRuntimeImpl;
 import com.example.webview.sonic.SonicSessionClientImpl;
 import com.lensim.fingerchat.commons.global.Route;
+import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.toolbar.FGToolbar.OnFGToolbarClickListenter;
+import com.lensim.fingerchat.commons.utils.DensityUtil;
 import com.lensim.fingerchat.data.Http;
 import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.commons.base.BaseActivity;
@@ -64,6 +71,7 @@ public class BrowserActivity extends BaseActivity {
     private SonicSession sonicSession;
     private ActivityRecommendBinding ui;
     private Context mContext;
+    private int hasNav;
 
     @Override
     public void initView() {
@@ -72,11 +80,23 @@ public class BrowserActivity extends BaseActivity {
 
         title = getIntent().getStringExtra(TITLE);
         user = getIntent().getStringExtra(USER);
+        hasNav = getIntent().getIntExtra("hasNav", 1);
         url = getIntent().getDataString();
 
         initBackButton(ui.mRecommendToolbar, true);
 
-        ui.mRecommendToolbar.setBtSearchDrawable(R.drawable.ic_delete);
+//        ui.mRecommendToolbar.initRightView(createButton());
+//        ui.mRecommendToolbar.setConfirmListener(new OnFGToolbarClickListenter() {
+//            @Override
+//            public void onClick() {
+//                if (ui.recommendWeb.canGoBack()) {
+//                    ui.recommendWeb.goBack();
+//                } else {
+//                    finish();
+//                }
+//            }
+//        });
+
         ui.mRecommendToolbar.setTitleText(title);
         if (title.equals("事项跟踪")) {
             ui.mRecommendToolbar.setBtImageDrawable(0);
@@ -85,6 +105,18 @@ public class BrowserActivity extends BaseActivity {
         initListener();
     }
 
+    public ImageView createButton() {
+        ImageView button = new ImageView(this);
+        button.setImageResource(R.drawable.ic_delete);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT);
+        int d = DensityUtil.dip2px(ContextHelper.getContext(), 1);
+        params.setMargins(0, 0, d, 0);
+        button.setLayoutParams(params);
+        button.setPadding(d, d / 2, d, d / 2);
+        return button;
+    }
 
     private void setVebView() {
         int networkState = TDevice.getNetworkState(this);
@@ -111,7 +143,7 @@ public class BrowserActivity extends BaseActivity {
             if (null != sonicSession) {
                 sonicSession.bindClient(sonicSessionClient = new SonicSessionClientImpl());
             } else {
-                Toast.makeText(this, "create sonic session fail!", Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, "create sonic session fail!", Toast.LENGTH_LONG).show();
             }
             ui.recommendWeb.setWebChromeClient(new FGWebChromeClient());
             ui.recommendWeb.setWebViewClient(new FGWebViewClient());
@@ -267,20 +299,17 @@ public class BrowserActivity extends BaseActivity {
                     JSONObject object = new JSONObject(data[1]);
                     int status = object.getInt("status");
                     switch (status) {
-                        case 0:
+                        case 0://发起投票
                             Intent intent = new Intent();
                             intent.putExtra("vote_message", data[1]);
                             setResult(Activity.RESULT_OK, intent);
                             finish();
                             break;
-                        case 1:
-                            //http://mobile.fingerchat.cn:8686/vote/votingdetails.html?id=账号&voteid=投票事项id
-//                            String account = AccountManager.getInstance().getUserjid();
-//                            MessageManager.getInstance().voteMessage(account,user,data[1]);
-//                            String url = LensImUtil.Host + "vote/votingdetails.html?id=%s&&voteid=%s";
-//                            //StringBuilder builder = new StringBuilder("http://mobile.fingerchat.cn:8686/vote/index.html");
-//                            url = String.format(url, LensImUtil.getUserName(),object.getString("voteid"));
-//                            ui.recommendWeb.loadUrl(url);
+                        case 1://参与投票
+                            Intent intent1 = new Intent();
+                            intent1.putExtra("vote_message", data[1]);
+                            setResult(Activity.RESULT_OK, intent1);
+                            finish();
                             break;
                     }
                 } catch (JSONException e) {
@@ -329,7 +358,8 @@ public class BrowserActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (title.equals("事项跟踪") || title.equals("投票")) {
+        if (hasNav == 0 || (!TextUtils.isEmpty(title) && (title.equals("事项跟踪") || title
+            .equals("投票")))) {
             hideToolbar();
         }
     }
@@ -453,10 +483,17 @@ public class BrowserActivity extends BaseActivity {
             String result = new String(decode);
             String protocol = "ltp://mobile";
             if (result.startsWith(protocol)) {
-                int index = result.lastIndexOf("/");
-                String method = result.substring(index + 1);
-                exeMethod(method);
-                return true;
+                if (result.contains(protocol + "/vote")) {
+                    int start = protocol.length();
+                    String method = result.substring(start + 1);
+                    exeMethod(method);
+                    return true;
+                } else {
+                    int index = result.lastIndexOf("/");
+                    String method = result.substring(index + 1);
+                    exeMethod(method);
+                    return true;
+                }
             }
             return super.shouldOverrideUrlLoading(view, url);
         }

@@ -19,13 +19,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.ui.image.ImagePagerActivity.ImageSize;
+import com.lens.chatmodel.view.photoedit.CameraSurfaceView;
+import com.lens.chatmodel.view.photoedit.ColorPickView;
 import com.lensim.fingerchat.commons.base.FGActivity;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
 import com.lensim.fingerchat.commons.utils.BitmapUtil;
 import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.TDevice;
-import com.lens.chatmodel.view.photoedit.CameraSurfaceView;
-import com.lens.chatmodel.view.photoedit.ColorPickView;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 
 
 /**
@@ -62,7 +63,7 @@ public class PhotoEditActivity extends FGActivity implements SurfaceHolder.Callb
         mToolBar = findViewById(R.id.viewTitleBar);
         initToolBar();
         sv = findViewById(R.id.sv);
-        line =findViewById(R.id.line);
+        line = findViewById(R.id.line);
         word = findViewById(R.id.word);
         mosaic = findViewById(R.id.mosaic);
         clip = findViewById(R.id.clip);
@@ -107,7 +108,7 @@ public class PhotoEditActivity extends FGActivity implements SurfaceHolder.Callb
             .getLayoutParams();
         layoutParams.topMargin = TDevice.getStatuBarHeight();
         mToolBar.setLayoutParams(layoutParams);
-        initBackButton(mToolBar,true);
+        initBackButton(mToolBar, true);
         mToolBar.setConfirmBt(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -315,7 +316,9 @@ public class PhotoEditActivity extends FGActivity implements SurfaceHolder.Callb
         Bitmap bitmap = sv.getResultBitmap();
         if (bitmap != null) {
             showProgress("正在保存...", false);
-            String filepath = FileUtil.saveToPicDir(bitmap);
+            bitmap = createWaterMark(bitmap);
+//            String filepath = FileUtil.saveToPicDir(bitmap, sv.getResultImageUri());
+            String filepath = BitmapUtil.saveBitmap(bitmap, sv.getResultImageUri());
             dismissProgress();
             Intent intent = new Intent();
             intent.putExtra("new_file_path", filepath);
@@ -357,7 +360,7 @@ public class PhotoEditActivity extends FGActivity implements SurfaceHolder.Callb
             Bitmap bitmap = sv.getResultBitmap();
             if (bitmap != null) {
                 showProgress("稍等...", false);
-                String filepath = FileUtil.saveToPicDir(bitmap);
+                String filepath = FileUtil.saveToPicDir(bitmap, sv.getResultImageUri());
                 dismissProgress();
                 Intent intent = new Intent(this, PhotoEditClipActivity.class);
                 intent.putExtra("clip_file_path", filepath);
@@ -368,5 +371,9 @@ public class PhotoEditActivity extends FGActivity implements SurfaceHolder.Callb
             sv.back();
 
         }
+    }
+
+    public Bitmap createWaterMark(Bitmap bitmap) {
+        return BitmapUtil.createWaterBitmap(bitmap, UserInfoRepository.getUserId());
     }
 }

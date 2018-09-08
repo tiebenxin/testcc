@@ -251,7 +251,7 @@ public class CreateMeetingActivity extends FGActivity implements DefaultMeeting 
      */
     public void postMeetingToFG(RestMeeting meeting, String toJsonlistParticipants) {
         VideoMeeting pj = new VideoMeeting();
-        pj.setToken(SSOTokenRepository.getInstance().getSSOToken().getToken());
+        pj.setToken(SSOTokenRepository.getInstance().getSSOToken().getFxToken());
         pj.setMeetingCreater(UserInfoRepository.getInstance().getUserInfo().getUsernick());
         pj.setMeetingName(meeting.getName());
         pj.setMeetingStart(TimeUtils.getDateString(meeting.getStartTime() + ""));
@@ -354,10 +354,10 @@ public class CreateMeetingActivity extends FGActivity implements DefaultMeeting 
         Gson gson = new Gson();
         final String toJson = gson.toJson(item);
 
-        IChatRoomModel chatRoomModel = MessageManager.getInstance()
-            .createMessage(userId, UserInfoRepository.getUserName(), toJson,
-                UserInfoRepository.getUsernick(), false, EMessageType.TEXT);
-        MessageManager.getInstance().sendMessage(chatRoomModel);
+//        IChatRoomModel chatRoomModel = MessageManager.getInstance()
+//            .createMessage(userId, UserInfoRepository.getUserName(), toJson,
+//                UserInfoRepository.getUsernick(), false, EMessageType.TEXT);
+//        MessageManager.getInstance().sendMessage(chatRoomModel);
 
     }
 

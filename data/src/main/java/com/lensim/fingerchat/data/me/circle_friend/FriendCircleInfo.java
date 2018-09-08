@@ -7,6 +7,13 @@ package com.lensim.fingerchat.data.me.circle_friend;
  */
 
 public class FriendCircleInfo {
-    public int userId;
-    public String name;
+    private FxPhotosBean fxNewPhotos;
+
+    public FxPhotosBean getFxNewPhotos() {
+        return fxNewPhotos;
+    }
+
+    public void setFxNewPhotos(FxPhotosBean fxNewPhotos) {
+        this.fxNewPhotos = fxNewPhotos;
+    }
 }

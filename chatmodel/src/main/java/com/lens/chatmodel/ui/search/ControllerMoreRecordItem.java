@@ -73,7 +73,7 @@ public class ControllerMoreRecordItem extends RecyclerView.ViewHolder {
                 break;
             case MUC:
                 tv_name.setText(StringUtils.getUserNick(bean.getNick(), bean.getUserId()));
-                iv_avatar.setDrawText(MucInfo.selectMucUserNick(ContextHelper.getContext(),bean.getUserId()));
+                iv_avatar.setDrawText(MucInfo.selectMucUserNickList(ContextHelper.getContext(),bean.getUserId()));
                 tv_content.setVisibility(View.GONE);
                 break;
             case RECORD:
@@ -81,7 +81,7 @@ public class ControllerMoreRecordItem extends RecyclerView.ViewHolder {
                     String mucName = MucInfo
                         .getMucName(ContextHelper.getContext(), bean.getUserId());
                     tv_name.setText(StringUtils.getUserNick(mucName, bean.getUserId()));
-                    iv_avatar.setDrawText(MucInfo.selectMucUserNick(ContextHelper.getContext(),bean.getUserId()));
+                    iv_avatar.setDrawText(MucInfo.selectMucUserNickList(ContextHelper.getContext(),bean.getUserId()));
                     tv_content.setText(getSpan(bean.getMessage(), condition));
                 } else {
                     UserBean userBean = MessageManager.getInstance()

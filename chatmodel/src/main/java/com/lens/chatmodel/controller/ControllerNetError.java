@@ -29,7 +29,7 @@ public class ControllerNetError {
                 if (listenter != null) {
                     listenter.onClick();
                 }
-                updateHint("正在重连...");
+//                updateHint("正在重连...");
             }
         });
     }

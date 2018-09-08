@@ -26,6 +26,11 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
     private int type;//0 群聊groupchat 1.私聊chat
     private ArrayList<BaseTransforEntity> body;
 
+    String senderAvatar;//发送者头像
+    String mucNickName;//群聊备注名，私聊为昵称
+    String groupName;//群聊专有字段，群名
+
+
     public MultiMessageEntity() {
     }
 
@@ -39,6 +44,9 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
         transitionTitle = in.readString();
         type = in.readInt();
         body = in.createTypedArrayList(BaseTransforEntity.CREATOR);
+        senderAvatar = in.readString();
+        mucNickName = in.readString();
+        groupName = in.readString();
     }
 
     public static final Creator<MultiMessageEntity> CREATOR = new Creator<MultiMessageEntity>() {
@@ -102,6 +110,9 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
                     }
                 }
                 setBody(list);
+                setMucNickName(optS("mucNickName", object));
+                setSenderAvatar(optS("senderAvatar", object));
+                setGroupName(optS("groupName", object));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -137,6 +148,9 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
                         }
                     }
                     entity.setBody(list);
+                    entity.setSenderAvatar(optS("senderAvatar", object));
+                    entity.setMucNickName(optS("mucNickName", object));
+                    entity.setGroupName(optS("groupName", object));
                     return entity;
                 }
             } catch (JSONException e) {
@@ -171,6 +185,9 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
             } else {
                 object.put("body", "");
             }
+            object.put("senderAvatar", entity.getSenderAvatar());
+            object.put("mucNickName", entity.getMucNickName());
+            object.put("groupName", entity.getGroupName());
             return object.toString();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -178,36 +195,6 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
         return "";
     }
 
-    public JSONObject toObject(MultiMessageEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-        try {
-            JSONObject object = new JSONObject();
-            object.put("senderUserid", entity.getSenderUserid());
-            object.put("senderUserName", entity.getSenderUserName());
-            object.put("transitionTitle", entity.getTransitionTitle());
-            object.put("type", entity.getType());
-            List<BaseTransforEntity> list = entity.getBody();
-            if (list != null && !list.isEmpty()) {
-                JSONArray array = new JSONArray();
-                int len = list.size();
-                for (int i = 0; i < len; i++) {
-                    BaseTransforEntity en = list.get(i);
-                    if (en != null) {
-                        array.put(en.toJson(en));
-                    }
-                    object.put("body", array);
-                }
-            } else {
-                object.put("body", "");
-            }
-            return object;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public String getTransitionTitle() {
         return transitionTitle;
@@ -249,6 +236,30 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
 
     public void setBody(ArrayList<BaseTransforEntity> body) {
         this.body = body;
+    }
+
+    public String getSenderAvatar() {
+        return senderAvatar;
+    }
+
+    public void setSenderAvatar(String senderAvatar) {
+        this.senderAvatar = senderAvatar;
+    }
+
+    public String getMucNickName() {
+        return mucNickName;
+    }
+
+    public void setMucNickName(String mucNickName) {
+        this.mucNickName = mucNickName;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     private BaseTransforEntity createEntity(EMessageType type, JSONObject o) {
@@ -305,5 +316,8 @@ public class MultiMessageEntity extends BaseJsonEntity implements Parcelable {
         dest.writeString(transitionTitle);
         dest.writeInt(type);
         dest.writeTypedList(body);
+        dest.writeString(senderAvatar);
+        dest.writeString(mucNickName);
+        dest.writeString(groupName);
     }
 }

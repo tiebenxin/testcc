@@ -102,7 +102,17 @@
                     android:src="@drawable/ease_voice_unread"/>
 
             </LinearLayout>
-
+            <com.lens.chatmodel.view.TimeTextView
+                android:id="@+id/textReadStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30's"
+                android:layout_toRightOf="@+id/tv_name"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="2dp"
+                android:textColor="#666666"
+                android:layout_below="@id/ll_root"
+                android:visibility="gone"/>
 
             <ProgressBar
                 android:id="@+id/progress_bar"

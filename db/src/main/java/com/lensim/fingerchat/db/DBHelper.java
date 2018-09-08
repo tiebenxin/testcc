@@ -9,7 +9,8 @@ public class DBHelper {
     public static final String[] chat_fields = new String[]{DBHelper.TYPE, DBHelper.TO,
         DBHelper.CONTENT, DBHelper.ID, DBHelper.TIME, DBHelper.CODE, DBHelper.CANCLE, DBHelper.FROM,
         DBHelper.SEND_TYPE, DBHelper.CHAT_TAG, DBHelper.UPLOAD_URL, DBHelper.IS_SECRET,
-        DBHelper.PLAY_STATUS, DBHelper.ACTION_TYPE, DBHelper.USER_AVATAR, DBHelper.NICK};
+        DBHelper.PLAY_STATUS, DBHelper.ACTION_TYPE, DBHelper.USER_AVATAR, DBHelper.NICK,
+        DBHelper.HAS_READED, DBHelper.READED_MEMBERS, DBHelper.SERVER_READED};
 
     public static String[] roster_fields = new String[]{DBHelper.ACCOUT, DBHelper.USER_NICK,
         DBHelper.WORK_ADDRESS, DBHelper.GROUP, DBHelper.EMP_NAME, DBHelper.REMARK_NAME,
@@ -19,10 +20,11 @@ public class DBHelper {
         DBHelper.IS_QUIT};
 
 
-    public static String[] recent_fields = new String[]{DBHelper.MSG, DBHelper.NICK,
-        DBHelper.GROUP_NAME, DBHelper.MSG_TYPE, DBHelper.USER_ID, DBHelper.TOP_FLAG,
-        DBHelper.UNREAD_COUNT, DBHelper.NOT_DISTURB, DBHelper.TIME, DBHelper.IS_AT,
-        DBHelper.CHAT_ID, DBHelper.AVATAR_URL, DBHelper.CHAT_TYPE, DBHelper.HINT, DBHelper.BG_ID};
+    public static String[] recent_fields = new String[]{/*DBHelper.MSG,*/ DBHelper.NICK,
+        DBHelper.GROUP_NAME, /*DBHelper.MSG_TYPE,*/ DBHelper.USER_ID, DBHelper.TOP_FLAG,
+        /*DBHelper.UNREAD_COUNT,*/ DBHelper.NOT_DISTURB, DBHelper.TIME, DBHelper.IS_AT,
+        DBHelper.CHAT_ID, DBHelper.AVATAR_URL, DBHelper.CHAT_TYPE, /*DBHelper.HINT,*/
+        DBHelper.BG_ID};
 
 
     //RosterItem 属性值
@@ -49,14 +51,14 @@ public class DBHelper {
     public final static String HAS_READED = "has_readed"; //是否已读，int 0为未读，1为已读
     public final static String NEW_STATUS = "new_status"; //是否新好友，int 0为否，1为是
     public final static String IS_STAR = "isStar_"; //是否是星标好友，int 0为否，1为是
-    public final static String CHAT_BG = "chat_bg"; //聊天背景，int 0为否，1为是
+    public final static String CHAT_BG = "chat_bg"; //聊天背景
     public final static String IS_QUIT = "isQuit";//是否已离职，int 0为否，1为是
 
 
     //Message 属性
     public final static String TABLE_MESSAGE = "t_private";
 
-    public final static String TYPE = "type_";
+    public final static String TYPE = "type_";//message type
     public final static String TO = "to_";
     public final static String CONTENT = "content_";
     public final static String ID = "id_";
@@ -66,13 +68,15 @@ public class DBHelper {
     public final static String FROM = "from_";
 
     //Message 自定义属性
-    public final static String SEND_TYPE = "send_type";
+    public final static String SEND_TYPE = "send_type";//是否发送成功
     public final static String CHAT_TAG = "chat_tag";//接收 or 发送
     public final static String UPLOAD_URL = "upload_url";//接收 or 发送
     public final static String IS_SECRET = "is_secret";//是否密聊
     public final static String PLAY_STATUS = "is_loaded";//是否下载了
     public final static String ACTION_TYPE = "action_type";//action
     public final static String USER_AVATAR = "avatar";//发送者头像
+    public final static String READED_MEMBERS = "readed_members"; //消息已读 成员Id集合
+    public final static String SERVER_READED = "server_readed"; //是否服务器已读，int 0为已读，1为未读
 //    public final static String USER_NICK = "nick";//发送者昵称
 //    public final static String CHAT_TYPE = "chat_type";//是否群聊
 
@@ -107,13 +111,13 @@ public class DBHelper {
     public final static String ROLE = "role_";
     public final static String NOTDISTURB = "noDisturb_";
     public final static String CHATBG = "chatBg_";
-    public final static String MUC_USERNICK = "mucusernick_";
+    public final static String MUC_USERNICK = "mucusernick_";//群备注名
     public final static String CREATION_TIME = "creationTime";//创建时间
     public final static String CREATOR = "creater";//创建者
     //MucInfo 群信息 END
 
     //MucMemberItem
-    public final static String TABLE_PRIVATE_MCU_USER = "t_muc_user";
+    public final static String TABLE_MUC_USER = "t_muc_user";
 
     public final static String GROUP_ROLE = "role_";
     public final static String GROUP_USERNAME = "username_";
@@ -122,4 +126,13 @@ public class DBHelper {
     public final static String GROUP_INVITER = "inviter_";
     public final static String GROUP_AVATAR = "avatar_";
     //MucMemberItem end
+
+
+    //自定义表情消息
+    public final static String TABLE_EMOTICON = "t_emoticon";
+    public final static String EMO_ID = "emo_id";
+    public final static String EMO_CONTENT = "emo_content";
+    public final static String EMO_TIME = "emo_time";
+
+
 }

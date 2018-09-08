@@ -7,7 +7,9 @@ import android.os.Looper;
 import android.widget.Toast;
 
 import com.hexmeet.sdk.HexmeetException;
+import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.utils.StringUtils;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.hexmeet.api.model.RestContact;
 import com.lensim.fingerchat.hexmeet.api.model.RestUser;
 import com.lensim.fingerchat.hexmeet.utils.NetworkUtil;
@@ -119,14 +121,18 @@ public class RuntimeData {
   }
 
   public static String getFGToken() {
-      return null;
-//    return StringUtils.isNotEmpty(FGtoken) ? FGtoken : (FGtoken = getStr(LensImUtil.getUserName()+"FGtoken"));
+    return StringUtils.isNotEmpty(FGtoken) ? FGtoken : (FGtoken = getStr(getUserName()+"FGtoken"));
   }
 
   public static void setFGToken(String token) {
-//    RuntimeData.FGtoken = token;
-//    saveStr(LensImUtil.getUserName()+"FGtoken", token);
+    RuntimeData.FGtoken = token;
+    saveStr(getUserName()+"FGtoken", token);
   }
+
+    private static String getUserName() {
+        String username = UserInfoRepository.getUserId();
+        return username == null ? "" : username.toLowerCase();
+    }
 
   public static String getDeviceSN() {
     return StringUtils.isNotEmpty(deviceSN) ? deviceSN : (deviceSN = getStr("deviceSN"));

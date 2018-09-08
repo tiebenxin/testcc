@@ -1,15 +1,25 @@
 package com.lensim.fingerchat.fingerchat.ui.settings;
 
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.lensim.fingerchat.commons.toolbar.FGToolbar;
-import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.base.BaseActivity;
+import com.lensim.fingerchat.commons.dialog.NiftyDialogBuilder;
+import com.lensim.fingerchat.commons.toolbar.FGToolbar;
+import com.lensim.fingerchat.commons.utils.SPHelper;
+import com.lensim.fingerchat.commons.utils.T;
+import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.api.SystemApi;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
+import com.lensim.fingerchat.fingerchat.model.bean.VersionInfoBean;
+import com.lensim.fingerchat.fingerchat.model.result.GetVersionInfoResult;
 
 import butterknife.InjectView;
 
@@ -22,7 +32,6 @@ public class AboutFGActivity extends BaseActivity {
     TextView tv_version;
     @InjectView(R.id.tv_inspect_version)
     TextView tv_inspect_version;
-    private int mLocalVersionCode;
     private FGToolbar toolbar;
 
     @Override
@@ -48,25 +57,23 @@ public class AboutFGActivity extends BaseActivity {
         tv_inspect_version.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLocalVersionCode = getVersionCode();
-                boolean isUpdateVersion = checkVersion();
-                if (isUpdateVersion) {
-                    //存在就弹出对话框，是否更新下载
-
-
-                } else {
-                    //已经是最新版本弹个土司
-                    Toast.makeText(getApplicationContext(), "当前已是最新版本", Toast.LENGTH_SHORT).show();
-                }
+                new SystemApi().getVersionInfo(new FXRxSubscriberHelper<GetVersionInfoResult>() {
+                    @Override
+                    public void _onNext(GetVersionInfoResult getVersionInfoResult) {
+                        VersionInfoBean bean = getVersionInfoResult.getContent();
+                        if (bean == null) {
+                            return;
+                        }
+                        if (bean.getAppVersion().equals(getVersionName())) {
+                            Toast.makeText(getApplicationContext(), "当前已是最新版本", Toast.LENGTH_SHORT)
+                                .show();
+                        } else {
+                            showUpdateDialog(bean);
+                        }
+                    }
+                });
             }
         });
-    }
-
-    //检查是否存在新版本
-    private boolean checkVersion() {
-
-
-        return false;
     }
 
     private int getVersionCode() {
@@ -80,6 +87,7 @@ public class AboutFGActivity extends BaseActivity {
         return 0;
     }
 
+
     //获取当前版本号
     private String getVersionName() {
         PackageManager pm = getPackageManager();
@@ -92,5 +100,36 @@ public class AboutFGActivity extends BaseActivity {
         return null;
     }
 
+    public void showUpdateDialog(VersionInfoBean mAppVersion) {
+        final NiftyDialogBuilder builder = NiftyDialogBuilder.getInstance(this);
+        builder.withTitle("有新版本")
+            .withMessage(mAppVersion.getAppMsg())
+            .withDuration(300)
+            .withIcon(R.mipmap.ic_logo)
+            .withButton1Text("不再提醒")
+            .withButton2Text("更新")
+            .isCancelableOnTouchOutside(false)
+            .setButton1Click(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    builder.dismiss();
+                    SPHelper.saveValue(AppConfig.VERSION_CODE, mAppVersion.getAppVersion());
+                    SPHelper.saveValue(AppConfig.VERSION_REMIND, true);
+                }
+            })
+            .setButton2Click(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    builder.dismiss();
+                    try {
+                        Uri uri = Uri.parse(mAppVersion.getAppUrl());
+                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        T.show("apk下载链接异常");
+                    }
+                }
+            }).show();
+    }
 
 }

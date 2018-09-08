@@ -54,7 +54,7 @@ public class FragmentOtherLogin extends BaseFragment {
         viewLoginBtn = new ControllerLoginButton(getView().findViewById(R.id.viewLoginBtn));
 
         viewInputAccout.initIconHint(R.drawable.phone_number, R.string.input_phone_num);
-        viewInputAccout.initEditType(false);
+        viewInputAccout.initEditType(true);
         viewInputAccout.setEidtAction(false);
 
         viewInputAccout.setOnEditActionListener(new OnActionListener() {
@@ -67,7 +67,7 @@ public class FragmentOtherLogin extends BaseFragment {
         });
 
         viewInputPsw.initIconHint(R.drawable.password, R.string.input_password);
-        viewInputPsw.initEditType(true);
+        viewInputPsw.initEditType(false);
         viewInputPsw.addRight(ControllerLoginItem.TYPE_PSW);
         viewInputPsw.setEidtAction(true);
         viewInputPsw.setShowText(false);
@@ -86,7 +86,8 @@ public class FragmentOtherLogin extends BaseFragment {
                 if (listener != null) {
                     if (!TextUtils.isEmpty(viewInputAccout.getText()) && !TextUtils
                         .isEmpty(viewInputPsw.getText())) {
-                        listener.clickLogin(viewInputAccout.getText(), viewInputPsw.getText());
+                        listener.clickLogin(viewInputAccout.getText().trim(),
+                            viewInputPsw.getText().trim());
                     } else {
                         if (TextUtils.isEmpty(viewInputAccout.getText())) {
                             T.show("账号不能为空");

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.lens.chatmodel.view.ImageLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.lens.chatmodel.view.chat.ImageLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
@@ -121,7 +121,17 @@
                     android:background="@android:color/transparent"/>
 
             </LinearLayout>
-
+            <com.lens.chatmodel.view.TimeTextView
+                android:id="@+id/textReadStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="未读"
+                android:layout_below="@+id/ll_root"
+                android:layout_marginRight="53dp"
+                android:layout_alignParentRight="true"
+                android:textColor="#666666"
+                android:layout_marginTop="2dp"
+                android:visibility="gone"/>
             <TextView
                 android:id="@+id/tv_name"
                 style="@style/chat_text_name_style"
@@ -156,4 +166,4 @@
         </FrameLayout>
 
     </LinearLayout>
-</com.lens.chatmodel.view.ImageLinearLayout>
+</com.lens.chatmodel.view.chat.ImageLinearLayout>

@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.widget.ImageView;
 import com.lens.chatmodel.ChatEnum.EChatCellLayout;
@@ -8,9 +7,9 @@ import com.lens.chatmodel.R;
 import com.lens.chatmodel.adapter.MessageAdapter;
 import com.lens.chatmodel.base.ChatEnvironment;
 import com.lens.chatmodel.bean.Emojicon;
+import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lens.chatmodel.helper.ImageHelper;
 import com.lens.chatmodel.interf.IChatEventListener;
-import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.utils.DensityUtil;
 
@@ -25,14 +24,11 @@ public class ChatCellEmoticon extends ChatCellBase {
     private final int DEFAULT_W = DensityUtil.dip2px(ContextHelper.getContext(), 200);
     private final int DEFAULT_H = DensityUtil.dip2px(ContextHelper.getContext(), 120);
     private ImageView iv_content;
+    public boolean isLocalGif = false;
 
-    private final Context mContext;
-
-    protected ChatCellEmoticon(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
-        mContext = context;
+    protected ChatCellEmoticon(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 
@@ -50,6 +46,7 @@ public class ChatCellEmoticon extends ChatCellBase {
                 emojicon = ChatEnvironment.getInstance().getEmojiconInfoProvider()
                     .getEmojiconInfo(mChatRoomModel.getContent());
                 if (emojicon != null) {
+                    isLocalGif = true;
                     if (emojicon.getBigIcon() != 0) {
                         ImageHelper
                             .loadImageOverrideSize(emojicon.getBigIcon(), iv_content, DEFAULT_W,
@@ -60,6 +57,7 @@ public class ChatCellEmoticon extends ChatCellBase {
                         loadImage("", "");
                     }
                 } else {
+                    isLocalGif = false;
                     ImageUploadEntity entity = ImageUploadEntity
                         .fromJson(mChatRoomModel.getContent());
                     if (entity != null) {
@@ -107,6 +105,10 @@ public class ChatCellEmoticon extends ChatCellBase {
                 ImageHelper.loadImageOverrideSize(url, iv_content, DEFAULT_W, DEFAULT_H);
             }
         }
+    }
+
+    public boolean isLocalGif() {
+        return isLocalGif;
     }
 
 }

@@ -15,18 +15,25 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.animation.CycleInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.RelativeLayout;
+
 import com.example.webview.BrowserActivity;
+import com.google.gson.Gson;
 import com.lensim.fingerchat.commons.base.BaseMVPFragment;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
 import com.lensim.fingerchat.commons.mvp.factory.CreatePresenter;
 import com.lensim.fingerchat.commons.utils.CyptoUtils;
 import com.lensim.fingerchat.commons.utils.DensityUtil;
@@ -37,20 +44,35 @@ import com.lensim.fingerchat.components.adapter.multitype.MultiTypeAdapter;
 import com.lensim.fingerchat.components.dialog.InputPasswordDialog;
 import com.lensim.fingerchat.components.dialog.nifty_dialog.Effectstype;
 import com.lensim.fingerchat.components.dialog.nifty_dialog.NiftyDialogBuilder;
+import com.lensim.fingerchat.data.help_class.TokenHelper;
 import com.lensim.fingerchat.data.login.PasswordRespository;
+import com.lensim.fingerchat.data.login.SSOTokenRepository;
+import com.lensim.fingerchat.data.login.UserInfo;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
+import com.lensim.fingerchat.data.work_center.OAToken;
+import com.lensim.fingerchat.data.work_center.OATokenRepository;
 import com.lensim.fingerchat.data.work_center.WorkItem;
-import com.lensim.fingerchat.data.work_center.identify.UserIdentify;
-import com.lensim.fingerchat.data.work_center.identify.UserIdentifyResponse;
 import com.lensim.fingerchat.fingerchat.R;
-import com.lensim.fingerchat.fingerchat.controller.ControllerBadNet;
+import com.lensim.fingerchat.fingerchat.api.SystemApi;
+import com.lensim.fingerchat.fingerchat.api.UserApi;
 import com.lensim.fingerchat.fingerchat.databinding.FragmentWorkCenterBinding;
+import com.lensim.fingerchat.fingerchat.manager.SPManager;
+import com.lensim.fingerchat.fingerchat.model.result.NewOATokenResult;
+import com.lensim.fingerchat.fingerchat.model.result.UserPrivilegesResult;
 import com.lensim.fingerchat.fingerchat.ui.guide.ImageViewPagerAdapter;
 import com.lensim.fingerchat.fingerchat.ui.settings.IdentifyActivity;
+
+import com.lensim.fingerchat.fingerchat.ui.work_center.sign.ClockInActivity;
+import com.lensim.fingerchat.hexmeet.login.HexMeetLogin;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -70,8 +92,8 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
 
     private FragmentWorkCenterBinding ui;
     private MultiTypeAdapter adapter;
-    private List<Object> items = new ArrayList<>();
-
+    private List<?> items = new ArrayList<>();
+    private boolean isUP = false;
     private String mEmpoyNo;
 
     private InputPasswordDialog dialog;
@@ -112,15 +134,15 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
 
     @Override
     protected void initView() {
-        ControllerBadNet viewBadNet = new ControllerBadNet(
-            getView().findViewById(R.id.view_badnet));
+        ControllerBadNet viewBadNet = new ControllerBadNet(getView().findViewById(R.id.view_badnet));
         viewBadNet.setOnClickListener(() -> T.showShort(ContextHelper.getContext(), "reload"));
         initPagerAdapter();
         iniSelectPoint();
         initItemAdapter();
         dragSort();
-        initItems();
+        getMvpPresenter().getWorkCenter();
     }
+
 
     private void iniSelectPoint() {
         ui.ivPoint.setImageResource(R.drawable.shape_dot_light);
@@ -187,8 +209,28 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
         ui.workCenterRv.setNestedScrollingEnabled(false);
         ui.workCenterRv.setAdapter(adapter);
 
-        itemAdapter.setListener((view, item) -> toActivity(view, item));
+        itemAdapter.setListener((view, item) -> toActivity(item));
+        itemAdapter.setTouchListener((view, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    isUP = false;
+                    view.setScaleX((float)1.15);
+                    view.setScaleY((float)1.15);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    isUP = true;
+                    view.setScaleX(1);
+                    view.setScaleY(1);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    isUP = true;
+                    view.setScaleX(1);
+                    view.setScaleY(1);
+                    break;
+            }
+        });
     }
+
 
     private List<View> getImageViewList() {
         List<View> list = new ArrayList<>();
@@ -216,6 +258,10 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
         ui.llPoints.addView(iv_dot);
     }
 
+    @Override
+    protected void initData() {
+        super.initData();
+    }
 
     /**
      * 拖拽排序
@@ -224,7 +270,7 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
         itemMoveCallBack = new AbItemMoveCallBack() {
 
             @Override
-            int setFirstPosition(RecyclerView.ViewHolder viewHolder) {
+            int getDragFirstPosition(RecyclerView.ViewHolder viewHolder) {
                 if (items.get(viewHolder.getAdapterPosition()) instanceof String) {
                     return viewHolder.getAdapterPosition();
                 } else {
@@ -238,7 +284,7 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
             }
 
             @Override
-            int setLastPosition(RecyclerView.ViewHolder viewHolder) {
+            int getDragLastPosition(RecyclerView.ViewHolder viewHolder) {
                 if (items.get(viewHolder.getAdapterPosition()) instanceof String) {
                     return viewHolder.getAdapterPosition();
                 } else {
@@ -262,17 +308,15 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
             }
 
             @Override
-            public boolean onMove(RecyclerView recyclerView, ViewHolder viewHolder,
-                ViewHolder target) {
-                if (target.getAdapterPosition() <= setFirstPosition(viewHolder)
-                    || target.getAdapterPosition() >= setLastPosition(viewHolder)) {
-                    return true;
-                }
+            void onMoveDrag(RecyclerView recyclerView, ViewHolder viewHolder, ViewHolder target) {
                 Collections
                     .swap(items, viewHolder.getAdapterPosition(), target.getAdapterPosition());
                 adapter
                     .notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
-                return true;
+
+                if (isUP) {
+                    getMvpPresenter().dragEnd(adapter.getItems());
+                }
             }
         };
 
@@ -284,64 +328,82 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
     @Override
     public void onResume() {
         super.onResume();
-        if (UserIdentifyResponse.getInstance().getUserIdentify() != null) {
-            UserIdentify userIdentify = UserIdentifyResponse.getInstance().getUserIdentify();
-            mEmpoyNo = userIdentify.EmployeeNO;
+        UserInfo userInfo = UserInfoRepository.getInstance().getUserInfo();
+        if (userInfo != null) {
+            mEmpoyNo = userInfo.getUserid();
             mEmpoyNo = StringUtils.isEmpty(mEmpoyNo) ? "" : mEmpoyNo;
         }
     }
 
 
-    private void initItems() {
-        getMvpPresenter().initItems();
-    }
-
     @Override
-    public void setItems(List<Object> items) {
+    public void setItems(List<?> items) {
         this.items = items;
-        sortItems();
         adapter.setItems(items);
     }
 
-    //排序过滤items
-    public void sortItems() {
-        if (items != null && items.size() > 0) {
 
-        }
+    private void toActivity(WorkItem item) {
+        new SystemApi().getUserPrivileges(UserInfoRepository.getUserId(),
+            new FXRxSubscriberHelper<UserPrivilegesResult>() {
+                @Override
+                public void _onNext(UserPrivilegesResult result) {
+                    Object object = result.getContent();
+                    String json = new Gson().toJson(object);
+                    try {
+                        JSONObject jsonObject = new JSONObject(json);
+                        Iterator<String> iterator = jsonObject.keys();
+                        while (iterator.hasNext()) {
+                            String route = iterator.next();
+                            if (route.equals(item.getNodePath())) {
+                                JSONObject jsonObject1 = jsonObject.getJSONObject(route);
+                                int opFlags = jsonObject1.getInt("opFlags");
+                                if (opFlags == 0) {
+                                    T.show("暂无该功能权限");
+                                    return;
+                                }
+                                clickItem(item);
+                                return;
+                            }
+                        }
+                        T.show("暂无该功能权限");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
     }
 
 
-    private void toActivity(View view, WorkItem item) {
-
+    private void clickItem(WorkItem item) {
         final String title = item.getFuncName();
         final String url = item.getFuncAddress();
-        int funcId = item.getFuncId();
-        int funcType = item.getFuncType();
+        int funcId = Integer.parseInt(item.getFuncId());
+        int isHasNav = item.getHasNav();
 
-        if (37 == funcId) {//签到
-//            Intent intent = new Intent(getActivity(), ClockInActivity.class);
-//            getActivity().startActivity(intent);
+        if ("oa".equals(item.getTokenSys())) {
+            getMvpPresenter().toOAActivity(url, title, isHasNav);
+        } else if (37 == funcId) {//签到
+            Intent intent = new Intent(getActivity(), ClockInActivity.class);
+            getActivity().startActivity(intent);
         } else if (7 == funcId) {//电话会议
-            T.show("电话会议");
-//            HexMeetLogin login = new HexMeetLogin(getActivity());
-//            login.toHexMeetLogin();
-        } else if (7 == funcType) {//OAToken ——news
-            getMvpPresenter().toOAActivity(url, title);
+            getMvpPresenter().toHexMeetLogin();
         } else if ("我的薪资".equals(title)) {
             if (StringUtils.isEmpty(mEmpoyNo)) {
                 T.showShort(getActivity(), "没有获取到工号信息,请先进行认证");
                 return;
             }
             dialog = new InputPasswordDialog(getActivity(), R.style.PasswordDialog);
-            dialog.setOnPwdConfrimListener((content) -> comfirmClick(content, url, title));
+            dialog.setOnPwdConfrimListener((content) -> comfirmClick(content, url, title, isHasNav));
             TDevice.showSoftKeyboard(dialog);
             dialog.show();
         } else {
-            getMvpPresenter().toOtherActivity(url, title);
+            getMvpPresenter().toOtherActivity(url, title, isHasNav);
         }
     }
 
-    private void comfirmClick(String content, String url, String title) {
+
+    private void comfirmClick(String content, String url, String title, int isHasNav) {
         if (TextUtils.isEmpty(content)) {
             T.showShort(getActivity(), "密码不能为空");
             return;
@@ -366,7 +428,7 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
             } else {
                 mUrl = url + "?username=" + mEmpoyNo + "&parm=" + encodeParam;
             }
-            startBrowserActivity(mUrl, title);
+            startBrowserActivity(mUrl, title, isHasNav);
         } else {
             T.showShort(getActivity(), "密码错误");
         }
@@ -374,12 +436,30 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
 
 
     @Override
-    public void startBrowserActivity(String url, String title) {
+    public void startBrowserActivity(String url, String title, int isHasNav) {
         Intent intent = new Intent(getActivity(), BrowserActivity.class);
         Uri uri = Uri.parse(url);
         intent.setData(uri);
         intent.putExtra(BrowserActivity.TITLE, title);
+        intent.putExtra("hasNav", isHasNav);
         startActivity(intent);
+    }
+
+    @Override
+    public List<?> getItems() {
+        return adapter.getItems();
+    }
+
+
+    @Override
+    public void toHexMeetActivity() {
+        HexMeetLogin login = new HexMeetLogin(getActivity());
+        login.toHexMeetLogin();
+    }
+
+    @Override
+    public void showMsg(String msg) {
+        T.show(msg);
     }
 
 

@@ -40,8 +40,8 @@ public class Api {
     * 投票路径
     * */
     public static String URL_VOTE =
-        HTTP + IP_OLD + PORT_8686 + "/vote/index.html?id=%s&username=%s&groupid=%s";
+        HTTP + IP_OLD + PORT_8686 + "/vote2/index.html?id=%s&username=%s&groupid=%s";
 
     public static String URL_VOTE_TO =
-        HTTP + IP_OLD + PORT_8686 + "/vote/votingdetails.html?id=%s&username=%s&voteid=%s";
+        HTTP + IP_OLD + PORT_8686 + "/vote2/votingdetails.html?id=%s&username=%s&voteid=%s";
 }

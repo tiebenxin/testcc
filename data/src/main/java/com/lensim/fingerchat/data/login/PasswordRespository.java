@@ -20,9 +20,11 @@ public class PasswordRespository {
     public static void cleanPassword() {
         PasswordManager.getInstance().clearPassword();
     }
+
     /**
      * 加密密码，秘钥
      * 存储密码，秘钥
+     *
      * @param pw 用户密码
      */
     public static void setPassword(String pw) {
@@ -39,6 +41,7 @@ public class PasswordRespository {
     /**
      * 加密密码，秘钥
      * 存储密码，秘钥
+     *
      * @param pw 用户密码
      */
     private static void storagePassword(String pw) {
@@ -51,14 +54,20 @@ public class PasswordRespository {
 
     /**
      * 解密
+     *
      * @return 用户密码
      */
     private static String decode() {
         Password password = PasswordManager.getInstance().getPassword();
-        if (password == null) return null;
+        if (password == null) {
+            return null;
+        }
         String pw = password.getPassword();
         String secretkey = password.getSecretkey();
         byte[] key = EncrypUtil.nativeDecode(secretkey).getBytes();
+        if (key == null || key.length <= 0) {
+            return null;
+        }
         return EncrypUtil.javaDecode(pw, key);
     }
 }

@@ -40,7 +40,10 @@
     <string name="action_uAutoEnter">群主已启用 "群聊邀请确认" ,群成员需群主确认才能邀请朋友进群。</string>
     <string name="action_uAutoEnter_no">群主已恢复默认进群方式。</string>
     <string name="action_uName">%1$s更改群聊名称为%2$s</string>
-    <string name="action_uSubject">群公告\n%1$s</string>
-    <string name="action_confirm">%1$s想邀请%2$s位朋友加入群聊</string>
+    <string name="action_uSubject">[群公告]\n%1$s</string>
+    <string name="action_confirm">%1$s想邀请%2$s加入群聊</string>
     <string name="action_invite_myself">你想邀请%1$s加入群聊</string>
+    <string name="action_destroy_myself">你销毁了该群聊</string>
+    <string name="action_destroy">你被%1$s移除该群聊</string>
+    <string name="action_waiting">群邀请已发送给群主，请等待群主确认</string>
 </resources>

@@ -9,22 +9,16 @@ import com.fingerchat.api.message.RespMessage;
 import com.fingerchat.proto.message.Roster.RosterItem;
 import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.R;
-import com.lens.chatmodel.bean.RosterGroupBean;
 import com.lens.chatmodel.bean.UserBean;
-import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.eventbus.ResponseEvent;
-import com.lens.chatmodel.im_service.FingerIM;
 import com.lens.chatmodel.manager.RosterManager;
 import com.lens.chatmodel.view.SwitchButton;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.commons.global.Common;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
-import com.lensim.fingerchat.commons.interf.IChatUser;
 import com.lensim.fingerchat.commons.interf.IEventProduct;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
-import java.util.ArrayList;
-import java.util.List;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -80,7 +74,7 @@ public class ActivityUserSetting extends BaseActivity {
     private void dealWithEvent(IEventProduct event) {
         if (event instanceof ResponseEvent) {
             RespMessage message = ((ResponseEvent) event).getPacket();
-            if (message.response.getCode() == Common.UPDATE_INFO_SUCCESS) {//更新好友信息成功
+            if (message.response.getCode() == Common.UPDATE_ROSTER_SUCCESS) {//更新好友信息成功
                 if (viewStarSwitch.isChecked()) {
                     ProviderUser.updateStarUser(userBean.getUserId(), ESureType.YES.ordinal());
                 } else {

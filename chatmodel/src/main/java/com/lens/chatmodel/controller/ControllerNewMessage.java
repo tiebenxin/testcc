@@ -40,7 +40,11 @@ public class ControllerNewMessage {
             setVisible(false);
         } else {
             setVisible(true);
-            tv_count.setText(String.format("有%s条新消息", count));
+            if (count > 99) {
+                tv_count.setText(String.format("有%s条新消息", 99 + "+"));
+            } else {
+                tv_count.setText(String.format("有%s条新消息", count));
+            }
         }
     }
 

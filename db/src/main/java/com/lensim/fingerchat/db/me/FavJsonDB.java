@@ -3,6 +3,7 @@ package com.lensim.fingerchat.db.me;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Index;
 
 /**
  * date on 2018/3/13
@@ -10,7 +11,11 @@ import org.greenrobot.greendao.annotation.Id;
  * describe
  */
 
-@Entity
+@Entity(
+    indexes = {
+        @Index(value = "favMsgId DESC", unique = true)
+    }
+)
 public class FavJsonDB {
 
     @Id

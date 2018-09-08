@@ -1,14 +1,15 @@
 package com.lensim.fingerchat.fingerchat.ui.work_center;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-
 import com.bumptech.glide.Glide;
 import com.lensim.fingerchat.commons.global.Route;
 import com.lensim.fingerchat.commons.utils.SPHelper;
@@ -27,11 +28,17 @@ import com.lensim.fingerchat.fingerchat.databinding.ItemWorkCenterItemBinding;
 public class WorkCenterItemAdapter extends ItemViewBinder<WorkItem, WorkCenterItemAdapter.HV> {
 
     private OnItemClickListener listener;
+
+    private OnItemTouchListener touchListener;
     private Context mContext;
     private int textSize;
 
     public void setListener(OnItemClickListener listener) {
         this.listener = listener;
+    }
+
+    public void setTouchListener(OnItemTouchListener touchListener) {
+        this.touchListener = touchListener;
     }
 
 
@@ -54,6 +61,7 @@ public class WorkCenterItemAdapter extends ItemViewBinder<WorkItem, WorkCenterIt
         return new HV(binding.getRoot());
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onBindViewHolder(@NonNull HV holder, @NonNull WorkItem item) {
         ItemWorkCenterItemBinding binding = DataBindingUtil.getBinding(holder.itemView);
@@ -65,6 +73,13 @@ public class WorkCenterItemAdapter extends ItemViewBinder<WorkItem, WorkCenterIt
             if (listener != null) {
                 listener.onClick(v, item);
             }
+        });
+
+        binding.itemSl.setOnTouchListener((v, event) -> {
+            if (touchListener != null) {
+                touchListener.onTouch(v, event);
+            }
+            return false;
         });
     }
 
@@ -78,5 +93,10 @@ public class WorkCenterItemAdapter extends ItemViewBinder<WorkItem, WorkCenterIt
     interface OnItemClickListener {
 
         void onClick(View view, WorkItem item);
+    }
+
+    interface OnItemTouchListener {
+
+        void onTouch(View view, MotionEvent event);
     }
 }

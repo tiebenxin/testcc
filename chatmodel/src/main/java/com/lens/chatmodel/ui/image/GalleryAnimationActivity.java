@@ -46,11 +46,12 @@ public class GalleryAnimationActivity extends FragmentActivity {
 
     private boolean msgMode;
     private ArrayList<LongImageBean> longList;
+    private String collectInfo;
 
     public static Intent newIntent(ArrayList<String> ThumbnailPicUrls,
         ArrayList<String> msgids,
         ArrayList<AnimationRect> rectList, ArrayList<LongImageBean> longList,
-        int initPosition) {
+        int initPosition,String collectInfo) {
         Intent intent = new Intent(ContextHelper.getContext(),
             GalleryAnimationActivity.class);
         intent.putExtra("msg", ThumbnailPicUrls);
@@ -58,6 +59,7 @@ public class GalleryAnimationActivity extends FragmentActivity {
         intent.putExtra("rect", rectList);
         intent.putExtra("position", initPosition);
         intent.putExtra("isLong", longList);
+        intent.putExtra("collectInfo",collectInfo);
         return intent;
     }
 
@@ -69,6 +71,7 @@ public class GalleryAnimationActivity extends FragmentActivity {
         rectList = getIntent().getParcelableArrayListExtra("rect");
         longList = getIntent().getParcelableArrayListExtra("isLong");
         msgids = getIntent().getStringArrayListExtra("msgids");
+        collectInfo = getIntent().getStringExtra("collectInfo");
         if (msgids == null || msgids.size() <= 0) {
             msgMode = false;
         } else {
@@ -161,7 +164,7 @@ public class GalleryAnimationActivity extends FragmentActivity {
                         .newInstance(urls.get(position),
                             msgMode ? getRect(msgids.get(position), rectList)
                                 : rectList.get(position),
-                            getLongBean(position), animateIn, initPosition == position);
+                            getLongBean(position), animateIn, initPosition == position,collectInfo,position);
                     alreadyAnimateIn = true;
                     fragmentMap.put(position, fragment);
                     String s = "false";

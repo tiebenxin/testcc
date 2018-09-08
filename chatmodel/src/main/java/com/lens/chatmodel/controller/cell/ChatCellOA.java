@@ -1,25 +1,19 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.text.Spannable;
-import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.example.webview.BrowserActivity;
+import com.lens.chatmodel.ChatEnum.ECellEventType;
 import com.lens.chatmodel.ChatEnum.EChatCellLayout;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.adapter.MessageAdapter;
 import com.lens.chatmodel.bean.body.PushBody;
 import com.lens.chatmodel.bean.body.PushEntity;
-import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.interf.IChatEventListener;
 import com.lens.chatmodel.view.spannable.SpannableUtil;
 import com.lensim.fingerchat.commons.helper.GsonHelper;
-import com.lensim.fingerchat.data.login.UserInfoRepository;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,8 +25,6 @@ import org.json.JSONObject;
 
 public class ChatCellOA extends ChatCellBase {
 
-
-    private final Context mContext;
     private TextView tv_title;
     private TextView tv_content;
     private PushEntity entity;
@@ -40,11 +32,9 @@ public class ChatCellOA extends ChatCellBase {
     private ImageView iv_icon;
 
 
-    protected ChatCellOA(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
-        mContext = context;
+    protected ChatCellOA(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 
@@ -90,7 +80,6 @@ public class ChatCellOA extends ChatCellBase {
                     try {
                         JSONObject object = new JSONObject(json);
                         if (object != null) {
-                            String type = object.optString("type");
                             String content = object.optString("body");
                             String from = object.optString("from");
                             tv_title.setText(from + "消息");
@@ -108,49 +97,9 @@ public class ChatCellOA extends ChatCellBase {
     @Override
     public void onBubbleClick() {
         if (entity != null && entity.getType().equalsIgnoreCase("OA")) {
-            if (ChatHelper.isSystemUser(entity.getFrom())) {
-                toOpenUrl(body.getActionUrl(), body.getTitle(), "");
+            if (mEventListener != null) {
+                mEventListener.onEvent(ECellEventType.OA_CLICK, mChatRoomModel, body);
             }
         }
     }
-
-    private void toOpenUrl(String url, String title, String token) {
-
-        Intent intent = new Intent(mContext, BrowserActivity.class);
-        StringBuilder builder = new StringBuilder(url);
-
-        if (url.contains("?")) {
-            builder.append("&id=")
-                .append(UserInfoRepository.getUserName())
-                .append("&empno=")
-                .append(UserInfoRepository.getUserName())
-                .append("&name=")
-                .append(
-                    new String(
-                        Base64.encode(UserInfoRepository.getUsernick().getBytes(), Base64.DEFAULT)))
-                .append("&terminal=")
-                .append("android")
-                .append("&token=")
-                .append(token);
-        } else {
-            builder.append("?id=")
-                .append(UserInfoRepository.getUserName())
-                .append("&empno=")
-                .append(UserInfoRepository.getUserName())
-                .append("&name=")
-                .append(
-                    new String(
-                        Base64.encode(UserInfoRepository.getUsernick().getBytes(), Base64.DEFAULT)))
-                .append("&terminal=")
-                .append("android")
-                .append("&token=")
-                .append(token);
-        }
-        Uri uri = Uri.parse(builder.toString());
-        intent.setData(uri);
-        intent.putExtra("title", title);
-        mContext.startActivity(intent);
-    }
-
-
 }

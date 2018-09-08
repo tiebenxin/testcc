@@ -9,7 +9,7 @@
 
         <com.lensim.fingerchat.commons.toolbar.FGToolbar
             android:id="@+id/statu_toolbar"
-            style="@style/FGToolbarStyle"/>
+            style="@style/FGToolbarStyleWithNoOverflow"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -32,8 +32,8 @@
                 android:id="@+id/mVideoStatuView"
                 android:layout_width="120dp"
                 android:layout_height="80dp"
-                android:layout_gravity="center_vertical|left"
                 android:layout_marginTop="10dp"
+                android:layout_gravity="center_vertical|left"
                 />
         </LinearLayout>
 
@@ -41,9 +41,9 @@
             android:id="@+id/tv_showsome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="10dp"
             android:drawableLeft="@drawable/show_someone"
             android:drawablePadding="10dp"
-            android:padding="10dp"
             android:text="@string/show_this_to_some"
             android:textSize="18sp"
             />

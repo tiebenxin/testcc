@@ -1,22 +1,35 @@
 package com.lens.chatmodel.ui.image;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-
 import android.widget.TextView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.lens.chatmodel.R;
+import com.lens.chatmodel.helper.ImageHelper;
+import com.lensim.fingerchat.commons.base.FGActivity;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
-import com.lensim.fingerchat.commons.utils.DensityUtil;
-import com.lensim.fingerchat.data.bean.ImageBean;
-import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
-
+import com.lensim.fingerchat.commons.utils.BitmapUtil;
+import com.lensim.fingerchat.commons.utils.DensityUtil;
+import com.lensim.fingerchat.commons.utils.FileUtil;
+import com.lensim.fingerchat.commons.utils.SPHelper;
+import com.lensim.fingerchat.data.bean.ImageBean;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -25,7 +38,7 @@ import java.util.ArrayList;
  * Created by Nereo on 2015/4/7.
  * Updated by nereo on 2016/1/19.
  */
-public class MultiImageSelectorActivity extends BaseActivity implements
+public class MultiImageSelectorActivity extends FGActivity implements
     MultiImageSelectorFragment.Callback {
 
     /**
@@ -108,12 +121,8 @@ public class MultiImageSelectorActivity extends BaseActivity implements
     private void confirm() {
         if (resultBeanList != null && resultBeanList.size() > 0) {
             // 返回已选择的图片数据
-            Intent data = new Intent();
-            Bundle bundle = new Bundle();
-            bundle.putParcelableArrayList(EXTRA_RESULT, resultBeanList);
-            data.putExtras(bundle);
-            setResult(RESULT_OK, data);
-            finish();
+            //                    setResultOk();
+            addWaterMark();
         }
     }
 
@@ -135,13 +144,9 @@ public class MultiImageSelectorActivity extends BaseActivity implements
 
     @Override
     public void onSingleImageSelected(ImageBean bean) {
-        Intent data = new Intent();
         resultBeanList.add(bean);
-        Bundle bundle = new Bundle();
-        bundle.putParcelableArrayList(EXTRA_RESULT, resultBeanList);
-        data.putExtras(bundle);
-        setResult(RESULT_OK, data);
-        finish();
+
+        addWaterMark();
     }
 
     @Override
@@ -166,13 +171,9 @@ public class MultiImageSelectorActivity extends BaseActivity implements
             if (imageFile.exists()) {
                 sendBroadcast(
                     new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(imageFile)));
-                Intent data = new Intent();
                 resultBeanList.add(bean);
-                Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(EXTRA_RESULT, resultBeanList);
-                data.putExtras(bundle);
-                setResult(RESULT_OK, data);
-                finish();
+//                    setResultOk();
+                addWaterMark();
             }
 
 
@@ -187,5 +188,143 @@ public class MultiImageSelectorActivity extends BaseActivity implements
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 101) {
+            if (null != data) {
+                Bundle bundle = data.getExtras();
+                String path = bundle.getString("imagePath");
+                File imageFile = new File(path);
+                ImageBean bean = new ImageBean(path,
+                    "picture_" + System.currentTimeMillis() + ".jpg", 0, "");
+                bean.setEdit(true);
+                if (imageFile.exists()) {
+                    sendBroadcast(
+                        new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(imageFile)));
+                    resultBeanList.add(bean);
+//                    setResultOk();
+                    addWaterMark();
+                }
+            }
+        }
+
+    }
+
+    private void setResultOk() {
+        dismissProgress();
+        Intent data = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList(EXTRA_RESULT, resultBeanList);
+        data.putExtras(bundle);
+        setResult(RESULT_OK, data);
+        finish();
+    }
+
+    private void addWaterMark() {
+        showProgress("正在处理...", false);
+        if (resultBeanList != null) {
+            int len = resultBeanList.size();
+            if (len > 0) {
+                for (int i = 0; i < len; i++) {
+                    ImageBean bean = resultBeanList.get(i);
+                    ImageHelper.loadBitmap(bean.path);
+                    if (bean.isEdit) {
+                        if (i != len - 1) {
+                            continue;
+                        } else {
+                            setResultOk();
+                            break;
+                        }
+                    } else {
+                        String path = SPHelper.getString(SPHelper.IMAGE_FILE, bean.path, "");
+                        File file = new File(path);
+                        if (!TextUtils.isEmpty(path) && file.exists()) {
+                            bean.path = path;
+                            if (i != len - 1) {
+                                continue;
+                            } else {
+                                setResultOk();
+                                break;
+                            }
+                        } else {
+                            doFinishGlide(bean);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void doFinishGlide(ImageBean bean) {
+        Glide.with(ContextHelper.getContext())
+            .load(bean.path)
+            .asBitmap()
+            .skipMemoryCache(true)
+            .into(new SimpleTarget<Bitmap>() {
+                @Override
+                public void onResourceReady(Bitmap resource,
+                    GlideAnimation<? super Bitmap> glideAnimation) {
+                    if (resource != null) {
+                        if (resource != null) {
+                            String result = FileUtil.createImagePath();
+                            String code = BitmapUtil
+                                .checkAndCompressBitmap(resource, result);
+                            if (code.equals("1")) {
+                                resource = BitmapUtil.decodeFile(result);
+                                resource = BitmapUtil
+                                    .createWaterBitmap(resource,
+                                        UserInfoRepository.getUserId());
+                                if (resource != null) {
+                                    String path = FileUtil
+                                        .saveToPicDir(resource, result);
+                                    SPHelper.setValue(SPHelper.IMAGE_FILE,
+                                        bean.path, path);//存储
+                                    bean.path = path;
+                                    bean.size =
+                                        resource.getWidth() + "x" + resource
+                                            .getHeight();
+                                }
+                            }
+                            setResultOk();
+                        }
+                    }
+                }
+            });
+    }
+
+    private void doFinish(ImageBean bean) {
+        Observable.just(bean.path)
+            .map(new Function<String, Bitmap>() {
+                @Override
+                public Bitmap apply(String s) throws Exception {
+                    Bitmap bitmap = BitmapUtil.decodeFile(s);
+                    if (bitmap != null) {
+                        bitmap = BitmapUtil
+                            .createWaterBitmap(bitmap,
+                                UserInfoRepository.getUserId());
+                    }
+                    return bitmap;
+                }
+            }).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorResumeNext(Observable.empty())
+            .subscribe(new Consumer<Bitmap>() {
+                @Override
+                public void accept(Bitmap bitmap) throws Exception {
+                    if (bitmap != null) {
+                        String path = FileUtil.saveBitmap(bitmap);
+                        SPHelper
+                            .setValue(SPHelper.IMAGE_FILE, bean.path, path);//存储
+                        bean.path = path;
+                        bean.size =
+                            bitmap.getWidth() + "x" + bitmap.getHeight();
+                    }
+                    setResultOk();
+                }
+            });
     }
 }

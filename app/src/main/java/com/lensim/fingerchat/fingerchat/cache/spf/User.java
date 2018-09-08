@@ -1,14 +1,15 @@
 package com.lensim.fingerchat.fingerchat.cache.spf;
 
-import com.spf.api.Spf;
+import com.lens.spf.api.Spf;
 
 @Spf
 public class User {
-    long token;
-
-    private String name;
-
-    String mobile;
-
-    Boolean first;
+    /**
+     * OAToken
+     */
+    String OAToken;
+    /**
+     * OAToken有效时间
+     */
+    long OATokenDuration;
 }

@@ -13,14 +13,15 @@ import org.json.JSONObject;
 public class VoteBody extends BaseJsonEntity {
 
     String senderAvatar;//发送者头像
-    String mucNickName;//群聊备注名，非群聊则无
-    boolean secret;//是否密聊
+    String mucNickName;//群聊备注名，私聊为昵称
+    int secret;//是否密聊
     int bubbleWidth;
     int bubbleHeight;
+    String groupName;//群聊专有字段，群名
 
     //投票消息
-    int status;
-    String voteId;
+    int status;//发起投票，还是参与投票
+    String voteid;
     String title;
     String option1;
     String option2;
@@ -43,10 +44,15 @@ public class VoteBody extends BaseJsonEntity {
     }
 
     public boolean isSecret() {
+        return secret == 1;
+    }
+
+
+    public int getSecret() {
         return secret;
     }
 
-    public void setSecret(boolean secret) {
+    public void setSecret(int secret) {
         this.secret = secret;
     }
 
@@ -75,11 +81,11 @@ public class VoteBody extends BaseJsonEntity {
     }
 
     public String getVoteId() {
-        return voteId;
+        return voteid;
     }
 
     public void setVoteId(String voteId) {
-        this.voteId = voteId;
+        this.voteid = voteId;
     }
 
     public String getTitle() {
@@ -106,6 +112,15 @@ public class VoteBody extends BaseJsonEntity {
         this.option2 = option2;
     }
 
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+
     public String toJson() {
         JSONObject object = new JSONObject();
         try {
@@ -126,8 +141,8 @@ public class VoteBody extends BaseJsonEntity {
 
             object.put("status", status);
 
-            if (!TextUtils.isEmpty(voteId)) {
-                object.put("voteid", voteId);
+            if (!TextUtils.isEmpty(voteid)) {
+                object.put("voteid", voteid);
             }
 
             if (!TextUtils.isEmpty(title)) {
@@ -138,6 +153,10 @@ public class VoteBody extends BaseJsonEntity {
             }
             if (!TextUtils.isEmpty(option2)) {
                 object.put("option2", option2);
+            }
+
+            if (!TextUtils.isEmpty(groupName)) {
+                object.put("groupName", groupName);
             }
         } catch (JSONException e) {
             e.printStackTrace();

@@ -11,10 +11,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.example.annotation.Path;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.lens.chatmodel.ChatEnum.ETransforType;
 import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.db.ProviderUser;
@@ -22,17 +18,24 @@ import com.lens.chatmodel.interf.IEventClickListener;
 import com.lens.chatmodel.ui.message.ChatActivity;
 import com.lens.chatmodel.ui.message.TransferDialog;
 import com.lens.chatmodel.ui.message.TransforMsgActivity;
+import com.lens.core.componet.net.exeception.ApiException;
+import com.lens.route.annotation.Path;
 import com.lensim.fingerchat.commons.base.BaseActivity;
+import com.lensim.fingerchat.commons.base.BaseResponse;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
 import com.lensim.fingerchat.commons.router.ActivityPath;
 import com.lensim.fingerchat.commons.utils.T;
+import com.lensim.fingerchat.commons.utils.ThreadUtils;
 import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.components.springview.container.DefaultFooter;
 import com.lensim.fingerchat.components.springview.container.DefaultHeader;
 import com.lensim.fingerchat.components.springview.widget.SpringView;
 import com.lensim.fingerchat.components.widget.circle_friends.CollectDialog;
-import com.lensim.fingerchat.data.Http;
-import com.lensim.fingerchat.data.RxSchedulers;
+import com.lensim.fingerchat.data.CollectionApi;
+import com.lensim.fingerchat.data.bean.GetFavoListBody;
+import com.lensim.fingerchat.data.bean.GetFavoListResponse;
+import com.lensim.fingerchat.data.bean.GetFavoListResponse.DataBean;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.content.CollectionManager;
 import com.lensim.fingerchat.data.me.content.FavJson;
@@ -41,9 +44,16 @@ import com.lensim.fingerchat.fingerchat.databinding.ActivityCollectionBinding;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.Content;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.ContentFactory;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.NoteContent;
-
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 /**
@@ -68,6 +78,11 @@ public class CollectionActivity extends BaseActivity implements
     private boolean isFromChat;
     private String transforContent;
     private FavJson transforFavJson;
+    private CollectionApi collectionApi;
+
+    private CollectionApi getCollectionApi() {
+        return null == collectionApi ? new CollectionApi() : collectionApi;
+    }
 
 
     @Override
@@ -92,7 +107,8 @@ public class CollectionActivity extends BaseActivity implements
 
         initAdapter();
         initSpringView();
-        loadNetData();
+        loadNetData(false);
+//        loadLocalData();
     }
 
     private void initAdapter() {
@@ -124,12 +140,16 @@ public class CollectionActivity extends BaseActivity implements
         Content content = ContentFactory
             .createContent(type, mAdapter.getItem(position).getFavContent());
         String text = content.getText();
+        if (TextUtils.isEmpty(text)) {
+            T.show("数据为空");
+            return;
+        }
         boolean isNote = content.isNote();
 
         if (isNote) {
             if (!isFromChat) {
                 NoteActivity.openActivity(this, CollectionActivity.REQUEST_FOR_NOTE,
-                    text, mAdapter.getItem(position).getFavId());
+                    text, mAdapter.getItem(position));
             } else {
                 T.showShort(ContextHelper.getContext(), "收藏笔记不能转发");
             }
@@ -151,7 +171,10 @@ public class CollectionActivity extends BaseActivity implements
         intent.putExtra(CollectionDetailActivity.ITEM_DATA, data);
         intent.putExtra(CollectionDetailActivity.UNIQUE_ID, item.getFavId());
         intent.putExtra(CollectionDetailActivity.AVATAR_URL, item.getFavCreaterAvatar());
+        intent.putExtra(CollectionDetailActivity.CREATOR, item.getFavCreater());
         intent.putExtra(CollectionDetailActivity.NAME, item.getProviderNick());
+        intent.putExtra(CollectionDetailActivity.PROVIDER_ID, item.getFavProvider());
+        intent.putExtra(CollectionDetailActivity.MSG_ID, item.getFavMsgId());
         intent.putExtra(CollectionDetailActivity.CREATE_TIME,
             TimeUtils.getTimeStamp(item.getFavTime()));
         intent.putExtra(CollectionDetailActivity.DES, des);
@@ -170,7 +193,7 @@ public class CollectionActivity extends BaseActivity implements
 
             @Override
             public void onLoadMore() {
-                loadNetData();
+//                loadNetData(true);
                 ui.springviewCollect.onFinishFreshAndLoad();
                 ui.recyclerViewCollect.scrollToPosition(layoutManager.getItemCount());
             }
@@ -179,34 +202,104 @@ public class CollectionActivity extends BaseActivity implements
 
 
     @SuppressLint("CheckResult")
-    private void loadNetData() {
-        Http.getFavList(UserInfoRepository.getUserName(), PAGE_NUM + "", PAGE_SIZE + "")
-            .compose(RxSchedulers.io_main())
-            .subscribe(stringRetObjectResponse -> {
-                    int ret = stringRetObjectResponse.retCode;
-                    if (ret == 1) {
-                        String json = stringRetObjectResponse.retData;
-                        Gson gson = new Gson();
-                        List<FavJson> favJsons = gson
-                            .fromJson(json, new TypeToken<List<FavJson>>() {
-                            }.getType());
+    private void loadNetData(boolean isLoadMore) {
+        GetFavoListBody body = new GetFavoListBody();
+        body.setPageIndex(PAGE_NUM);
+        body.setPageSize(PAGE_SIZE);
+        getCollectionApi().getAllFavoList(UserInfoRepository.getUserName(), body,
+            new FXRxSubscriberHelper<BaseResponse<GetFavoListResponse>>() {
+                @Override
+                public void _onNext(BaseResponse<GetFavoListResponse> baseResponse) {
+                    if (baseResponse.getCode() == 10) {
+                        List<DataBean> dataBeans = baseResponse.getContent().getData();
+                        List<FavJson> favJsons = new ArrayList<>();
+                        for (DataBean dataBean : dataBeans) {
+                            FavJson favJson = new FavJson();
+                            favJson.setFavType(dataBean.getMsgType() + "");
+                            favJson.setFavProvider(dataBean.getProvider());
+                            favJson.setProviderNick(dataBean.getFromNickname());
+                            favJson.setFavDes(dataBean.getTags());
+                            favJson.setFavTime(TimeUtils.timeFormat(dataBean.getCreationTime()));
+                            favJson.setFavCreater(dataBean.getCreator());
+                            favJson.setFavMsgId(dataBean.getMsgId());
+                            favJson.setFavContent(dataBean.getMsgContent());
+                            try {
+                                JSONObject jsonObject = new JSONObject(dataBean.getMsgContent());
+                                if (jsonObject.has("userHeadImageStr")) {
+                                    favJson.setFavCreaterAvatar(
+                                        jsonObject.optString("userHeadImageStr"));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            favJsons.add(favJson);
+                        }
                         handleFavJsons(favJsons);
                         PAGE_NUM++;
-                        CollectionManager.getInstance().collections(favJsons);
+                        for (FavJson favJson :favJsons){
+                            CollectionManager.getInstance().collect(favJson);
+                        }
+                        //CollectionManager.getInstance().collections(favJsons);
                     } else {
+                        if (!isLoadMore) {
+                            loadLocalData();
+                        }
+                    }
+
+                }
+
+                @Override
+                public void _onError(ApiException error) {
+                    super._onError(error);
+                    if (!isLoadMore) {
                         loadLocalData();
                     }
-                },
-                throwable -> loadLocalData()
-            );
+                }
+            });
     }
 
     private void loadLocalData() {
-        if (PAGE_NUM == 0 && null != CollectionManager.getInstance().getCollections()) {
-            handleFavJsons(CollectionManager.getInstance().getCollections());
+        if (PAGE_NUM == 0 && null != CollectionManager.getInstance().getCollectionsByPage()) {
+            //handleFavJsons(CollectionManager.getInstance().getCollections());
+            handleFavJsons(CollectionManager.getInstance().getCollectionsByPage());
         }
     }
-
+    //本地获取数据
+   /* public void loadLocalData() {
+        getLocalObservable().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+            .subscribe(getObserver());
+    }*/
+    //数据赋值
+    public Consumer<List<FavJson>> getObserver() {
+        return new Consumer<List<FavJson>>() {
+            @Override
+            public void accept(List<FavJson> mStoreDataList) throws Exception {
+                if (null == mStoreDataList || mStoreDataList.isEmpty()) {
+                    return;
+                }
+                handleFavJsons(mStoreDataList);
+            }
+        };
+    }
+    //获取本地数据
+    private Observable<List<FavJson>> getLocalObservable() {
+        return Observable.create(new ObservableOnSubscribe<List<FavJson>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<FavJson>> e) throws Exception {
+                if (!e.isDisposed()) {
+                    List<FavJson> list = CollectionManager.getInstance().getCollectionsByPage();
+                    if (null != list) {
+                       /* if (list.size() < PAGE_SIZE) {
+                            loadNetData(false);
+                        } else {
+                            e.onNext(list);
+                        }*/
+                        e.onNext(list);
+                    }
+                }
+            }
+        });
+    }
 
     private void handleFavJsons(List<FavJson> mStoreDataList) {
         if (null == mStoreDataList || mStoreDataList.isEmpty()) {
@@ -217,7 +310,13 @@ public class CollectionActivity extends BaseActivity implements
         } else {
             items.addAll(mStoreDataList);
         }
-        mAdapter.setItems(items);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.setItems(items);
+            }
+        });
+
     }
 
 
@@ -230,20 +329,22 @@ public class CollectionActivity extends BaseActivity implements
     public void removeItem(final int posi) {
         if (null != mAdapter.getItem(posi)) {
             FavJson favJson = mAdapter.getItem(posi);
-            Http.removeFavItem(favJson.getFavMsgId(), UserInfoRepository.getUserName())
-                .compose(RxSchedulers.io_main())
-                .subscribe(retResponse -> {
-                    if (1 == retResponse.retCode) {
-                        notifyItemRemoved(posi, favJson);
-                    } else {
-                        T.show(retResponse.retMsg);
+            getCollectionApi().deleteCollection(UserInfoRepository.getUserName(),
+                favJson.getFavMsgId(), new FXRxSubscriberHelper<BaseResponse>() {
+                    @Override
+                    public void _onNext(BaseResponse baseResponse) {
+                        if ("Ok".equals(baseResponse.getMessage())) {
+                            notifyItemRemoved(posi, favJson);
+                        } else {
+                            T.show(baseResponse.getMessage());
+                        }
                     }
                 });
         }
     }
 
     private void notifyItemRemoved(final int posi, final FavJson favJson) {
-        CollectionManager.getInstance().deleteByFavId(favJson.getFavId());
+        CollectionManager.getInstance().deleteByFavId(favJson.getFavMsgId());
         items.remove(posi);
         mAdapter.notifyItemRemoved(posi);
     }
@@ -289,13 +390,30 @@ public class CollectionActivity extends BaseActivity implements
      * 更新笔记后的回调
      */
     private void reLoadNote() {
-        if (CollectionManager.getInstance().getLastFavJson() != null) {
-            items.add(0, CollectionManager.getInstance().getLastFavJson());
-            mAdapter.notifyItemInserted(0);
-            ui.recyclerViewCollect.scrollToPosition(0);
-        }
-    }
+        Observable.create(new ObservableOnSubscribe<List<FavJson>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<FavJson>> e) throws Exception {
+                if (!e.isDisposed()) {
+                    List<FavJson> list = CollectionManager.getInstance().getCollectionsByPage(0, "1");
+                    if (null != list && list.size() > 0) {
+                        e.onNext(list);
+                    }
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new Consumer<List<FavJson>>() {
+                @Override
+                public void accept(List<FavJson> mStoreDataList) throws Exception {
+                    if (null == mStoreDataList || mStoreDataList.isEmpty()) {
+                        return;
+                    }
+                    items.add(0, mStoreDataList.get(0));
+                    mAdapter.notifyItemInserted(0);
+                    ui.recyclerViewCollect.scrollToPosition(0);
+                }
+            });
 
+    }
     @Override
     public void onItemClick(int position, int dataPosition) {
         switch (position) {
@@ -317,10 +435,40 @@ public class CollectionActivity extends BaseActivity implements
             String type = transforFavJson.getFavType();
             String text = mAdapter.getItem(dataPosition).getFavContent();
             Content content = ContentFactory.createContent(type, text);
-            openDialog(content.getText(), Content.getMsgType(type));
+            openDialog(content.getText(), type, Content.getMsgType(type));
         }
     }
 
+    private String getText(String content, String type) {
+        try {
+            JSONObject jsonObject = new JSONObject(content);
+
+            if (type.equals("1")) {
+                return jsonObject.optString("content");
+            } else if (type.equals("2")) {
+                return content;
+            } else if (type.equals("4")) {
+                JSONObject json = new JSONObject();
+                JSONObject jsonObject1 = new JSONObject();
+                json.put("ImageUrl", jsonObject.optString("ImageUrl"));
+                json.put("ImageSize", jsonObject.optString("ImageSize"));
+                json.put("VideoUrl", jsonObject.optString("VideoUrl"));
+                //jsonObject.put("timeLength",0);
+                jsonObject1.put("body", json.toString());
+                jsonObject1.put("secret", 0);
+                jsonObject1.put("bubbleWidth", 0);
+                jsonObject1.put("bubbleHeight", 0);
+                jsonObject1.put("mucNickName", jsonObject.optString("userName"));
+
+                return content;
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return "";
+        }
+        return "";
+    }
 
     private void forwardItem(int dataPosition) {
         if (null != items && items.size() > dataPosition) {
@@ -328,20 +476,79 @@ public class CollectionActivity extends BaseActivity implements
             String type = favJson.getFavType();
             String text = favJson.getFavContent();
             Content content = ContentFactory.createContent(type, text);
+            JSONObject jsonObject = new JSONObject();
+            JSONObject jsonObject1 = new JSONObject();
+            String sendContent = "";
+            if (type.equals("4")) {
+                try {
+                    JSONObject json = new JSONObject(content.getText());
+                    if (null == json) {
+                        return;
+                    }
+                    jsonObject.put("ImageUrl", json.optString("ImageUrl"));
+                    jsonObject.put("ImageSize", json.optString("ImageSize"));
+                    jsonObject.put("VideoUrl", json.optString("VideoUrl"));
+                    //jsonObject.put("timeLength",0);
+                    jsonObject1.put("body", jsonObject.toString());
+                    jsonObject1.put("secret", 0);
+                    jsonObject1.put("bubbleWidth", 0);
+                    jsonObject1.put("bubbleHeight", 0);
+                    jsonObject1.put("mucNickName", favJson.getFavProvider());
+                    sendContent = jsonObject1.toString();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (type.equals("2")) {
+                try {
+                    JSONObject json = new JSONObject(content.getText());
+                    if (null == json) {
+                        return;
+                    }
+                    jsonObject.put("OriginalUrl", json.optString("OriginalUrl"));
+                    jsonObject.put("OriginalSzie", json.optString("OriginalSzie"));
+                    jsonObject.put("ThumbnailUrl", json.optString("ThumbnailUrl"));
+                    jsonObject.put("ThumbnailSize", json.optString("ThumbnailSize"));
+                    jsonObject1.put("body", jsonObject.toString());
+                    jsonObject1.put("secret", 0);
+                    jsonObject1.put("bubbleWidth", 0);
+                    jsonObject1.put("bubbleHeight", 0);
+                    sendContent = jsonObject1.toString();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (type.equals("3")) {
+                T.show(getString(R.string.collect_voice_not_support));
+                return;
+            } else if (type.equals("1")) {
+                try {
+                    JSONObject json = new JSONObject(content.getText());
+                    if (null == json) {
+                        return;
+                    }
+                    sendContent = json.getString("content");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
             Intent intent = TransforMsgActivity
-                .newPureIntent(this, content.getText(), Content.getMsgType(type), 0, "");
+                .newPureIntent(this, sendContent, Content.getMsgType(type), 1, "");
             startActivity(intent);
         }
     }
 
 
-    public void openDialog(String content, int messageType) {
+    public void openDialog(String content, String type, int messageType) {
+        if (type.equals("3")) {
+            T.show(getString(R.string.collect_voice_not_support));
+            return;
+        }
         UserBean user = (UserBean) ProviderUser
             .selectRosterSingle(ContextHelper.getContext(), userId);
         if (null == user) {
             return;
         }
-        transforContent = content;
+        transforContent = getText(content, type);
         List<UserBean> rosterContactTempList = new ArrayList<UserBean>();
         rosterContactTempList.add(user);
         TransferDialog dialog = new TransferDialog(CollectionActivity.this, rosterContactTempList,
@@ -349,7 +556,7 @@ public class CollectionActivity extends BaseActivity implements
         dialog.setUser(null);
         dialog.setCarbonType(ETransforType.PURE_MSG.ordinal());
         dialog.setCarbonMode(0);
-        dialog.setContent(content);
+        dialog.setContent(transforContent);
         dialog.setMessageType(messageType);
         dialog.show();
     }
@@ -366,4 +573,17 @@ public class CollectionActivity extends BaseActivity implements
             }
         }
     }
+
+    private List<FavJson> removeDup(List<FavJson> list) {
+        for (int i = 0; i < list.size() - 1; i++) {
+            for (int j = list.size() - 1; j > i; j--) {
+                if (list.get(j).equals(list.get(i)) || list.get(j).getFavMsgId()
+                    .equals(list.get(i).getFavMsgId())) {
+                    list.remove(j);
+                }
+            }
+        }
+        return list;
+    }
+
 }

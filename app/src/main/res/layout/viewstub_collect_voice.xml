@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/ll_root"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dimen_5"
+        android:layout_alignParentLeft="true"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:id="@+id/bubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dimen_5"
+            android:layout_gravity="start"
+            android:layout_toRightOf="@id/ll_root"
+            android:background="@drawable/finger_chatfrom_bg"
+            android:gravity="start">
+
+            <ImageView
+                android:id="@+id/iv_voice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:paddingLeft="10dp"
+                android:paddingRight="12dp"
+                android:src="@drawable/ease_chatfrom_voice_playing"/>
+            <LinearLayout
+                android:id="@+id/ll_unread"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_centerInParent="true"
+                android:layout_toRightOf="@+id/iv_voice"
+                android:gravity="center_vertical">
+                <TextView
+                    android:id="@+id/tv_length"
+                    style="@style/chat_text_name_style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10dp"
+                    android:layout_alignTop="@+id/ll_root"
+                    android:layout_toRightOf="@+id/ll_root"
+                    android:gravity="center"
+                    android:text="3's"/>
+
+                <ImageView
+                    android:id="@+id/iv_unread_voice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_alignTop="@id/ll_root"
+                    android:layout_toRightOf="@id/tv_length"
+                    android:src="@drawable/ease_voice_unread"/>
+
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

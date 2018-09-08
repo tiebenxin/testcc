@@ -12,17 +12,19 @@ public class ContentFactory {
 
     public static Content createContent(String type, String text) {
         Content content;
-        //1.text 文字 2.image 图片 3.video 视频 4.gif 大表情
+        //1.text 文字 2.image 图片 3.video 视频 4.gif 大表情 5.content 个人名片
         if ("1".equals(type)) {
             content = new TextContent(type, text, false);
         } else if ("2".equals(type)) {
             content = new ImageContent(type, SpliceUrl.getUrl(text), false);
         } else if ("3".equals(type)) {
-            content = new VideoContent(type, SpliceUrl.getUrl(text), false);
+            content = new VoiceContent(type, SpliceUrl.getUrl(text), false);
         } else if ("4".equals(type)) {
-            content = new BigImageContent(type, SpliceUrl.getUrl(text), false);
+            content = new VideoContent(type, SpliceUrl.getUrl(text), false);
         } else if ("5".equals(type)){
             content = new ContactContent(type, text, false);
+        }else if ("".equals(type)){
+            content = new BigImageContent(type, SpliceUrl.getUrl(text), false);
         }else {
             content = new NoteContent(type, text, true);
         }

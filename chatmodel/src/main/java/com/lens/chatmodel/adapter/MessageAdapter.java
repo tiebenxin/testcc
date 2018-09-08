@@ -18,13 +18,14 @@ import com.lens.chatmodel.bean.message.RecentMessage;
 import com.lens.chatmodel.controller.cell.ChatCellAction;
 import com.lens.chatmodel.controller.cell.ChatCellBase;
 import com.lens.chatmodel.controller.cell.FactoryChatCell;
+import com.lens.chatmodel.db.MucInfo;
 import com.lens.chatmodel.db.MucUser;
 import com.lens.chatmodel.db.ProviderChat;
+import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.interf.IChatEventListener;
 import com.lens.chatmodel.interf.IChatRoomModel;
 import com.lens.chatmodel.interf.IShowListener;
-import com.lens.chatmodel.manager.MessageManager;
 import com.lens.chatmodel.view.CustomContextMenu;
 import com.lens.chatmodel.view.CustomContextMenu.OnMenuListener;
 import com.lensim.fingerchat.commons.app.AppConfig;
@@ -35,6 +36,7 @@ import com.lensim.fingerchat.components.pulltorefresh.XCPullToLoadMoreListView;
 import com.lensim.fingerchat.data.login.UserInfo;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONArray;
 
 /**
  * Created by LL130386 on 2018/1/3.
@@ -59,6 +61,7 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
     private int unreadCount;
     private UserInfo mInfo;
     private UserBean otherBean;
+    boolean isScrolling = false;
 
 
     public MessageAdapter(Context c, IChatEventListener l) {
@@ -124,29 +127,42 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
             controller.setFirstUnreadPosition(getTotalItemsCount() - unreadCount);
         }
 
-        if (!model.isGroupChat()) {
-            if (model.isIncoming()) {
-                model.setNick(otherBean.getUserNick());
-                model.setAvatarUrl(otherBean.getAvatarUrl());
-            } else {
-                model.setNick(mInfo.getUsernick());
-                model.setAvatarUrl(mInfo.getImage());
-            }
-        } else {//群聊
-            if (model.isIncoming()) {
-                Muc.MucMemberItem memberItem = MucUser
-                    .selectUserById(ContextHelper.getContext(), model.getTo(), model.getFrom());
-                if (null != memberItem) {
-                    model.setNick(TextUtils.isEmpty(memberItem.getMucusernick()) ? (
-                        TextUtils.isEmpty(memberItem.getUsernick()) ? memberItem.getUsername()
-                            : memberItem.getUsernick()) : memberItem.getMucusernick());
-                    model.setAvatarUrl(memberItem.getAvatar());
-                }
-            } else {
-                model.setNick(mInfo.getUsernick());
-                model.setAvatarUrl(mInfo.getImage());
-            }
-        }
+//        if (!model.isGroupChat()) {
+//            if (model.isIncoming()) {
+//                model.setNick(otherBean.getUserNick());
+//                model.setAvatarUrl(otherBean.getAvatarUrl());
+//            } else {
+//                model.setNick(mInfo.getUsernick());
+//                model.setAvatarUrl(mInfo.getImage());
+//            }
+//        } else {//群聊
+//            if (model.isIncoming()) {
+//                Muc.MucMemberItem memberItem = MucUser
+//                    .selectUserById(ContextHelper.getContext(), model.getTo(), model.getFrom());
+//                if (null != memberItem) {
+//                    model.setNick(TextUtils.isEmpty(memberItem.getMucusernick()) ? (
+//                        TextUtils.isEmpty(memberItem.getUsernick()) ? memberItem.getUsername()
+//                            : memberItem.getUsernick()) : memberItem.getMucusernick());
+//                    model.setAvatarUrl(memberItem.getAvatar());
+//                }
+//            } else {
+//                String mucNick = MucInfo
+//                    .getMucUserNick(ContextHelper.getContext(), model.getTo());
+//                if (TextUtils.isEmpty(mucNick)) {
+//                    mucNick = MucUser
+//                        .getMucUserNick(ContextHelper.getContext(), model.getTo(), model.getFrom());
+//                }
+//                if (TextUtils.isEmpty(mucNick)) {
+//                    mucNick = ProviderUser
+//                        .getRosterNick(ContextHelper.getContext(), model.getFrom());
+//                }
+//                if (TextUtils.isEmpty(mucNick)) {
+//                    mucNick = model.getFrom();
+//                }
+//                model.setNick(mucNick);
+//                model.setAvatarUrl(mInfo.getImage());
+//            }
+//        }
         controller.setModel(model);
         controller.setCustomContextMenu(getCustomContextMenu());
         controller.setMenuListener(this);
@@ -236,12 +252,14 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
         if (position >= 0 && position < getTotalItemsCount()) {
             System.out.println("updateUploadProgress:" + progress);
             if (type == ESendType.SENDING) {
-                ChatCellBase controller = (ChatCellBase) view.getTag(getTypeId(getItemViewType(position)));
+                ChatCellBase controller = (ChatCellBase) view
+                    .getTag(getTypeId(getItemViewType(position)));
                 if (controller != null) {
                     controller.updateProgress(progress);
                 }
             } else if (type == ESendType.MSG_SUCCESS) {
-                ChatCellBase controller = (ChatCellBase) view.getTag(getTypeId(getItemViewType(position)));
+                ChatCellBase controller = (ChatCellBase) view
+                    .getTag(getTypeId(getItemViewType(position)));
                 if (controller != null) {
                     controller.updateProgress(100);
                 }
@@ -323,22 +341,14 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
                     json = selectedModel.getUploadUrl();
                 }
                 if (!TextUtils.isEmpty(json)) {
-                    if (!TextUtils.isEmpty(data)) {
-                        if (!data.contains(json)) {
-                            data = data + ";" + json;
-                            SPHelper.saveValue(AppConfig.EX_KEY, data);
-                        } else {
-                            T.show("已经收藏");
-                        }
-                    } else {
-                        data = json;
-                        SPHelper.saveValue(AppConfig.EX_KEY, data);
-                    }
-
+                    eventListener.onEvent(ECellEventType.ADD_EX, selectedModel, json);
                 }
-                eventListener.onEvent(ECellEventType.ADD_EX, selectedModel, data);
                 break;
             case CustomContextMenu.TRANSMIT:
+                if (selectedModel.isSecret()) {
+                    T.show("密信消息不能转发");
+                    return;
+                }
                 eventListener.onEvent(ECellEventType.TRANSFER_MSG, selectedModel, null);
                 break;
             case CustomContextMenu.CANCLE:
@@ -361,12 +371,13 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
                         if (index == totalSize - 1) {//最后一条消息
                             IChatRoomModel model = mList.get(index - 1);
                             RecentMessage message = createRecentMessage(model, false);
-                            ProviderChat.updateRecentMessage(ContextHelper.getContext(), message);
+                            ProviderChat
+                                .updateRecentMessageAsyn(ContextHelper.getContext(), message);
                         }
-                    } else if (index == 0 && index == totalSize - 1) {//当前有且仅有一条消息，删除后，要不要把对话完全删除？
+                    } /*else if (index == 0 && index == totalSize - 1) {//当前有且仅有一条消息，删除后，要不要把对话完全删除？
                         ProviderChat.clearRecentMessageById(ContextHelper.getContext(),
                             selectedModel.getTo());
-                    }
+                    }*/
                     removeMessage(selectedModel);
                     ProviderChat
                         .delePrivateMessage(ContextHelper.getContext(),
@@ -374,11 +385,16 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
                 }
                 break;
             case CustomContextMenu.COLLECTION:
+                //showToast("此功能暂未开放");
                 eventListener.onEvent(ECellEventType.COLLECT_MSG, selectedModel, null);
                 break;
             case CustomContextMenu.MORE:
                 if (selectedModel.getMsgType() == EMessageType.MULTIPLE) {
                     T.showShort(context, "合并消息不能转发或作为附件");
+                    return;
+                }
+                if (selectedModel.isSecret()) {
+                    T.showShort(context, "密聊消息不能转发");
                     return;
                 }
                 showCheckBox(true, true);
@@ -393,14 +409,8 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
 
     private RecentMessage createRecentMessage(IChatRoomModel msg, boolean isNew) {
         RecentMessage message = new RecentMessage();
-        message.setMsg(msg.getContent());
-        message.setMsgType(msg.getMsgType());
-        if (msg.getMsgType() == EMessageType.NOTICE && msg.getCancel() == 1) {
-            message.setHint(MessageManager.getInstance().getCancelText(msg));
-        }
         message.setUserId(msg.getTo());
         message.setNick(msg.getNick());
-        message.setUnreadCount(0);
         message.setChatId(msg.getTo());
         message.setAvatarUrl(msg.getAvatarUrl());
         message.setTime(msg.getTime());
@@ -472,5 +482,14 @@ public class MessageAdapter extends BaseAdapter implements OnMenuListener {
 
     public XCPullToLoadMoreListView getListView() {
         return lisView;
+    }
+
+    public boolean isScrolling() {
+        return isScrolling;
+    }
+
+    public void setScrolling(boolean scrolling) {
+        isScrolling = scrolling;
+//        notifyDataSetChanged();
     }
 }

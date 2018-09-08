@@ -2,6 +2,7 @@ package com.lensim.fingerchat.commons.base;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -18,16 +19,13 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import com.fingerchat.api.client.ClientConfig;
-import com.fingerchat.api.listener.ConflictListener;
-import com.fingerchat.api.message.ConflictMessage;
 import com.lensim.fingerchat.commons.authority.AuthorityManager;
 import com.lensim.fingerchat.commons.helper.AppManager;
 import com.lensim.fingerchat.commons.interf.IEventProduct;
-import com.lensim.fingerchat.commons.router.ActivityPath;
-import com.lensim.fingerchat.commons.router.ActivitysRouter;
 import com.lensim.fingerchat.commons.utils.L;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -49,7 +47,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         initMVPView();
         registerEventBus();
-//        ClientConfig.I.registerListener(ConflictListener.class, this);
         initView();
         initData(savedInstanceState);
     }
@@ -60,10 +57,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         AppManager.getAppManager().finishActivity(this);
-//        ClientConfig.I.removeListener(ConflictListener.class, this);
         unregisterEventBus();
         super.onDestroy();
     }
+
 
     public abstract void initView();
 
@@ -172,16 +169,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(isHas);
         }
     }
-
-//    @Override
-//    public void onReceivedConflictListener(ConflictMessage message) {
-//        Intent intent = ActivitysRouter.getInstance()
-//            .invoke(this, ActivityPath.USER_CONFLICT_ACTIVITY_PATH);
-//        if (intent != null) {
-//            intent.putExtra(ActivityPath.CLOSE_ERROR, 0);
-//            startActivity(intent);
-//        }
-//    }
 
     public void hideSoftKeyboard(View v) {
         if (v == null) {

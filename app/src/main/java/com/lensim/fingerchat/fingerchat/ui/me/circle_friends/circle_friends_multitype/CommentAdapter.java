@@ -10,12 +10,13 @@ import com.lens.chatmodel.utils.UrlUtils;
 import com.lens.chatmodel.view.friendcircle.CommentListView;
 import com.lens.chatmodel.view.spannable.CircleMovementMethod;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.utils.CyptoConvertUtils;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.TDevice;
 import com.lensim.fingerchat.commons.utils.UIHelper;
-import com.lensim.fingerchat.data.me.circle_friend.ContentEntity;
 import com.lensim.fingerchat.data.repository.SPSaveHelper;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentBean;
 
 /**
  * date on 2018/2/9
@@ -23,7 +24,7 @@ import com.lensim.fingerchat.fingerchat.R;
  * describe
  */
 
-public class CommentAdapter extends CommentListView.Adapter<ContentEntity> {
+public class CommentAdapter extends CommentListView.Adapter<CommentBean> {
 
     public final static String FONT_SIZE = "font_size";
 
@@ -40,24 +41,24 @@ public class CommentAdapter extends CommentListView.Adapter<ContentEntity> {
         final CircleMovementMethod circleMovementMethod = new CircleMovementMethod(R.color.name_selector_color,
             R.color.name_selector_color);
 
-        final ContentEntity bean = mDatas.get(position);
-        String name =bean.getPHC_CommentUsername();
-        String id = bean.getPHC_CommentUserid();
+        final CommentBean bean = mDatas.get(position);
+        String name =CyptoConvertUtils.decryptString(bean.getCommentUsername());
+        String id = bean.getCommentUserid();
         String toReplyName = "";
-        if (bean.getPHC_SecondUserid() != null) {
-            toReplyName = bean.getPHC_SecondUsername();
+        if (bean.getCreatorUserid() != null) {
+            toReplyName = CyptoConvertUtils.decryptString(bean.getCommentUsername2());
         }
 
         SpannableStringBuilder builder = new SpannableStringBuilder();
-        builder.append(setClickableSpan(name, bean.getPHC_CommentUserid()));
+        builder.append(setClickableSpan(name, bean.getCommentUserid()));
 
         if (!StringUtils.isEmpty(toReplyName)) {
             builder.append(" 回复 ");
-            builder.append(setClickableSpan(toReplyName, bean.getPHC_SecondUserid()));
+            builder.append(setClickableSpan(toReplyName, bean.getCommentUserid()));
         }
         builder.append(": ");
         //转换表情字符
-        String contentBodyStr = bean.getPHC_Content();
+        String contentBodyStr = CyptoConvertUtils.decryptString(bean.getCommentContent());
         int textSize = SPSaveHelper.getIntValue(FONT_SIZE, 1) * 4 + 12;
         Spannable smiledText = SmileUtils.getSmiledText(ContextHelper.getApplication(),
             UrlUtils.formatUrlString(contentBodyStr), TDevice.sp2px(textSize+10));

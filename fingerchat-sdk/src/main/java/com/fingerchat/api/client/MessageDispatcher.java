@@ -5,6 +5,7 @@ import com.fingerchat.api.MessageHandler;
 import com.fingerchat.api.PacketReceiver;
 import com.fingerchat.api.connection.Connection;
 import com.fingerchat.api.handler.AckHandler;
+import com.fingerchat.api.handler.ExcuteMessageHandler;
 import com.fingerchat.api.handler.FGPushHandler;
 import com.fingerchat.api.handler.FastConnectOkHandler;
 import com.fingerchat.api.handler.HandshakeOkHandler;
@@ -17,6 +18,7 @@ import com.fingerchat.api.handler.MucHandler;
 import com.fingerchat.api.handler.MucMemberHandler;
 import com.fingerchat.api.handler.OfflineMessageHandler;
 import com.fingerchat.api.handler.PrivateChatHandler;
+import com.fingerchat.api.handler.ReadMessageHandler;
 import com.fingerchat.api.handler.RespHandler;
 import com.fingerchat.api.handler.RosterHandler;
 import com.fingerchat.api.handler.UserinfoHandler;
@@ -57,6 +59,8 @@ public class MessageDispatcher implements PacketReceiver {
         register(Command.MSG_ACK, new MessageAckHandler());
         register(Command.FIRST_HELLO, new PrivateChatHandler());
         register(Command.NOTIFY, new FGPushHandler());
+        register(Command.EXCUTE, new ExcuteMessageHandler());
+        register(Command.READED, new ReadMessageHandler());
         this.ackRequestMgr = AckRequestMgr.I();
     }
 

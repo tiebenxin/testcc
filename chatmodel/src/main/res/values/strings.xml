@@ -89,7 +89,7 @@
     <string name="user_photos">相册</string>
     <string name="max_images">最多只能选9张</string>
     <string name="saving">正在保存...</string>
-    <string name="save">正在保存</string>
+    <string name="save">保存</string>
     <string name="picture_read_failed">图片读取失败</string>
     <string name="wait_for_download_picture">正在下载...</string>
     <string name="tip_take_photo">拍摄照片</string>
@@ -103,6 +103,7 @@
     <string name="add_friend_seccess">添加成功</string>
     <string name="add_friend_failed">添加失败</string>
     <string name="not_repeated">请勿重复发送</string>
+    <string name="remark_and_group">备注及分组</string>
     <string name="divide_group">分组</string>
     <string name="more_result">更多结果</string>
     <string name="friends_create_groups">好友分组</string>
@@ -127,6 +128,15 @@
     <string name="error_no_member_of_muc">你不是该群成员，不能发送消息</string>
     <string name="error_no_exit_room">当前群聊不存在，不能发送消息</string>
 
+    <string name="input_remark">输入名称</string>
+    <string name="add_groups_to_divide">添加分组对联系人进行分类</string>
+    <string name="all_labels">所有标签</string>
+    <string name="someone_at_me">有人@我</string>
+    <string name="no_surport_function">该版本暂不支持此功能</string>
+
+    <string name="sign_in_outer">外出打卡（%1$s）</string>
+
+    <string name="shake_content">发送一条抖动消息</string>
 
 
 </resources>

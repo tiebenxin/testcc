@@ -32,7 +32,6 @@ public class ChatCellVoice extends ChatCellBase {
     private ImageView iv_voice;
     private TextView tv_length;
 
-    private final Context mContext;
     private ImageView iv_unread;
     private double minWidth;
     private double maxWidth;
@@ -41,11 +40,9 @@ public class ChatCellVoice extends ChatCellBase {
     private double grade2;
     private double grade3;
 
-    protected ChatCellVoice(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
-        mContext = context;
+    protected ChatCellVoice(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 

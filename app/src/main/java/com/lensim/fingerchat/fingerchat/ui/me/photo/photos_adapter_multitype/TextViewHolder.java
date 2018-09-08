@@ -60,6 +60,7 @@ public class TextViewHolder extends ItemViewBinder<NewComment, TextViewHolder.Vi
         holder.fl_content.setOnClickListener(v -> {
             Intent intent = new Intent(context, CommentDetailActivity.class);
             intent.putExtra("newComment", item);
+            intent.putExtra("photoSerno", item.getPHO_Serno());
             ((PhotosActivity) context)
                 .startActivityForResult(intent, PhotosActivity.PHOTOS_REQUEST_NEW_STATUS);
         });

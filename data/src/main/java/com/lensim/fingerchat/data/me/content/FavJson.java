@@ -1,12 +1,14 @@
 package com.lensim.fingerchat.data.me.content;
 
+import java.io.Serializable;
+
 /**
  * date on 2018/3/13
  * author ll147996
  * describe
  */
 
-public class FavJson {
+public class FavJson implements Serializable{
 
     private long favId;
 

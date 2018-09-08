@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +16,19 @@ import com.lens.chatmodel.ChatEnum.EChatType;
 import com.lens.chatmodel.ChatEnum.ENetStatus;
 import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.base.BaseUserInfoActivity;
+import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.bean.message.RecentMessage;
 import com.lens.chatmodel.controller.ControllerNetError;
 import com.lens.chatmodel.db.MucInfo;
 import com.lens.chatmodel.db.MucUser;
 import com.lens.chatmodel.db.ProviderChat;
+import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.im_service.FingerIM;
 import com.lens.chatmodel.interf.IChatItemClickListener;
+import com.lens.chatmodel.interf.IChatRoomModel;
 import com.lens.chatmodel.interf.ISearchClickListener;
 import com.lens.chatmodel.net.network.NetworkUtils;
-import com.lens.chatmodel.ui.message.AdapterMessage;
+import com.lens.chatmodel.ui.message.AdapterNewMessage;
 import com.lens.chatmodel.ui.message.ChatActivity;
 import com.lens.chatmodel.ui.profile.FriendDetailActivity;
 import com.lens.chatmodel.ui.search.SearchActivity;
@@ -34,6 +38,7 @@ import com.lensim.fingerchat.commons.dialog.NewMsgDialog;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.IDialogItemClickListener;
 import com.lensim.fingerchat.commons.interf.OnControllerClickListenter;
+import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.components.pulltorefresh.refresh_listview.OnMyRefreshListener;
 import com.lensim.fingerchat.components.pulltorefresh.refresh_listview.RefreshListView;
 import com.lensim.fingerchat.data.login.PasswordRespository;
@@ -51,19 +56,22 @@ import java.util.List;
 public class FragmentTabMessage extends BaseFragment {
 
     private final int RELOGIN = 0x01;
-//    private int reLogin
+    private final int MIN_SECENDS = 1000;
 
     private RefreshListView listView;
-    private AdapterMessage mAdapter;
+    private AdapterNewMessage mAdapter;
     private List<RecentMessage> listData;
 
     private ControllerNetError viewNetError;
-    private boolean isConnectOk;
+    private int num = 0;
+
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == RELOGIN) {
+                Log.e("num", "num = " + num);
+                num++;
                 relogin();
             }
         }
@@ -82,6 +90,7 @@ public class FragmentTabMessage extends BaseFragment {
         return inflater.inflate(R.layout.fragment_message, null);
     }
 
+
     @Override
     protected void initView() {
         ControllerSearch viewSearch = new ControllerSearch(getView().findViewById(R.id.viewSearch));
@@ -97,12 +106,17 @@ public class FragmentTabMessage extends BaseFragment {
         viewNetError.setControllerListener(new OnControllerClickListenter() {
             @Override
             public void onClick() {//重新登录
-                relogin();
+                if (!NetworkUtils.isNetAvaliale()) {
+                    T.showShort(R.string.no_network_connection);
+                } else {
+                    mHandler.removeMessages(RELOGIN);
+                    relogin();
+                }
             }
         });
 
         listView = getView().findViewById(R.id.lv_list);
-        mAdapter = new AdapterMessage(getContext());
+        mAdapter = new AdapterNewMessage(getContext());
         mAdapter.setUserId(((BaseUserInfoActivity) getActivity()).getUserId());
         mAdapter.setItemClickListener(new IChatItemClickListener() {
             @Override
@@ -115,6 +129,9 @@ public class FragmentTabMessage extends BaseFragment {
             @Override
             public void click(RecentMessage model) {
                 if (model != null) {
+                    if (model.isAt()) {
+                        ProviderChat.updateAt(model.getChatId());
+                    }
                     startActivityChat(model);
                 }
             }
@@ -165,57 +182,62 @@ public class FragmentTabMessage extends BaseFragment {
     * */
     private void relogin() {
         if (FingerIM.I.isLogin()) {
+            if (mHandler != null) {
+                mHandler.removeMessages(RELOGIN);
+            }
             return;
-        } else {
-            if (FingerIM.I.hasRunning()) {//service是否在运行
-                if (FingerIM.I.isConnected()) {//client是否在已经连接
-                    if (TextUtils.isEmpty(userId)) {
-                        userId = UserInfoRepository.getUserName();
-                    }
-                    if (TextUtils.isEmpty(psw)) {
-                        psw = PasswordRespository.getPassword();
-                    }
-                    if (!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(psw)) {
-                        if (isConnectOk) {
-                            mHandler.removeMessages(RELOGIN);
-                            FingerIM.I.login(userId, psw);
-                        } else {
-                            mHandler.sendEmptyMessage(RELOGIN);
-                        }
-                    }
-                } else {
-                    if (NetworkUtils.isNetAvaliale()) {
-                        FingerIM.I.onNetStateChange(true);
-                    }
-                }
-            } else {//service是否在运行
-                if (NetworkUtils.isNetAvaliale()) {
-                    FingerIM.I.startFingerIM();
-                }
-                mHandler.sendEmptyMessage(RELOGIN);
+        }
+
+        if (!FingerIM.I.hasStarted() || !FingerIM.I.isClientState()) {
+            //service是否已经启动，client不为空
+            FingerIM.I.startFingerIM();
+        } else if (!FingerIM.I.isConnected()) {
+            FingerIM.I.manualReconnect();
+        } else if (FingerIM.I.isConnected()) {
+            if (TextUtils.isEmpty(userId)) {
+                userId = UserInfoRepository.getUserName();
+            }
+            if (TextUtils.isEmpty(psw)) {
+                psw = PasswordRespository.getPassword();
+            }
+            if (!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(psw) && FingerIM.I.isHandOk()) {
+                FingerIM.I.login(userId, psw);
             }
         }
+        mHandler.sendEmptyMessageDelayed(RELOGIN, MIN_SECENDS);
     }
 
     @Override
     public void notifyResumeData() {
         super.notifyResumeData();
         loadData();
+        bindData();
         showNetStatus();
     }
 
     private void loadData() {
         List<RecentMessage> temp = ProviderChat.selectAllRecents(getContext());
+        for (RecentMessage message : temp) {
+            boolean isGroupChat = message.getChatType() == EChatType.GROUP.ordinal();
+            IChatRoomModel model = ProviderChat.getLastMessage(message.getChatId(), isGroupChat);
+            if (model != null) {
+                message.setLastMessage(model);
+            }
+            message.setUnreadCount(ProviderChat
+                .selectUnreadMessageCountOfUser(ContextHelper.getContext(), message.getChatId()));
+        }
         if (temp != null) {
             if (listData != null) {
                 listData.clear();
                 listData.addAll(temp);
             }
         }
+    }
+
+    private void bindData() {
         if (mAdapter != null && listData != null) {
             mAdapter.bindData(listData);
         }
-
     }
 
     private void startActivityChat(RecentMessage message) {
@@ -227,9 +249,17 @@ public class FragmentTabMessage extends BaseFragment {
                     chatType, message.getBackgroundId(),
                     message.getNotDisturb(), message.getTopFlag());
         } else if (chatType == EChatType.PRIVATE.ordinal()) {
-            intent = ChatActivity
-                .createChatIntent(getActivity(), message.getChatId(), message.getBackgroundId(),
-                    message.getNotDisturb(), message.getTopFlag());
+            if (ChatHelper.isSystemUser(message.getChatId())) {
+                UserBean bean = new UserBean();
+                bean.setUserId(message.getChatId());
+                bean.setRemarkName(message.getNick());
+                intent = ChatActivity
+                    .createChatIntent(getActivity(), bean);
+            } else {
+                intent = ChatActivity
+                    .createChatIntent(getActivity(), message.getChatId(), message.getBackgroundId(),
+                        message.getNotDisturb(), message.getTopFlag());
+            }
         }
         getActivity().startActivity(intent);
     }
@@ -244,8 +274,9 @@ public class FragmentTabMessage extends BaseFragment {
         final boolean isGroup, isTop, isUnread;
         final String jid = mBean.getChatId();
         isGroup = (mBean.getChatType() == EChatType.GROUP.ordinal());
-
-        if (mBean.getUnreadCount() != 0) {
+        int unreadCount = ProviderChat
+            .selectUnreadMessageCountOfUser(ContextHelper.getContext(), mBean.getChatId());
+        if (unreadCount != 0) {
             isUnread = true;
         } else {
             isUnread = false;
@@ -287,7 +318,11 @@ public class FragmentTabMessage extends BaseFragment {
 
             @Override
             public void markUnread() {
-                ProviderChat.markReaded(getActivity(), mBean.getChatId(), isUnread);
+                if (isUnread) {
+                    ProviderChat.updateHasReaded(mBean.getChatId(), isUnread);
+                } else {
+                    ProviderChat.updateHasReaded(mBean.getMsgId());
+                }
                 onChatChanged();
                 ((MainActivity) getActivity()).initUnreadCounts();
             }
@@ -297,32 +332,36 @@ public class FragmentTabMessage extends BaseFragment {
 
     private void onChatChanged() {
         loadData();
+        bindData();
+
     }
 
     public void notifyNetStatusChange(ENetStatus status) {
         if (status == null) {
             return;
-        } else {
-            if (status == ENetStatus.ERROR_NET || status == ENetStatus.ERROR_CONNECT) {
-                isConnectOk = false;
-                AppManager.getInstance().setLoginStatus(false);
-            } else if (status == ENetStatus.SUCCESS_ON_SERVICE
-                || status == ENetStatus.SUCCESS_ON_NET
-                || status == ENetStatus.ERROR_LOGIN) {
-                isConnectOk = true;
-                if (FingerIM.I.isConnected()) {//连接未断
-                    if (!FingerIM.I.isLoginConflicted()) {//先判断上次断开连接是不是因为登录冲突
-                        relogin();//自动重登陆
-                    }
-                } else {
-                    FingerIM.I.onNetStateChange(true);
-                }
-            }
-        }
-        if (viewNetError == null) {
-            return;
         }
 
+        if (status == ENetStatus.ERROR_NET) {
+            AppManager.getInstance().setLoginStatus(false);
+
+        } else if (status == ENetStatus.SUCCESS_ON_SERVICE) {//握手成功
+            relogin();//自动重登陆
+        } else if (status == ENetStatus.SUCCESS_ON_NET || status == ENetStatus.ERROR_LOGIN
+            || status == ENetStatus.ERROR_CONNECT) {
+
+            if (status == ENetStatus.ERROR_CONNECT) {
+                AppManager.getInstance().setLoginStatus(false);
+            }
+            //连接断开,先判断上次断开连接是不是因为登录冲突
+            if (!FingerIM.I.isConnected() && !FingerIM.I.isBannedAutoLogin()) {
+                relogin();//自动重登陆
+            } else if (FingerIM.I.isConnected() && !FingerIM.I.isBannedAutoLogin()) {//连接未断
+                FingerIM.I.onNetStateChange(true);
+                mHandler.sendEmptyMessageDelayed(RELOGIN, MIN_SECENDS);
+            }
+        } else if (status == ENetStatus.LOGIN_SUCCESS) {
+            mHandler.removeMessages(RELOGIN);
+        }
         showNetStatus();
     }
 
@@ -330,18 +369,25 @@ public class FragmentTabMessage extends BaseFragment {
         if (viewNetError == null) {
             return;
         }
-        if (FingerIM.I.isConnected()) {
-            isConnectOk = true;
-        }
-        if (isConnectOk && AppManager.getInstance().hasLogin()) {
+        if (FingerIM.I.isConnected() &&
+            (AppManager.getInstance().hasLogin() || FingerIM.I.isLogin())) {
+            if (mHandler != null) {
+                mHandler.removeMessages(RELOGIN);
+            }
             viewNetError.setVisiable(false);
         } else {
             viewNetError.setVisiable(true);
-            if (isConnectOk) {
+            if (FingerIM.I.isConnected()) {
                 viewNetError.updateHint(ContextHelper.getString(R.string.reconnecting));
             } else {
                 viewNetError.updateHint(ContextHelper.getString(R.string.network_error));
             }
+        }
+    }
+
+    public void loginOut() {
+        if (mHandler != null) {
+            mHandler.removeMessages(RELOGIN);
         }
     }
 

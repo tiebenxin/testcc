@@ -1,7 +1,6 @@
 package com.lensim.fingerchat.fingerchat.ui.work_center.sign;
 
 
-
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.view.View;
@@ -14,8 +13,10 @@ import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.PoiInfo;
+import com.lens.route.annotation.Path;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.commons.global.Route;
+import com.lensim.fingerchat.commons.router.ActivityPath;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.data.work_center.SignInJsonRet;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
  *
  * Created by LL117394 on 2017/8/23
  */
-
+@Path(ActivityPath.CLOCK_DETAIL_ACTIVITY_PATH)
 public class ClockInRecordDetailActivity extends BaseActivity {
 
     public final static String PARAMS_CONTENT = "content";
@@ -62,7 +63,7 @@ public class ClockInRecordDetailActivity extends BaseActivity {
     public void initView() {
         ui = DataBindingUtil.setContentView(this, R.layout.activity_clock_in_record_detail);
         ui.clockInToolbar.setTitleText("外出打卡详情");
-        initBackButton(ui.clockInToolbar,true);
+        initBackButton(ui.clockInToolbar, true);
         mDataItem = getIntent().getParcelableExtra(PARAMS_CONTENT);
     }
 
@@ -79,11 +80,15 @@ public class ClockInRecordDetailActivity extends BaseActivity {
         adapter.setItems(new ArrayList<>());
         ui.statuImgContainer.setAdapter(adapter);
 
-        if (null == mDataItem) return;
+        if (null == mDataItem) {
+            return;
+        }
 
         try {
             String[] imgs = mDataItem.getTPSignIn().split("@");
-            if (!StringUtils.isEmpty(mDataItem.getLocationData())) drawMarker(getPoiInfo());
+            if (!StringUtils.isEmpty(mDataItem.getLocationData())) {
+                drawMarker(getPoiInfo());
+            }
 
             for (int i = 0, len = imgs.length; i < len; i++) {
                 if (!StringUtils.isEmpty(imgs[i]) &&

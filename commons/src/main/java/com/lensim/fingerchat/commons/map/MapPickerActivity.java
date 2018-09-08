@@ -1,8 +1,11 @@
 package com.lensim.fingerchat.commons.map;
 
 
+import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
+
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +23,7 @@ import android.widget.ZoomControls;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BaiduMap.SnapshotReadyCallback;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.InfoWindow;
@@ -46,7 +50,16 @@ import com.lensim.fingerchat.commons.map.bean.MapInfoEntity;
 import com.lensim.fingerchat.commons.map.service.LocationService;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
 import com.lensim.fingerchat.commons.utils.StringUtils;
+import com.lensim.fingerchat.commons.utils.compress.CircleImage;
+import com.lensim.fingerchat.commons.utils.compress.ImageCompress;
+import com.lensim.fingerchat.commons.utils.compress.ImageInterface;
+import com.lensim.fingerchat.commons.utils.compress.OnCompressListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 public class MapPickerActivity extends BaseActivity implements AdapterView.OnItemClickListener {
@@ -249,8 +262,7 @@ public class MapPickerActivity extends BaseActivity implements AdapterView.OnIte
             @Override
             public void onClick(View v) {
                 if (isLocateFinished) {
-                    toReturn();
-//              takeShotAndFinish();
+              takeShotAndFinish();
                 }
             }
         });
@@ -339,15 +351,6 @@ public class MapPickerActivity extends BaseActivity implements AdapterView.OnIte
         list.setAdapter(mAdapter);
     }
 
-    public void toReturn() {
-        Intent returnIntent = new Intent();
-        MapInfoEntity location = new MapInfoEntity(mName, mAddress, mLoactionLatLng.latitude,
-            mLoactionLatLng.longitude);
-        returnIntent.putExtra("position", location);
-        setResult(RESULT_OK, returnIntent);
-        finish();
-    }
-
     public void toMyPosition() {
         MyLocationData location = mBaiduMap.getLocationData();
         // 实现动画跳转
@@ -411,6 +414,67 @@ public class MapPickerActivity extends BaseActivity implements AdapterView.OnIte
         mStreet = info.address;
         mCity = info.city;
     }
+    public void takeShotAndFinish() {
+        showToast("正在保存位置信息");
+        mBaiduMap.snapshot(new SnapshotReadyCallback() {
+            public void onSnapshotReady(Bitmap snapshot) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+                if (null == snapshot) {
+                    return;
+                }
+                String imgPath = null;
+                String imgName = "test_" + sdf.format(new Date()) + ".jpg";
+                try {
+                    File cache = getCacheDir();
+                    if (!cache.exists()) {
+                        cache.mkdir();
+                    }
+                    imgPath = cache.getPath() + File.separator + imgName;
+                    FileOutputStream fos = new FileOutputStream(imgPath);
+                    boolean b = snapshot.compress(Bitmap.CompressFormat.JPEG, 100, fos);
 
+                    fos.flush();
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    compressImg(imgPath, imgName);
+                }
+            }
+        });
+    }
+    public void compressImg(final String imgPath, final String imgName) {
+        List<ImageInterface> images = new ArrayList<>();
+        CircleImage image = new CircleImage();
+        image.setPath(imgPath);
+        images.add(image);
+        ImageCompress.
+            get(getApplicationContext())
+            .load(images)
+            .setFilename(imgName)
+            .setCompressListener(new OnCompressListener() {
+                @Override
+                public void onStart() {
 
+                }
+
+                @Override
+                public void onSuccess(List<ImageInterface> results) {
+                    ArrayList<String> resultList = new ArrayList<>();
+                    resultList.add(imgPath);
+                    Intent returnIntent = new Intent();
+                    MapInfoEntity location = new MapInfoEntity(mName, mAddress, mLoactionLatLng.latitude,
+                        mLoactionLatLng.longitude);
+                    returnIntent.putExtra("position", location);
+                    returnIntent.putStringArrayListExtra("select_result", resultList);
+                    setResult(RESULT_OK, returnIntent);
+                    finish();
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    e.printStackTrace();
+                }
+            }).launch();
+    }
 }

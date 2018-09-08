@@ -70,25 +70,7 @@
 
 
 
-    <declare-styleable name="TagCloudView">
-        <attr format="reference" name="tcvBackground"/>
-        <attr format="color" name="tcvTextColor"/>
-        <attr format="dimension" name="tcvBorder"/>
-        <attr format="integer" name="tcvTextSize"/>
-        <attr format="dimension" name="tcvBorderItem"/>
-        <attr format="dimension" name="tcvItemBorderVertical"/>
-        <attr format="dimension" name="tcvItemBorderHorizontal"/>
 
-        <attr format="boolean" name="tcvSingleLine"/>
-        <attr format="boolean" name="tcvShowEndText"/>
-        <attr format="boolean" name="tcvShowRightImg"/>
-        <attr format="string" name="tcvEndText"/>
-        <attr format="reference" name="tcvRightResId"/>
-        <attr format="boolean" name="tcvCanTagClick"/>
-
-        <attr format="reference" name="tcvTagResId"/>
-        <attr format="boolean" name="tcvShowEdit"/>
-    </declare-styleable>
 
     <!--视频录制控制按钮-->
     <declare-styleable name="VideoControlView">
@@ -127,8 +109,17 @@
     <!-- UserMenuView -->
     <declare-styleable name="UserMenuView">
         <attr name="left_icon" format="integer"/>
+        <attr name="right_icon" format="integer"/>
         <attr name="title" format="string"/>
         <attr name="title_size" format="integer"/>
         <attr name="title_color" format="integer"/>
+    </declare-styleable>
+    <declare-styleable name="slideswitch">
+        <attr name="themeColor" format="color" />
+        <attr name="isOpen" format="boolean" />
+        <attr name="shape">
+            <enum name="rect" value="1" />
+            <enum name="circle" value="2" />
+        </attr>
     </declare-styleable>
 </resources>

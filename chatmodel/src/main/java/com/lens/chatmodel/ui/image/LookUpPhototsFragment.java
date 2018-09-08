@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import com.fingerchat.proto.message.BaseChat.MessageType;
 import com.lens.chatmodel.ChatEnum.EChatType;
 import com.lens.chatmodel.ChatEnum.EMessageType;
 import com.lens.chatmodel.R;
@@ -23,6 +22,7 @@ import com.lens.chatmodel.ui.message.TransforMsgActivity;
 import com.lens.chatmodel.ui.video.LookUpVideoActivity;
 import com.lens.chatmodel.view.photoview.PhotoViewAttacher;
 import com.lens.chatmodel.view.photoview.ZoomImageView;
+import com.lens.core.componet.image.ImageLoader;
 import com.lensim.fingerchat.commons.authority.AuthorityManager;
 import com.lensim.fingerchat.commons.helper.AnimationRect;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
@@ -54,6 +54,7 @@ public class LookUpPhototsFragment extends Fragment {
         String path = getArguments().getString("path");
 
         photoView.setIsOrigin(false);//不让拉升
+        //Log.e("ttt--加载的图片-",path);
         loadImage(path);
 
         imgURL = path;
@@ -148,10 +149,10 @@ public class LookUpPhototsFragment extends Fragment {
     private void loadImage(String path) {
         if (ContextHelper.isGif(path)) {
             photoView.setIsGif(true);
-            ImageHelper.loadGif(path, photoView);
+            ImageLoader.loadGif(photoView, path);
         } else {
             photoView.setIsGif(false);
-            ImageHelper.loadImage(path, photoView);
+            ImageLoader.loadImage(photoView, path);
         }
     }
 

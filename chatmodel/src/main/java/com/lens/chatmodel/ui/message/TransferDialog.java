@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,9 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
-import com.fingerchat.proto.message.BaseChat.MessageType;
 import com.fingerchat.proto.message.Muc.MucMemberItem;
-import com.lens.chatmodel.ChatEnum.EChatType;
 import com.lens.chatmodel.ChatEnum.EMessageType;
 import com.lens.chatmodel.ChatEnum.ETransforModel;
 import com.lens.chatmodel.ChatEnum.ETransforType;
@@ -39,7 +36,6 @@ import com.lensim.fingerchat.commons.interf.IChatUser;
 import com.lensim.fingerchat.commons.utils.TDevice;
 import com.lensim.fingerchat.commons.widgt.AvatarImageView;
 import com.lensim.fingerchat.components.dialog.BaseDialog;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -195,7 +191,7 @@ public class TransferDialog extends BaseDialog {
             if (isGroupChat) {
                 mTransforName.setText(MucInfo.getMucName(ContextHelper.getContext(), user));
                 iv_avatar.setDrawText(
-                    MucInfo.selectMucUserNick(ContextHelper.getContext(), user));
+                    MucInfo.selectMucUserNickList(ContextHelper.getContext(), user));
             } else {
                 IChatUser bean = ProviderUser.selectRosterSingle(ContextHelper.getContext(), user);
                 if (bean != null) {
@@ -221,7 +217,7 @@ public class TransferDialog extends BaseDialog {
                 if (ChatHelper.isGroupChat(user.getChatType())) {
                     mTransforName.setText(user.getMucName());
                     iv_avatar.setDrawText(
-                        MucInfo.selectMucUserNick(ContextHelper.getContext(), user.getUserId()));
+                        MucInfo.selectMucUserNickList(ContextHelper.getContext(), user.getUserId()));
                 } else {
                     mTransforName.setText(user.getUserNick());
                     iv_avatar.setChatType(true);
@@ -370,8 +366,6 @@ public class TransferDialog extends BaseDialog {
         int i = view.getId();
         if (i == R.id.mTransforCancel) {
             users.clear();
-            ETransforType type = ETransforType.fromInt(carbonType);
-            listener.onEvent(type.ordinal(), users);
             dismiss();
         } else if (i == R.id.mTransforConfirm) {
             ETransforType type = ETransforType.fromInt(carbonType);

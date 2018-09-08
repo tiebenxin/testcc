@@ -1,16 +1,23 @@
 package com.lens.chatmodel.helper;
 
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.fingerchat.proto.message.Roster.ROption;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.view.CustomShapeTransformation;
+import com.lensim.fingerchat.commons.global.Route;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.utils.AppHostUtil;
+import com.lensim.fingerchat.commons.utils.ImageLoader;
 import com.lensim.fingerchat.commons.utils.TDevice;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,10 +76,19 @@ public class ImageHelper {
         if (imageView == null) {
             return;
         }
+        if (TextUtils.isEmpty(url)) {
+            imageView.setImageResource(R.drawable.default_avatar_normal);
+            return;
+        }
+        if (url.toLowerCase().startsWith("hnlensimage")) {
+            url = AppHostUtil.getHttpConnectHostApi() + "/" + url;
+        } else if (url.toLowerCase().startsWith("/hnlensimage")) {
+            url = AppHostUtil.getHttpConnectHostApi() + url;
+        }
         Glide.with(ContextHelper.getContext())
             .load(url)
-            .error(R.drawable.default_avatar)
-            .placeholder(R.drawable.default_avatar)
+            .error(R.drawable.default_avatar_normal)
+            .placeholder(R.drawable.default_avatar_normal)
             .centerCrop()
             .into(imageView);
     }
@@ -83,8 +99,8 @@ public class ImageHelper {
         }
         Glide.with(ContextHelper.getContext())
             .load(drawable)
-            .error(R.drawable.default_avatar)
-            .placeholder(R.drawable.default_avatar)
+            .error(R.drawable.default_avatar_normal)
+            .placeholder(R.drawable.default_avatar_normal)
             .centerCrop()
             .into(imageView);
     }
@@ -154,6 +170,25 @@ public class ImageHelper {
             .into(imageView);
     }
 
+    public static void loadGifLocal(int drawableId, ImageView imageView) {
+        if (imageView == null) {
+            return;
+        }
+        Glide.with(ContextHelper.getContext())
+            .load(drawableId)
+            .asGif()
+            .error(R.drawable.ease_default_expression)
+            .placeholder(R.drawable.ease_default_expression)
+            .fitCenter()
+            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+            .into(imageView);
+    }
+
+    public static void loadImageAndGif(String url, ImageView imageView) {
+        Glide.with(ContextHelper.getContext()).load(url)
+            .placeholder(R.drawable.ease_default_expression).into(imageView);
+    }
+
     public static void loadImageOverrideSize(String url, ImageView imageView, int w, int h) {
         if (imageView == null) {
             return;
@@ -171,12 +206,13 @@ public class ImageHelper {
         if (imageView == null) {
             return;
         }
-        Glide.with(ContextHelper.getContext())
+        ImageLoader.loadImage(url, imageView);
+        /*Glide.with(ContextHelper.getContext())
             .load(url)
             .error(R.drawable.default_image)
             .placeholder(R.drawable.default_image)
             .fitCenter()
-            .into(imageView);
+            .into(imageView);*/
     }
 
     public static void loadImageOverrideSize(int drawableId, ImageView imageView, int w, int h) {
@@ -199,6 +235,7 @@ public class ImageHelper {
         if (imageView == null) {
             return;
         }
+        imageView.setImageResource(R.drawable.default_image);
         Glide.with(ContextHelper.getContext())
             .load(url)
             .error(R.drawable.default_image)
@@ -252,6 +289,70 @@ public class ImageHelper {
                     } else {
                         imageView.setImageResource(defaultDrawable);
                     }
+                }
+            });
+    }
+
+    public static void loadUrlAsBitmap(String url, ImageView imageView) {
+        if (imageView == null || TextUtils.isEmpty(url)) {
+            return;
+        }
+        Glide.with(ContextHelper.getContext())
+            .load(url)
+            .asBitmap()
+            .error(R.drawable.default_image)
+            .placeholder(R.drawable.default_image)
+            .into(imageView);
+    }
+
+    public static void pauseRequests() {
+        Glide.with(ContextHelper.getContext()).pauseRequests();
+
+    }
+
+    public static void resumeRequests() {
+        Glide.with(ContextHelper.getContext()).resumeRequests();
+    }
+
+
+    public static void loadColloctionAvatar(String url, ImageView imageView,
+        BitmapTransformation transformation) {
+        if (imageView == null) {
+            return;
+        }
+        imageView.setImageResource(R.drawable.default_image);
+        Glide.with(ContextHelper.getContext())
+            .load(url)
+            .error(R.drawable.default_image)
+            .placeholder(R.drawable.default_image)
+            .centerCrop()
+            .transform(transformation)//自定义裁剪
+            .into(new SimpleTarget<GlideDrawable>() {
+                @Override
+                public void onResourceReady(GlideDrawable resource,
+                    GlideAnimation<? super GlideDrawable> glideAnimation) {
+                    if (resource != null) {
+                        imageView.setImageDrawable(resource);
+                    } else {
+                        imageView.setImageResource(R.drawable.default_image);
+                    }
+                }
+            });
+    }
+
+    //加载bitmap
+    public static void loadBitmap(String uri) {
+        Glide.with(ContextHelper.getContext())
+            .load(uri)
+            .asBitmap()
+            .skipMemoryCache(true)
+            .into(new SimpleTarget<Bitmap>() {
+                @Override
+                public void onResourceReady(Bitmap resource,
+                    GlideAnimation<? super Bitmap> glideAnimation) {
+                    System.out.println(
+                        "Glide:" + resource.getWidth() + "***" + resource.getHeight() + "--"
+                            + resource.getByteCount());
                 }
             });
     }

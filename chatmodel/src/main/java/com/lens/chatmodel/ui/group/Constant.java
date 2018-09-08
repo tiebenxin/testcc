@@ -17,6 +17,7 @@ public class Constant {
     //单选
     public static final int GROUP_SELECT_MODE_CHANGE_ROLE = 0X14;
 
+
     //报告选择模式
     public static final int GROUP_SELECT_MODE_CARD = 0X16;
     //转发消息
@@ -33,5 +34,8 @@ public class Constant {
     public static final int MODE_GROUP_CREATE = 0X20; //创建分组
     public static final int MODE_GROUP_ADD_MEMEBER = 0X21; //分组添加成员
     public static final int MODE_GROUP_DELE_MEMEBER = 0X22; //分组删除成员
+
+    //
+    public static final int SECRETCHAT_ADD = 0X23;
 
 }

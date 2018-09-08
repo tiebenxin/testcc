@@ -4,9 +4,9 @@ package com.lensim.fingerchat.fingerchat.ui.me.circle_friends;
 
 import com.lensim.fingerchat.commons.mvp.presenter.RxMvpPresenter;
 import com.lensim.fingerchat.commons.mvp.view.ProcessMvpView;
-import com.lensim.fingerchat.data.me.CircleItem;
 import com.lensim.fingerchat.data.me.circle_friend.CommentConfig;
-import com.lensim.fingerchat.data.me.circle_friend.ContentEntity;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentBean;
+import com.lensim.fingerchat.fingerchat.model.bean.PhotoBean;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.CircleFriendsPresenter.DownloadListener;
 import java.util.List;
 
@@ -20,7 +20,7 @@ public interface CircleFirendsContract {
 
     interface View extends ProcessMvpView {
 
-        void updateFriendCircle(int type, List<CircleItem> items);
+        void updateFriendCircle(int type, List<PhotoBean> items);
 
         void updateEditTextBodyVisible(int visibility, CommentConfig commentConfig);
 
@@ -34,6 +34,8 @@ public interface CircleFirendsContract {
 
         //发朋友圈--小视频
         void sendVideo();
+
+        void updateBackgroundImg();
     }
 
 
@@ -56,12 +58,12 @@ public interface CircleFirendsContract {
         /**
          * 点赞
          */
-        public abstract void addFavort(CircleItem circleItem, int circlePosition);
+        public abstract void addFavort(PhotoBean circleItem, int circlePosition);
 
         /**
          * 取消点赞
          */
-        public abstract void deleteFavort(CircleItem circleItem, int circlePosition);
+        public abstract void deleteFavort(PhotoBean circleItem, int circlePosition);
 
         /**
          * 增加评论
@@ -84,10 +86,10 @@ public interface CircleFirendsContract {
          */
         public abstract void downloadVideoFile(String fileUrl, DownloadListener listener);
 
-        public abstract void replyComment(int circlePosition, CircleItem circleItem,
-            ContentEntity commentItem, int commentPosition);
+        public abstract void replyComment(int circlePosition, PhotoBean circleItem,
+                                          CommentBean commentItem, int commentPosition);
 
-        public abstract void writeCommen(CircleItem circleItem, int circlePosition);
+        public abstract void writeCommen(PhotoBean circleItem, int circlePosition);
     }
 
 }

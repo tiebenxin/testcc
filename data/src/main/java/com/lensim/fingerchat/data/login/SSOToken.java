@@ -25,11 +25,11 @@ public class SSOToken implements Serializable {
     private long lifetime;//有效时长 60*60*24 s
     private long tokenValidTime;//token有效的终止时间毫秒值
 
-    public String getUserid() {
+    public String getUserId() {
         return userid;
     }
 
-    public void setUserid(String userid) {
+    public void setUserId(String userid) {
         this.userid = userid;
     }
 

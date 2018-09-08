@@ -4,9 +4,12 @@ package com.lens.chatmodel.bean;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.bean.Emojicon.Type;
 import com.lensim.fingerchat.commons.app.AppConfig;
+import com.lensim.fingerchat.commons.helper.GsonHelper;
 import com.lensim.fingerchat.commons.utils.SPHelper;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import java.util.Arrays;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 
 public class EmojiconDefaultGroupData {
@@ -125,26 +128,37 @@ public class EmojiconDefaultGroupData {
 
     private static EmojiconGroupEntity createCustomData() {
         EmojiconGroupEntity emojiconGroupEntity = new EmojiconGroupEntity();
-        Emojicon[] datas;
+        Emojicon[] datas = null;
 
         String string = SPHelper.getString(AppConfig.EX_KEY, "");
         if (!StringUtils.isEmpty(string)) {
-            String[] split = string.split(";");
-            int length = split.length;
-            datas = new Emojicon[++length];
-            datas[0] = new Emojicon(R.drawable.icon_addpic_unfocused, null, Type.BIG_EXPRESSION);
-            datas[0].setBigIcon(R.drawable.icon_addpic_unfocused);
-            datas[0].setIdentityCode("add_ex");
-            datas[0].setName("");
+            try {
+                JSONArray array = new JSONArray(string);
+                if (array != null) {
+                    int length = array.length();
+                    datas = new Emojicon[length + 1];
+                    datas[0] = new Emojicon(R.drawable.icon_addpic_unfocused, "",
+                        Type.BIG_EXPRESSION);
+                    datas[0].setBigIcon(R.drawable.icon_addpic_unfocused);
+                    datas[0].setIdentityCode("add_ex");
+                    datas[0].setName("");
 
-            for (int i = 1; i < length; i++) {
-                String path = split[i - 1];
-                datas[i] = new Emojicon();
-                datas[i].setType(Type.BIG_EXPRESSION);
-                datas[i].setIconPath(path);
-                datas[i].setBigIconPath(path);
-                datas[i].setName("");
-                datas[i].setIdentityCode(split[i - 1]);
+                    for (int i = 0; i < length; i++) {
+                        String emoObj = array.getString(i);
+                        EmoBean bean = GsonHelper.getObject(emoObj, EmoBean.class);
+                        if (bean != null) {
+                            String path = bean.getContent();
+                            datas[i + 1] = new Emojicon();
+                            datas[i + 1].setType(Type.BIG_EXPRESSION);
+                            datas[i + 1].setIconPath(path);
+                            datas[i + 1].setBigIconPath(path);
+                            datas[i + 1].setName("");
+                            datas[i + 1].setIdentityCode(path);
+                        }
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         } else {
             datas = new Emojicon[1];
@@ -153,7 +167,6 @@ public class EmojiconDefaultGroupData {
             datas[0].setIdentityCode("add_ex");
             datas[0].setName("");
         }
-//
         emojiconGroupEntity.setEmojiconList(Arrays.asList(datas));
         emojiconGroupEntity.setIcon(R.drawable.gif);
         emojiconGroupEntity.setType(Type.BIG_EXPRESSION);
@@ -162,35 +175,46 @@ public class EmojiconDefaultGroupData {
 
     public static EmojiconGroupEntity getCustomData(String data) {
         EmojiconGroupEntity emojiconGroupEntity = new EmojiconGroupEntity();
-        Emojicon[] datas;
+        Emojicon[] datas = null;
 
         String string = SPHelper.getString(AppConfig.EX_KEY, "");
         if (!StringUtils.isEmpty(string)) {
-            String[] split = string.split(";");
-            int length = split.length;
-            datas = new Emojicon[++length];
-            datas[0] = new Emojicon(R.drawable.icon_addpic_unfocused, null, Type.BIG_EXPRESSION);
-            datas[0].setBigIcon(R.drawable.icon_addpic_unfocused);
-            datas[0].setIdentityCode("add_ex");
-            datas[0].setName("");
+            try {
+                JSONArray array = new JSONArray(string);
+                if (array != null) {
+                    int length = array.length();
+                    datas = new Emojicon[length + 1];
+                    datas[0] = new Emojicon(R.drawable.icon_addpic_unfocused, "",
+                        Type.BIG_EXPRESSION);
+                    datas[0].setBigIcon(R.drawable.icon_addpic_unfocused);
+                    datas[0].setIdentityCode("add_ex");
+                    datas[0].setName("");
 
-            for (int i = 1; i < length; i++) {
-                String path = split[i - 1];
-                datas[i] = new Emojicon();
-                datas[i].setType(Type.BIG_EXPRESSION);
-                datas[i].setIconPath(path);
-                datas[i].setBigIconPath(path);
-                datas[i].setName("");
-                datas[i].setIdentityCode(split[i - 1]);
+                    for (int i = 0; i < length; i++) {
+                        String emoObj = array.getString(i);
+                        EmoBean bean = GsonHelper.getObject(emoObj, EmoBean.class);
+                        if (bean != null) {
+                            String path = bean.getContent();
+                            datas[i + 1] = new Emojicon();
+                            datas[i + 1].setType(Type.BIG_EXPRESSION);
+                            datas[i + 1].setIconPath(path);
+                            datas[i + 1].setBigIconPath(path);
+                            datas[i + 1].setName("");
+                            datas[i + 1].setIdentityCode(path);
+                        }
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } else {
+        }else {
             datas = new Emojicon[1];
             datas[0] = new Emojicon(R.drawable.icon_addpic_unfocused, null, Type.BIG_EXPRESSION);
             datas[0].setBigIcon(R.drawable.icon_addpic_unfocused);
             datas[0].setIdentityCode("add_ex");
             datas[0].setName("");
         }
-//
+
         emojiconGroupEntity.setEmojiconList(Arrays.asList(datas));
         emojiconGroupEntity.setIcon(R.drawable.emoji_134);
         emojiconGroupEntity.setType(Type.BIG_EXPRESSION);

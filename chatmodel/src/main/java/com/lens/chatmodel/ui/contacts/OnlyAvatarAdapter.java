@@ -13,7 +13,6 @@ import com.lens.chatmodel.helper.ImageHelper;
 import com.lensim.fingerchat.commons.widgt.AvatarImageView;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.utils.L;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -48,7 +47,7 @@ public class OnlyAvatarAdapter extends RecyclerView.Adapter {
         L.i("NewMsgAdapter", "消息列表重绘");
         if (ChatHelper.isGroupChat(userBean.getChatType())) {
             holder.avatarView.setDrawText(
-                MucInfo.selectMucUserNick(ContextHelper.getContext(), userBean.getUserId()));
+                MucInfo.selectMucUserNickList(ContextHelper.getContext(), userBean.getUserId()));
         } else {
             holder.avatarView.setChatType(true);
             ImageHelper.loadAvatarPrivate(userBean.getAvatarUrl(), holder.avatarView);

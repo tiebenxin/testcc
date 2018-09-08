@@ -21,6 +21,7 @@ import com.lens.chatmodel.eventbus.MucRefreshEvent;
 import com.lens.chatmodel.eventbus.ResponseEvent;
 import com.lens.chatmodel.helper.MucHelper;
 import com.lens.chatmodel.manager.MucManager;
+import com.lens.chatmodel.ui.group.AdapterGroupList.OnItemClickListener;
 import com.lens.chatmodel.ui.message.ChatActivity;
 import com.lensim.fingerchat.commons.base.FGActivity;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
@@ -38,13 +39,13 @@ import org.greenrobot.eventbus.ThreadMode;
  * 群列表
  */
 
-public class GroupListActivity extends FGActivity implements AdapterGroupList.OnItemClick {
+public class GroupListActivity extends FGActivity implements OnItemClickListener {
 
     protected FGToolbar toolbar;
-    private RecyclerView groupListRecyclerView;
-    protected AdapterGroupList adapterGroupList;
+    protected RecyclerView groupListRecyclerView;
+    private AdapterGroupList adapterGroupList;
 
-    private List<Muc.MucItem> localMucItems;
+    protected List<Muc.MucItem> localMucItems;
 
     @Override
     public void initView() {
@@ -101,7 +102,21 @@ public class GroupListActivity extends FGActivity implements AdapterGroupList.On
     }
 
     @Override
-    public void onitemClick(int positioin) {
+    protected void onResume() {
+        super.onResume();
+
+        updateData();
+    }
+
+    private void updateData() {
+        localMucItems = MucInfo.selectAllMucInfo(getApplicationContext());
+        if (null != localMucItems && adapterGroupList != null) {
+            adapterGroupList.setData(localMucItems, false);
+        }
+    }
+
+    @Override
+    public void onItemClick(int positioin) {
         startActivityChat(adapterGroupList.getData().get(positioin));
     }
 

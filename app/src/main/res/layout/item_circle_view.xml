@@ -145,8 +145,8 @@
 
                     <ImageView
                         android:id="@+id/snsBtn"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:background="@drawable/coment"
                         android:focusable="true"
@@ -168,12 +168,12 @@
 
                     <com.lens.chatmodel.view.friendcircle.FavortListView
                         android:id="@+id/favortListTv"
-                        android:layout_width="match_parent"
+                        android:layout_width="281dp"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:lineSpacingMultiplier="1.1"
-                        android:textSize="14sp"
                         android:textColor="@color/color_8290AF"
+                        android:textSize="14sp"
                         />
 
                     <View

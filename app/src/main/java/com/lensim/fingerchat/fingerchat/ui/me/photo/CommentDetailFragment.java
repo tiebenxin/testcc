@@ -1,7 +1,6 @@
 package com.lensim.fingerchat.fingerchat.ui.me.photo;
 
 
-
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -34,15 +33,19 @@ import com.lens.chatmodel.view.emoji.EmotionKeyboard;
 import com.lens.chatmodel.view.friendcircle.FavortListView;
 import com.lens.chatmodel.view.friendcircle.FavortListView.Adapter;
 import com.lensim.fingerchat.commons.app.AppConfig;
+import com.lensim.fingerchat.commons.base.BaseResponse;
 import com.lensim.fingerchat.commons.global.Route;
 import com.lensim.fingerchat.commons.helper.AnimationRect;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
 import com.lensim.fingerchat.commons.utils.CyptoConvertUtils;
+import com.lensim.fingerchat.commons.utils.CyptoUtils;
 import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.commons.utils.TDevice;
+import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.commons.utils.UIHelper;
 import com.lensim.fingerchat.components.dialog.nifty_dialog.NiftyDialogBuilder;
 import com.lensim.fingerchat.components.widget.CircleProgress;
@@ -53,22 +56,27 @@ import com.lensim.fingerchat.data.Http;
 import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.CircleItem;
-import com.lensim.fingerchat.data.me.CommentEntity;
 import com.lensim.fingerchat.data.me.NewComment;
-import com.lensim.fingerchat.data.me.ZambiaEntity;
 import com.lensim.fingerchat.data.me.circle_friend.CommentConfig;
-import com.lensim.fingerchat.data.me.circle_friend.ContentEntity;
-import com.lensim.fingerchat.data.me.circle_friend.FriendCircleEntity;
 import com.lensim.fingerchat.data.me.content.StoreManager;
 import com.lensim.fingerchat.data.repository.SPSaveHelper;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.api.CirclesFriendsApi;
 import com.lensim.fingerchat.fingerchat.databinding.FragmentCommentDetailBinding;
+import com.lensim.fingerchat.fingerchat.model.bean.CircleDetailsInfo;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentBean;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentResponse;
+import com.lensim.fingerchat.fingerchat.model.bean.PhotoBean;
+import com.lensim.fingerchat.fingerchat.model.bean.ThumbsBean;
+import com.lensim.fingerchat.fingerchat.model.requestbody.CommentTalkRequestBody;
+import com.lensim.fingerchat.fingerchat.model.requestbody.RevertCommentRequestBody;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.circle_friends_multitype.CommentAdapter;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.Content;
 import com.lensim.fingerchat.fingerchat.ui.me.utils.BitmapUtil;
 import com.lensim.fingerchat.fingerchat.ui.me.utils.DatasUtil;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -81,7 +89,7 @@ public class CommentDetailFragment extends Fragment {
     private CommentAdapter commentAdapter;
     private FavortListView.Adapter favortListAdapter;
     private CommentConfig config;
-    private CircleItem circleItem;
+    private PhotoBean circleItem;
     private View rootView;
     private int mCurrentKeyboardH;
     private int mScreenHeight;
@@ -90,13 +98,21 @@ public class CommentDetailFragment extends Fragment {
     private int mSelectCommentItemOffset;
     private boolean isDeleteCircle = false;
     private FragmentCommentDetailBinding ui;
+    private PhotoBean photoBean;
+    private CirclesFriendsApi circlesFriendsApi;
+    private String pSero;
+
+    private CirclesFriendsApi getCirclesFriendsApi(){
+        return null == circlesFriendsApi ? new CirclesFriendsApi() :circlesFriendsApi;
+    }
 
 
-    public static CommentDetailFragment newInstance(NewComment comment, CircleItem item) {
+    public static CommentDetailFragment newInstance(NewComment comment, PhotoBean item,String sero) {
         CommentDetailFragment fragment = new CommentDetailFragment();
         Bundle args = new Bundle();
         args.putParcelable(CommentDetailActivity.NEW_COMEMNT, comment);
         args.putParcelable(CommentDetailActivity.CIRCLE_ITEM, item);
+        args.putString(CommentDetailActivity.PHOTO_SERO,sero);
         fragment.setArguments(args);
         return fragment;
     }
@@ -187,7 +203,7 @@ public class CommentDetailFragment extends Fragment {
                     comment(UserInfoRepository.getUserName(), UserInfoRepository.getUsernick(),
                         config.id, config.createdid, config.createdName, content);
                 } else {
-                    reComment(config.id, config.createdid, config.createdName, content,
+                    reComment(pSero, config.createdid, config.createdName, content,
                         config.replyUserid, config.replyUsername);
                 }
 
@@ -198,39 +214,54 @@ public class CommentDetailFragment extends Fragment {
 
     private void comment(String commentUserid, String commentUsername, String photoserno,
         String createUserid, String createUsername, String content) {
-        Http.comment(commentUserid, commentUsername, photoserno, createUserid, createUsername, content)
-            .compose(RxSchedulers.io_main())
-            .subscribe(stringRetObjectResponse -> {
-                if (stringRetObjectResponse.retCode == 1 && !TextUtils.isEmpty(stringRetObjectResponse.retMsg)) {
-                    ContentEntity entity = new ContentEntity();
-                    entity.setPHC_CommentUserid(UserInfoRepository.getUserName());
-                    entity.setPHC_CommentUsername(UserInfoRepository.getUsernick());
-                    entity.setPHC_Content(content);
-                    entity.setPHC_Serno(stringRetObjectResponse.retMsg);
-                    circleItem.comments.add(entity);
-                    bindFavortAndComment(circleItem);
+        CommentTalkRequestBody requestBody = new CommentTalkRequestBody();
+        requestBody.setCommentUserId(commentUserid);
+        requestBody.setCommentUserName(CyptoUtils.encrypt(commentUsername));
+        requestBody.setContent(CyptoUtils.encrypt(content));
+        requestBody.setCreatorUserId(createUserid);
+        requestBody.setCreatorUserName(createUsername);
+        requestBody.setPhotoSerno(photoserno);
+        getCirclesFriendsApi().commentTalk(requestBody,
+            new FXRxSubscriberHelper<BaseResponse<CommentResponse>>() {
+                @Override
+                public void _onNext(BaseResponse<CommentResponse> commentResponseBaseResponse) {
+                    if (null != commentResponseBaseResponse && "Ok".equals(commentResponseBaseResponse.getMessage())){
+                        CommentBean entity = new CommentBean();
+                        entity.setCommentUserid(UserInfoRepository.getUserName());
+                        entity.setCommentUsername(UserInfoRepository.getUsernick());
+                        entity.setCommentContent(content);
+                        entity.setPhotoSerno(photoserno);
+                        circleItem.getComments().add(entity);
+                        bindFavortAndComment(circleItem);
+                    }
                 }
             });
     }
 
     private void reComment(String photoserno, String createUserid, String createUsername,
         String content, String secondid, String secondname) {
-        Http.reComment(photoserno, createUserid, createUsername, content, secondid, secondname)
-            .compose(RxSchedulers.io_main())
-            .subscribe(stringRetObjectResponse -> {
-                if (stringRetObjectResponse.retCode == 1 && !TextUtils.isEmpty(stringRetObjectResponse.retMsg)) {
-                    ContentEntity entity = new ContentEntity();
-                    entity.setPHC_CommentUserid(UserInfoRepository.getUserName());
-                    entity.setPHC_CommentUsername(UserInfoRepository.getUsernick());
-                    entity.setPHC_Content(content);
-                    entity.setPHC_SecondUserid(config.replyUserid);
-                    entity.setPHC_SecondUsername(config.replyUsername);
-                    entity.setPHC_Serno(stringRetObjectResponse.retMsg);
-                    circleItem.comments.add(entity);
-                    commentAdapter.setItems(circleItem.comments);
-                    commentAdapter.notifyDataSetChanged();
+        RevertCommentRequestBody revertCommentRequestBody = new RevertCommentRequestBody.Builder()
+            .commentUserId(UserInfoRepository.getUserName())
+            .commentUserId2(secondid)
+            .commentUserName(CyptoUtils.encrypt(UserInfoRepository.getUsernick()))
+            .commentUserName2(CyptoUtils.encrypt(secondname))
+            .creatorUserId(secondid)
+            .creatorUserName(secondname)
+            .content(CyptoUtils.encrypt(content))
+            .photoSerno(photoserno)
+            .build();
+        getCirclesFriendsApi().revertComment(revertCommentRequestBody,
+            new FXRxSubscriberHelper<BaseResponse<CommentResponse>>() {
+                @Override
+                public void _onNext(BaseResponse<CommentResponse> baseResponse) {
+                    if (null != baseResponse && "Ok".equals(baseResponse.getMessage())){
+                        circleItem.getComments().add(baseResponse.getContent().getComment());
+                        commentAdapter.setItems(circleItem.getComments());
+                        commentAdapter.notifyDataSetChanged();
+                    }
                 }
             });
+
     }
 
 
@@ -238,37 +269,53 @@ public class CommentDetailFragment extends Fragment {
     private void initData() {
         Bundle arguments = getArguments();
         NewComment newComment = arguments.getParcelable(CommentDetailActivity.NEW_COMEMNT);
-        CircleItem circleData = arguments.getParcelable(CommentDetailActivity.CIRCLE_ITEM);
+//        PhotoBean circleData = arguments.getParcelable(CommentDetailActivity.CIRCLE_ITEM);
+        pSero = arguments.getString(CommentDetailActivity.PHOTO_SERO);
+        getCirclesFriendsApi().getSubject(pSero,
+            new FXRxSubscriberHelper<BaseResponse<CircleDetailsInfo>>() {
+                @Override
+                public void _onNext(BaseResponse<CircleDetailsInfo> circleDetailsInfoBaseResponse) {
+                    if("Ok".equals(circleDetailsInfoBaseResponse.getMessage())){
+                        photoBean = circleDetailsInfoBaseResponse.getContent().getFxNewPhotos();
 
-        if (config == null) {
-            config = new CommentConfig();
-        }
-        config.id = newComment.getPHO_Serno();
-        config.createdid = newComment.getPHO_CreateUserID();
-        config.createdName = newComment.getUSR_Name();
+                        if (config == null) {
+                            config = new CommentConfig();
+                        }
+                        config.id = pSero;
+                        config.createdid = newComment.getPHO_CreateUserID();
+                        config.createdName = newComment.getUSR_Name();
 
-        if (TextUtils.isEmpty(newComment.getPHC_CommentUserid())) {
-            ui.circleInput.setCirclePrimaryMenuHint("评论");
-        } else {
-            config.commentType = CommentConfig.Type.REPLY;
-            config.replyUserid = newComment.getPHC_CommentUserid();
-            config.replyUsername = newComment.getPHC_CommentUsername();
-            ui.circleInput.setCirclePrimaryMenuHint("回复" + config.replyUsername + ":");
-        }
+                        if (TextUtils.isEmpty(newComment.getPHC_CommentUserid())) {
+                            ui.circleInput.setCirclePrimaryMenuHint("评论");
+                        } else {
+                            config.commentType = CommentConfig.Type.REPLY;
+                            config.replyUserid = newComment.getPHC_CommentUserid();
+                            config.replyUsername = newComment.getPHC_CommentUsername();
+                            ui.circleInput.setCirclePrimaryMenuHint("回复" + config.replyUsername + ":");
+                        }
 
-        if (circleData == null) {
-            String content = SPSaveHelper.getStringValue(UserInfoRepository.getUserName() + "circle_content", "");
-            Gson gson = new Gson();
-            List<FriendCircleEntity> entity = gson.fromJson(content, new TypeToken<List<FriendCircleEntity>>() {}.getType());
-            if (entity != null && !entity.isEmpty() && entity.get(0) != null) {
-                circleData = DatasUtil.createCircleData(entity.get(0));
-                bindData(circleData);
-            } else {
-                getCircleDataFromNet(newComment);
-            }
-        } else {
-            bindData(circleData);
-        }
+                        if (photoBean == null) {
+                            String content = SPSaveHelper.getStringValue(UserInfoRepository.getUserName() + "circle_content", "");
+                            Gson gson = new Gson();
+                            List<PhotoBean> entity = gson.fromJson(content, new TypeToken<List<PhotoBean>>() {}.getType());
+                            if (entity != null && !entity.isEmpty() && entity.get(0) != null) {
+                                bindData(photoBean);
+                            } else {
+                                getCircleDataFromNet(newComment);
+                            }
+                        } else {
+                            bindData(photoBean);
+                        }
+
+                    }
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    super.onError(throwable);
+                }
+            });
+
 
     }
 
@@ -290,11 +337,12 @@ public class CommentDetailFragment extends Fragment {
                 item.photos = DatasUtil.createPhotos(newComment.getPHO_ImageName(), newComment.getPHO_ImagePath());
             }
         }
-        getPhotoItemById(item, newComment.getPHO_Serno(), UserInfoRepository.getUserName());
+//        getPhotoItemById(item, newComment.getPHO_Serno(), UserInfoRepository.getUserName());
     }
 
 
-    private void getPhotoItemById(CircleItem item, String pho_serno, String username) {
+    private void getPhotoItemById(PhotoBean item, String pho_serno, String username) {
+        /**
         Http.getPhotoItemById(pho_serno, username)
             .compose(RxSchedulers.io_main())
             .subscribe(stringRetObjectResponse -> {
@@ -330,36 +378,36 @@ public class CommentDetailFragment extends Fragment {
                     T.show(stringRetObjectResponse.retMsg);
                 }
             },
-            throwable -> T.show(throwable.getMessage()));
+            throwable -> T.show(throwable.getMessage()));**/
     }
 
-    private void bindData(final CircleItem circleItem) {
+    private void bindData(final PhotoBean circleItem) {
         this.circleItem = circleItem;
-        String name = circleItem.username;//发朋友圈人的名字
-        String headImg = circleItem.headUrl;//
+        String name = circleItem.getUserName();//发朋友圈人的名字
+        String headImg = circleItem.getUserImage();//
 
         if (TextUtils.isEmpty(headImg)) {
-            headImg = String.format(Route.obtainAvater, circleItem.userid);
+            headImg = String.format(Route.obtainAvater, circleItem.getPhotoCreator());
         }
 
         if (headImg.toLowerCase().startsWith("c:\\hnlensweb\\")) {
             headImg = headImg.replace("C:\\HnlensWeb\\", Route.Host);
             headImg = headImg.replace("\\", "/").trim();
         }
-        final String content = CyptoConvertUtils.decryptString(circleItem.content);
-        String createTime = circleItem.createTime;
+        final String content = CyptoConvertUtils.decryptString(circleItem.getPhotoContent());
+        long createTime = circleItem.getCreateDatetime();
 
         //String sign = BaseApplication.getString(LensImUtil.getUserName() + "sign", "");
         //Glide.with(this).load(headImg).signature(new StringSignature(sign)).placeholder(R.color.im_line_color).into(headIv);
         ImageLoader.getInstance().displayImage(headImg, ui.headIv, BitmapUtil.getAvatarOptions());
         ui.headIv.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), FriendDetailActivity.class);
-            intent.putExtra(AppConfig.FRIEND_NAME, circleItem.userid);
+            intent.putExtra(AppConfig.FRIEND_NAME, circleItem.getPhotoCreator());
             startActivity(intent);
         });
 
-        ui.nameTv.setText(TextUtils.isEmpty(name) ? circleItem.userid : name);
-        ui.timeTv.setText(TextUtils.isEmpty(createTime) ? "" : StringUtils.parseDbTime2(createTime));
+        ui.nameTv.setText(TextUtils.isEmpty(name) ? circleItem.getPhotoCreator() : name);
+        ui.timeTv.setText(createTime == 0L ? "" : StringUtils.parseDbTime2(TimeUtils.timeFormat(createTime)));
 
         if (StringUtils.isEmpty(content)) {
             ui.contentTv.setVisibility(View.GONE);
@@ -384,10 +432,7 @@ public class CommentDetailFragment extends Fragment {
 
         bindFavortAndComment(circleItem);
         ui.urlTipTv.setVisibility(View.GONE);
-        if (TextUtils.isEmpty(circleItem.type)) {
-            return;
-        }
-        switch (circleItem.type) {
+        switch (circleItem.getType()+"") {
 //            case TYPE_URL:// 处理链接动态的链接内容和和图片
 //                String linkImg = circleItem.linkImg;
 //                String linkTitle = circleItem.linkTitle;
@@ -414,7 +459,7 @@ public class CommentDetailFragment extends Fragment {
         ui.viewStub.getViewStub().setLayoutResource(R.layout.viewstub_imgbody);
         ui.viewStub.getViewStub().inflate();
         final MultiImageView multiImageView = rootView.findViewById(R.id.multiImagView);
-        final List<String> photos = circleItem.photos;
+        final List<String> photos = Arrays.asList(circleItem.getPhotoUrl().split(","));
         if (photos == null || photos.isEmpty()) {
             multiImageView.setVisibility(View.GONE);
         } else {
@@ -436,10 +481,11 @@ public class CommentDetailFragment extends Fragment {
                     }
                 }
                 ArrayList<String> urls = new ArrayList<>(photos);
-                StoreManager.getInstance().storeInit(circleItem.id, circleItem.userid, circleItem.username, circleItem.headUrl, Content.MSG_TYPE_PIC);
+                StoreManager.getInstance().storeInit(circleItem.getPhotoId()+"", circleItem.getPhotoCreator(),
+                    circleItem.getUserName(), circleItem.getUserImage(), Content.MSG_TYPE_PIC);
 
                 Intent intent = GalleryAnimationActivity
-                    .newIntent(urls, null, animationRectArrayList, null, position);
+                    .newIntent(urls, null, animationRectArrayList, null, position,"");
                 startActivity(intent);
             });
 
@@ -460,19 +506,21 @@ public class CommentDetailFragment extends Fragment {
         FrameLayout layoutPlayer = rootView.findViewById(R.id.container_video_play);
         CircleProgress progressBar = rootView.findViewById(R.id.progress_bar);
         ll_loading.setVisibility(View.GONE);
-        String videoPathCache = FileCache.getInstance().getVideoPath(circleItem.videoUrl);
+        String vedioPath = circleItem.getPhotoUrl().split(",")[0];
+        String photoUrl = circleItem.getPhotoUrl().split(",")[1];
+        String videoPathCache = FileCache.getInstance().getVideoPath(vedioPath);
 
         if (!StringUtils.isEmpty(videoPathCache) && FileUtil
             .checkFilePathExists(videoPathCache)) {
             videothumbnial.setVisibility(View.VISIBLE);
-            Glide.with(getActivity()).load(circleItem.videoUrl.replace(".mp4", ".jpg")).centerCrop().into(videothumbnial);
+            Glide.with(getActivity()).load(photoUrl).centerCrop().into(videothumbnial);
             layoutPlayer.setOnClickListener(v -> toPlayer(videothumbnial, videoPathCache));
         } else {
             ll_loading.setVisibility(View.VISIBLE);
         }
 
         layoutPlayer.setOnLongClickListener(v -> {
-            showCollectWindow(true, circleItem.videoUrl, circleItem,
+            showCollectWindow(true, circleItem.getPhotoUrl(), circleItem,
                 Content.MSG_TYPE_VIDEO);
             return true;
         });
@@ -490,12 +538,12 @@ public class CommentDetailFragment extends Fragment {
         startActivity(intent);
     }
 
-    private void bindFavortAndComment(final CircleItem circleItem) {
-        final String circleId = circleItem.id;//每个条目的序号
-        final List<ZambiaEntity> favortDatas = circleItem.favorters;
-        final List<ContentEntity> commentsDatas = circleItem.comments;
-        boolean hasFavort = circleItem.favorters != null && circleItem.favorters.size() > 0;
-        boolean hasComment = circleItem.comments != null && circleItem.comments.size() > 0;
+    private void bindFavortAndComment(final PhotoBean circleItem) {
+        final String circleId = circleItem.getPhotoId()+"";//每个条目的序号
+        final List<ThumbsBean> favortDatas = circleItem.getThumbsUps();
+        final List<CommentBean> commentsDatas = circleItem.getComments();
+        boolean hasFavort = circleItem.getThumbsUps() != null && circleItem.getThumbsUps().size() > 0;
+        boolean hasComment = circleItem.getComments() != null && circleItem.getComments().size() > 0;
 
         //处理点赞列表
         if (hasFavort) {
@@ -508,32 +556,33 @@ public class CommentDetailFragment extends Fragment {
         //处理评论列表
         if (hasComment) {
             ui.commentList.setOnItemClick(commentPosition -> {
-                ContentEntity commentItem = commentsDatas.get(commentPosition);
+                CommentBean commentItem = commentsDatas.get(commentPosition);
                 //回复别人的评论
-                if (!UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid())) {
+                if (!UserInfoRepository.getUserName().equals(commentItem.getCommentUserid())) {
                     CommentConfig config = new CommentConfig();
                     config.id = circleId;
-                    config.createdid = circleItem.userid;
-                    config.createdName = circleItem.username;
+                    config.createdid = circleItem.getPhotoCreator();
+                    config.createdName = circleItem.getUserName();
                     config.commentPosition = commentPosition;
                     config.commentType = CommentConfig.Type.REPLY;
-                    config.replyUserid = commentItem.getPHC_CommentUserid();
-                    config.replyUsername = StringUtils.isEmpty(commentItem.getPHC_CommentUsername()) ? commentItem.getPHC_CommentUserid() : commentItem.getPHC_CommentUsername();
+                    config.replyUserid = commentItem.getCommentUserid();
+                    config.replyUsername = StringUtils.isEmpty(commentItem.getCreatorUsername())
+                        ? commentItem.getCommentUserid() : commentItem.getCommentUsername();
                     showEditTextBody(config);
                 }
             });
 
             ui.commentList.setOnItemLongClick(commentPosition -> {
-                ContentEntity commentItem = commentsDatas.get(commentPosition);
-                CommentDialog dialog = new CommentDialog(getActivity(), UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid()));
+                CommentBean commentItem = commentsDatas.get(commentPosition);
+                CommentDialog dialog = new CommentDialog(getActivity(), UserInfoRepository.getUserName().equals(commentItem.getCommentUserid()));
                 dialog.setCanceledOnTouchOutside(true);
                 dialog.setCancelable(true);
                 //删除
-                dialog.setDeleteClickListener(() -> deleteComment(commentPosition, commentItem.getPHC_CommentUserid(), commentItem.getPHC_Serno()));
+                dialog.setDeleteClickListener(() -> deleteComment(commentPosition, commentItem.getCommentUserid(), commentItem.getPhotoSerno()));
                 //复制
                 dialog.setCopyClickListener(() -> {
                     ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                    clipboard.setPrimaryClip(ClipData.newPlainText(null, commentItem.getPHC_Content()));
+                    clipboard.setPrimaryClip(ClipData.newPlainText(null, commentItem.getCommentContent()));
                 });
                 dialog.show();
             });
@@ -558,10 +607,10 @@ public class CommentDetailFragment extends Fragment {
     /**
      * 处理点赞
      */
-    private void handleFavort(@NonNull List<ZambiaEntity> favortDatas) {
+    private void handleFavort(@NonNull List<ThumbsBean> favortDatas) {
         favortListAdapter.setSpanClickListener(position -> {
             Intent intent = new Intent(getActivity(), FriendDetailActivity.class);
-            intent.putExtra(AppConfig.FRIEND_NAME, favortDatas.get(position).PHC_CommentUserid);
+            intent.putExtra(AppConfig.FRIEND_NAME, favortDatas.get(position).getThumbsUserId());
             startActivity(intent);
         });
         List<String> favortItems = DatasUtil.getFavortItems(favortDatas);
@@ -631,7 +680,7 @@ public class CommentDetailFragment extends Fragment {
     }
 
 
-    private void showCollectWindow(boolean isVideo, String resPath, CircleItem circleItem,
+    private void showCollectWindow(boolean isVideo, String resPath, PhotoBean circleItem,
         int extraType) {
         CollectDialog dialog = new CollectDialog(getActivity(), isVideo);
         dialog.setCanceledOnTouchOutside(true);
@@ -651,9 +700,20 @@ public class CommentDetailFragment extends Fragment {
             .show();
     }
 
-
+    /**
+     * 删除说说
+     */
     private void deleteRequest() {
-        Http.deleteCircle(config.id, UserInfoRepository.getUserName())
+        getCirclesFriendsApi().deletePhoto(pSero, new FXRxSubscriberHelper<BaseResponse>() {
+            @Override
+            public void _onNext(BaseResponse baseResponse) {
+                isDeleteCircle = true;
+                if (getActivity() instanceof CommentDetailActivity) {
+                    ((CommentDetailActivity) getActivity()).onReturn();
+                }
+            }
+        });
+       /* Http.deleteCircle(config.id, UserInfoRepository.getUserName())
             .compose(RxSchedulers.io_main())
             .subscribe(stringRetObjectResponse -> {
                 isDeleteCircle = true;
@@ -664,12 +724,12 @@ public class CommentDetailFragment extends Fragment {
             throwable -> {
                 isDeleteCircle = true;
                 T.show("删除失败");
-            });
+            });*/
     }
 
     public Intent setResult() {
         Intent intent = new Intent();
-        intent.putExtra("circleitem", circleItem);
+        intent.putExtra("circleitem", circleItem.getComments().size()+","+circleItem.getThumbsUps().size());
         intent.putExtra("isDeleteCircle", isDeleteCircle);
         return intent;
     }
@@ -677,11 +737,11 @@ public class CommentDetailFragment extends Fragment {
     private class PopupCollectClickListener implements CollectDialog.OnItemClickListener {
 
         private String path;
-        private CircleItem mcircleItem;
+        private PhotoBean mcircleItem;
         private int mType;
 
 
-        public PopupCollectClickListener(String resPath, CircleItem circleItem, int extraType) {
+        public PopupCollectClickListener(String resPath, PhotoBean circleItem, int extraType) {
             this.path = resPath;
             this.mType = extraType;
             this.mcircleItem = circleItem;
@@ -702,11 +762,13 @@ public class CommentDetailFragment extends Fragment {
         }
     }
 
-    public void collect(String path, CircleItem circleItem, int mType) {
+    public void collect(String path, PhotoBean circleItem, int mType) {
         if (mType == Content.MSG_TYPE_TEXT) {
-            StoreManager.getInstance().storeCircleText(circleItem.id, circleItem.userid, circleItem.username, path, circleItem.headUrl);
+            StoreManager.getInstance().storeCircleText(circleItem.getPhotoId()+"", circleItem.getPhotoCreator()
+                , circleItem.getUserName(), path, circleItem.getUserImage());
         } else {
-            StoreManager.getInstance().storeCircleImageVideo(circleItem.id, circleItem.userid, circleItem.username, path, circleItem.headUrl, mType);
+            StoreManager.getInstance().storeCircleImageVideo(circleItem.getPhotoId()+"", circleItem.getPhotoCreator()
+                , circleItem.getUserName(), path, circleItem.getUserImage(), mType);
         }
     }
 }

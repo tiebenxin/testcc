@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/activity_bg"
+        android:orientation="vertical">
+
+        <com.lensim.fingerchat.commons.toolbar.FGToolbar
+            android:id="@+id/toolbar"
+            style="@style/FGToolbarStyleWithNoOverflow"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingLeft="@dimen/indent_10"
+                android:paddingRight="@dimen/indent_10"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="name"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/dimen_14_sp"/>
+
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="@dimen/indent_4"
+                    android:text="10.33"
+                    android:textColor="@color/gray_99"
+                    android:textSize="@dimen/dimen_12_sp"/>
+
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:paddingLeft="@dimen/indent_10"
+                android:paddingRight="@dimen/indent_10"
+                android:text=""
+                android:textColor="@color/black_33"
+                android:textSize="@dimen/dimen_14_sp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:background="@color/activity_bg"/>
+
+            <!--<android.support.design.widget.TabLayout-->
+            <!--android:id="@+id/tab_layout"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="50dp"-->
+            <!--app:tabIndicatorHeight="0dp"-->
+            <!--app:tabPaddingEnd="2dp"-->
+            <!--app:tabPaddingStart="2dp"/>-->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_40">
+
+                <TextView
+                    android:id="@+id/tv_left"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="已读"
+                    android:textColor="@color/black_33"
+                    android:textSize="@dimen/dimen_14_sp"/>
+
+                <TextView
+                    android:id="@+id/tv_right"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="未读"
+                    android:textColor="@color/black_33"
+                    android:textSize="@dimen/dimen_14_sp"/>
+            </LinearLayout>
+
+
+            <FrameLayout
+                android:id="@+id/fl_content"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>

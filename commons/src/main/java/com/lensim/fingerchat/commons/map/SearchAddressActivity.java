@@ -53,7 +53,6 @@ public class SearchAddressActivity extends BaseActivity implements View.OnClickL
         listView.setOnItemClickListener(this);
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("搜索中...");
-
 //    LatLng position = getIntent().getParcelableExtra("position");
         city = getIntent().getStringExtra("city");
 //    lp = new LatLng(position.latitude, position.longitude);

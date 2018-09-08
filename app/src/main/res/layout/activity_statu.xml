@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white">
+        android:background="@color/white"
+        android:orientation="vertical">
 
 
         <com.lensim.fingerchat.commons.toolbar.FGToolbar
             android:id="@+id/statu_toolbar"
-            style="@style/FGToolbarStyle"/>
+            style="@style/FGToolbarStyleWithNoOverflow"/>
 
         <EditText
             android:id="@+id/statu_input_mind"
             android:layout_width="fill_parent"
             android:layout_height="100dp"
             android:layout_margin="8dp"
+            android:background="@null"
             android:gravity="start|top"
-            android:textColor="@color/blue"
             android:hint="@string/input_your_mind"
-            android:background="@null" />
+            android:textColor="@color/blue"/>
         <com.lensim.fingerchat.components.widget.NoScrollGridView
             android:id="@+id/statu_img_container"
             android:layout_width="290dp"
@@ -28,7 +28,7 @@
             android:horizontalSpacing="3dp"
             android:numColumns="4"
             android:scrollbars="none"
-            android:verticalSpacing="5dp" />
+            android:verticalSpacing="5dp"/>
 
     </LinearLayout>
 

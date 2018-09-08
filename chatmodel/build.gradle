@@ -1,22 +1,19 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
+    compileSdkVersion 26
 
     defaultConfig {
         minSdkVersion rootProject.ext.android["minSdkVersion"]
         targetSdkVersion rootProject.ext.android["targetSdkVersion"]
         consumerProguardFiles 'proguard-rules.pro'
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
                 includeCompileClasspath false
             }
         }
-//        vectorDrawables {
-//            useSupportLibrary = true
-//        }
+        multiDexEnabled true
 
     }
 
@@ -39,30 +36,18 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation rootProject.ext.dependencies["appcompat-v7"]
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    //    implementation files('libs/pinyin4j-2.5.0.jar')
     implementation project(path: ':commons')
     implementation project(path: ':fingerchat-sdk')
     implementation project(path: ':components')
     implementation project(path: ':data')
-    implementation project(path: ':camera')
+    implementation project(':librarys:camera')
     implementation project(path: ':db')
     implementation project(path: ':WebView')
-    implementation "org.greenrobot:eventbus:$rootProject.ext.eventbusVersion"
-    implementation "com.github.bumptech.glide:glide:$rootProject.ext.glideVersion"
     implementation rootProject.ext.dependencies["recyclerview"]
-    implementation "io.reactivex.rxjava2:rxandroid:$rootProject.ext.rxandroidVersion"
-    implementation "io.reactivex.rxjava2:rxjava:$rootProject.ext.rxjavaVersion"
     implementation "com.czt.mp3recorder:library:$rootProject.ext.mp3recorderVersion"
-
-    implementation "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofitVersion"
-    implementation "com.squareup.okhttp3:okhttp:$rootProject.ext.okhttpVersion"
-    implementation 'com.google.code.gson:gson:2.8.2'
-
     implementation 'com.edmodo:cropper:1.0.1'
     implementation "com.jakewharton:butterknife:$rootProject.ext.butterknifeVersion"
     implementation 'com.zhy:percent-support-extends:1.1.1'
+    implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
+
 }

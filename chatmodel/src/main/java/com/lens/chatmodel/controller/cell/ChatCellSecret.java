@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,16 +18,13 @@ import com.lens.chatmodel.interf.IChatEventListener;
  */
 
 public class ChatCellSecret extends ChatCellBase {
-
-
     private TextView tv_msg;
     private BodyEntity entity;
     private ImageView iv_lock;
 
-    protected ChatCellSecret(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
+    protected ChatCellSecret(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 

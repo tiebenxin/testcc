@@ -41,7 +41,7 @@ public class NetworkReceiver extends BroadcastReceiver {
         if (networkInfo != null && networkInfo.isConnected()) {
             updateNetStatus(ENetStatus.SUCCESS_ON_NET);
             System.out.println("NetworkReceiver" + "有网络了");
-
+            
         } else {
             updateNetStatus(ENetStatus.ERROR_NET);
             System.out.println("NetworkReceiver" + "无网络了");

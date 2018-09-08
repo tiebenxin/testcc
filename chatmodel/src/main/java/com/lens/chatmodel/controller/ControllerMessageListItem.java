@@ -25,6 +25,7 @@ import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.helper.ImageHelper;
 import com.lens.chatmodel.helper.MsgTagHandler;
 import com.lens.chatmodel.interf.IChatItemClickListener;
+import com.lens.chatmodel.interf.IChatRoomModel;
 import com.lens.chatmodel.utils.SmileUtils;
 import com.lens.chatmodel.view.spannable.SpannableUtil;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
@@ -41,7 +42,7 @@ import java.sql.Date;
 public class ControllerMessageListItem extends ControllerBaseItem<RecentMessage> {
 
     private AvatarImageView iv_avatar;
-    private TextView tv_unread;
+    private TextView tv_unread, tv_notify;
     private TextView tv_name;
     private LinearLayout ll_identify;
     private TextView tv_time;
@@ -54,6 +55,8 @@ public class ControllerMessageListItem extends ControllerBaseItem<RecentMessage>
     private ImageView iv_disturb;
     private LinearLayout ll_root;
     private TextView tv_sender;
+    private boolean isGroupChat;
+    private IChatRoomModel message;
 
     public ControllerMessageListItem(Context context) {
         this(context, R.layout.item_message_list);
@@ -71,6 +74,7 @@ public class ControllerMessageListItem extends ControllerBaseItem<RecentMessage>
         iv_avatar = getView().findViewById(R.id.iv_avatar);
         tv_unread = getView().findViewById(R.id.tv_unread);
         tv_name = getView().findViewById(R.id.tv_name);
+        tv_notify = getView().findViewById(R.id.tv_notify);
 
         ll_identify = getView().findViewById(R.id.ll_identify);
         iv_identify = getView().findViewById(R.id.iv_identify);
@@ -110,6 +114,12 @@ public class ControllerMessageListItem extends ControllerBaseItem<RecentMessage>
         super.showData(o);
 
         model = o;
+        if (model.getChatType() == EChatType.PRIVATE.ordinal()) {
+            isGroupChat = false;
+        } else if (model.getChatType() == EChatType.GROUP.ordinal()) {
+            isGroupChat = true;
+        }
+        message = model.getLastMessage();
         if (model != null) {
             int factor = SPHelper.getInt("font_size", 1) * 2;
             if (factor <= 2) {
@@ -119,16 +129,19 @@ public class ControllerMessageListItem extends ControllerBaseItem<RecentMessage>
             }
             tv_name.setTextSize(TypedValue.COMPLEX_UNIT_DIP, factor + 12);
             tv_msg.setTextSize(TypedValue.COMPLEX_UNIT_DIP, factor + 10);
+            tv_sender.setTextSize(TypedValue.COMPLEX_UNIT_DIP, factor + 10);
+            tv_notify.setTextSize(TypedValue.COMPLEX_UNIT_DIP, factor + 10);
             tv_time.setTextSize(TypedValue.COMPLEX_UNIT_DIP, factor + 10);
 
-            if (model.getChatType() == EChatType.PRIVATE.ordinal()) {
+            if (!isGroupChat) {
                 tv_sender.setVisibility(View.GONE);
-
                 tv_name
                     .setText(
                         TextUtils.isEmpty(model.getNick()) ? model.getChatId() : model.getNick());
-                if (ChatHelper.isSystemUser(model.getChatId())) {
+                if (ChatHelper.isMytipUser(model.getChatId())) {
                     ImageHelper.loadDrawableImage(R.drawable.ic_contact_server, iv_avatar);
+                } else if (ChatHelper.isMytipSystemUser(model.getChatId())) {
+                    ImageHelper.loadDrawableImage(R.drawable.ic_server, iv_avatar);
                 } else {
                     ImageHelper.loadAvatarPrivate(model.getAvatarUrl(), iv_avatar);
                 }
@@ -137,8 +150,8 @@ public class ControllerMessageListItem extends ControllerBaseItem<RecentMessage>
                 if (model.getUserId().equals(userId)) {
                     tv_sender.setVisibility(View.GONE);
                 } else {
-                    if (model.getMsgType() != EMessageType.ACTION && !TextUtils
-                        .isEmpty(model.getMsg())) {
+                    if (message != null && message.getMsgType() != EMessageType.ACTION && !TextUtils
+                        .isEmpty(message.getContent()) && message.getCancel() != 1) {
                         tv_sender.setVisibility(View.VISIBLE);
                         tv_sender
                             .setText(
@@ -153,36 +166,77 @@ public class ControllerMessageListItem extends ControllerBaseItem<RecentMessage>
                         TextUtils.isEmpty(model.getGroupName()) ? model.getChatId()
                             : model.getGroupName());
                 iv_avatar
-                    .setDrawText(MucInfo.selectMucUserNick(mContext, model.getChatId()));
+                    .setDrawText(MucInfo
+                        .selectMucUserNickList(ContextHelper.getContext(), model.getChatId()));
 
             }
             String draft = "";
             if (!TextUtils.isEmpty(userId)) {
                 draft = SPHelper.getString(userId + "&" + model.getChatId());
             }
-            if (!TextUtils.isEmpty(draft)) {//有草稿
-                Spannable smiledText = SmileUtils
-                    .getSmiledText(mContext, "[草稿]", draft, TDevice.sp2px(12 + factor));
-                tv_msg.setText(SpannableUtil.traftText(smiledText), BufferType.SPANNABLE);
-            } else {
-                ///为action的消息做解析
-                if (model.getMsgType().value == ChatEnum.EMessageType.ACTION.value) {
-                    tv_msg.setMovementMethod(LinkMovementMethod.getInstance());
-                    tv_msg.setText(Html.fromHtml(model.getHint(), null,
-                        new MsgTagHandler(ContextHelper.getContext(), false, "")));
-                } else {
+
+            if (message != null) {
+                tv_msg.setVisibility(View.VISIBLE);
+                model.setMsgId(message.getMsgId());
+                if (model.isAt()) {
+                    tv_notify.setVisibility(View.VISIBLE);
+                    tv_notify.setText(
+                        "[" + ContextHelper.getString(R.string.someone_at_me) + "]");
+                    if (message.getMsgType().value == ChatEnum.EMessageType.ACTION.value) {
+                        tv_msg.setMovementMethod(LinkMovementMethod.getInstance());
+                        if (!TextUtils.isEmpty(ChatHelper.getHint(message))) {
+                            tv_msg.setText(Html.fromHtml(ChatHelper.getHint(message), null,
+                                new MsgTagHandler(ContextHelper.getContext(), false, "")));
+                        }
+                    } else {
+
+                        if (!TextUtils.isEmpty(message.getHint())) {
+                            Spannable smiledText = SmileUtils
+                                .getSmiledText(mContext, ChatHelper.getHint(message),
+                                    TDevice.sp2px(10 + factor));
+                            tv_msg.setText(smiledText, BufferType.SPANNABLE);
+                        } else {
+                            tv_msg.setText(ChatHelper.getHint(message));
+                        }
+                    }
+                } else if (!TextUtils.isEmpty(draft)) {
+                    tv_notify.setVisibility(View.GONE);
+                    tv_sender.setVisibility(View.GONE);
                     Spannable smiledText = SmileUtils
-                        .getSmiledText(mContext, model.getHint(), TDevice.sp2px(12 + factor));
-                    tv_msg.setText(smiledText, BufferType.SPANNABLE);
+                        .getSmiledText(mContext, "[草稿]", draft, TDevice.sp2px(10 + factor));
+                    tv_msg.setText(SpannableUtil.traftText(smiledText), BufferType.SPANNABLE);
+                } else {
+                    tv_notify.setVisibility(View.GONE);
+                    ///为action的消息做解析
+                    if (message.getMsgType().value == ChatEnum.EMessageType.ACTION.value) {
+                        tv_msg.setMovementMethod(LinkMovementMethod.getInstance());
+                        if (!TextUtils.isEmpty(ChatHelper.getHint(message))) {
+                            tv_msg.setText(Html.fromHtml(ChatHelper.getHint(message), null,
+                                new MsgTagHandler(ContextHelper.getContext(), false, "")));
+                        }
+                    } else {
+
+                        if (!TextUtils.isEmpty(message.getHint())) {
+                            Spannable smiledText = SmileUtils
+                                .getSmiledText(mContext, ChatHelper.getHint(message),
+                                    TDevice.sp2px(10 + factor));
+                            tv_msg.setText(smiledText, BufferType.SPANNABLE);
+                        } else {
+                            tv_msg.setText(ChatHelper.getHint(message));
+                        }
+                    }
                 }
+            } else {
+                tv_msg.setVisibility(View.INVISIBLE);
             }
+
             ll_identify.setVisibility(View.INVISIBLE);
 
             tv_time.setText(StringUtils.friendly_time3(new Date(model.getTime())));
-
-            if (model.getUnreadCount() > 0) {
+            int unreadCount = model.getUnreadCount();
+            if (unreadCount > 0) {
                 tv_unread.setVisibility(View.VISIBLE);
-                tv_unread.setText(model.getUnreadCount() + "");
+                tv_unread.setText(unreadCount > 99 ? 99 + "+" : unreadCount + "");
             } else {
                 tv_unread.setVisibility(View.GONE);
             }

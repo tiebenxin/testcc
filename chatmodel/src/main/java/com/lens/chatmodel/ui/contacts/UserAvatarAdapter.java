@@ -6,13 +6,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.db.MucInfo;
 import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.helper.ImageHelper;
-import com.lens.chatmodel.ui.group.Constant;
 import com.lens.chatmodel.ui.profile.FriendDetailActivity;
 import com.lensim.fingerchat.commons.widgt.AvatarImageView;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
@@ -57,7 +55,7 @@ public class UserAvatarAdapter extends RecyclerView.Adapter {
             //群
             if (ChatHelper.isGroupChat(userBean.getChatType())) {
                 avatarHolder.avatarView
-                    .setDrawText(MucInfo.selectMucUserNick(context, userBean.getUserId()));
+                    .setDrawText(MucInfo.selectMucUserNickList(context, userBean.getUserId()));
             } else {
                 //人
                 avatarHolder.avatarView.setChatType(true);

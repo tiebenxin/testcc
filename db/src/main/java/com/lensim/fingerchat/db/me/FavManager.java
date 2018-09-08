@@ -1,9 +1,9 @@
 package com.lensim.fingerchat.db.me;
 
 import android.text.TextUtils;
+import com.lensim.fingerchat.db.GreenDaoManager;
 import com.lensim.fingerchat.db.greendao.FavJsonDBDao;
 import com.lensim.fingerchat.db.greendao.FavJsonDBDao.Properties;
-import com.lensim.fingerchat.db.GreenDaoManager;
 import java.util.ArrayList;
 import java.util.List;
 

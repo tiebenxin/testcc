@@ -15,9 +15,13 @@ public interface IMClient extends FingerProtocol {
 
     void destroy();
 
+    boolean isClientState();
+
     boolean isRunning();
 
     boolean isLogin();
+
+    boolean isHandOk();
 
     void onNetStateChange(boolean isConnected);
 

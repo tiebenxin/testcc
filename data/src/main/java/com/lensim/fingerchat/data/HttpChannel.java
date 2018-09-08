@@ -18,6 +18,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -26,6 +29,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -96,7 +105,7 @@ public class HttpChannel {
         switch (type) {
             case UPLOAD:
                 retrofit = new Retrofit.Builder()
-                    .baseUrl(BaseURL.BASE_URL_UPLOAD)
+                    .baseUrl(BaseURL.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create()) // 支持RxJava
                     .client(okHttpClient) // 打印请求参数
@@ -104,7 +113,7 @@ public class HttpChannel {
                 break;
             case SEARCH_USER:
                 retrofit = new Retrofit.Builder()
-                    .baseUrl(BaseURL.BASE_URL_SEARCH)
+                    .baseUrl(BaseURL.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create()) // 支持RxJava
                     .client(okHttpClient) // 打印请求参数
@@ -112,7 +121,7 @@ public class HttpChannel {
                 break;
             case DEFAULT:
                 retrofit = new Retrofit.Builder()
-                    .baseUrl(BaseURL.BASE_URL_TEST)
+                    .baseUrl(BaseURL.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create()) // 支持RxJava
                     .client(okHttpClient) // 打印请求参数
@@ -128,7 +137,7 @@ public class HttpChannel {
                 break;
             case MGSON:
                 retrofit = new Retrofit.Builder()
-                    .baseUrl(BaseURL.BASE_URL_TEST)
+                    .baseUrl(BaseURL.BASE_URL)
                     .addConverterFactory(MGsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create()) // 支持RxJava
                     .client(okHttpClient) // 打印请求参数
@@ -136,7 +145,7 @@ public class HttpChannel {
                 break;
             case SSO_LOGIN:
                 retrofit = new Retrofit.Builder()
-                    .baseUrl(Route.SSO_HOST)
+                    .baseUrl(BaseURL.BASE_URL)
                     .addConverterFactory(MGsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create()) // 支持RxJava
                     .client(okHttpClient) // 打印请求参数
@@ -144,7 +153,7 @@ public class HttpChannel {
                 break;
             default:
                 retrofit = new Retrofit.Builder()
-                    .baseUrl(BaseURL.BASE_URL_TEST)
+                    .baseUrl(BaseURL.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create()) // 支持RxJava
                     .client(okHttpClient) // 打印请求参数
@@ -160,7 +169,7 @@ public class HttpChannel {
      *
      * @return OkHttpClient
      */
-    private OkHttpClient getOkHttpClient() {
+    public OkHttpClient getOkHttpClient() {
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
         httpLoggingInterceptor.setLevel(Consts.DEBUG ?
             HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
@@ -170,6 +179,14 @@ public class HttpChannel {
         builder.connectTimeout(DEFAULT_TIME_OUT, TimeUnit.SECONDS);
         builder.readTimeout(DEFAULT_TIME_OUT, TimeUnit.SECONDS);
         builder.writeTimeout(DEFAULT_TIME_OUT, TimeUnit.SECONDS);
+        //支持HTTPS请求，跳过证书验证
+        builder.sslSocketFactory(createSSLSocketFactory());
+        builder.hostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        });
         builder.addInterceptor(httpLoggingInterceptor);
 
         if (BuildConfig.DEBUG) {
@@ -234,8 +251,6 @@ public class HttpChannel {
     }
 
     /**
-     * 发送消息
-     *
      * @param observable Observable<? extends BaseBean>
      */
     public static void getObserverString(Observable<ResponseBody> observable,
@@ -254,7 +269,9 @@ public class HttpChannel {
                         if (null != responseBody) {
                             String result = responseBody.string();
                             if (!TextUtils.isEmpty(result)) {
-                                listener.loadSuccess(result);
+                                if (listener != null) {
+                                    listener.loadSuccess(result);
+                                }
                             }
                         }
                     } catch (Exception e) {
@@ -264,7 +281,9 @@ public class HttpChannel {
 
                 @Override
                 public void onError(@NonNull Throwable e) {
-                    listener.loadFailure(e.getMessage());
+                    if (listener != null) {
+                        listener.loadFailure(e.getMessage());
+                    }
                 }
 
                 @Override
@@ -393,6 +412,42 @@ public class HttpChannel {
             }
         } catch (IOException e) {
             return false;
+        }
+    }
+
+    /**
+     * 生成安全套接字工厂，用于https请求的证书跳过
+     */
+    public SSLSocketFactory createSSLSocketFactory() {
+        SSLSocketFactory ssfFactory = null;
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
+            ssfFactory = sc.getSocketFactory();
+        } catch (Exception e) {
+        }
+        return ssfFactory;
+    }
+
+    /**
+     * 用于信任所有证书
+     */
+    class TrustAllCerts implements X509TrustManager {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s)
+            throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s)
+            throws CertificateException {
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.lens.chatmodel.bean;
 
+import android.text.TextUtils;
 import com.lensim.fingerchat.commons.helper.AnimationRect;
 
 /**
@@ -10,10 +11,12 @@ public class VideoEventBean {
 
     AnimationRect rect;
     String videoPath;
+    String imageSize;
 
-    public VideoEventBean(AnimationRect r, String url) {
+    public VideoEventBean(AnimationRect r, String url, String size) {
         rect = r;
         videoPath = url;
+        imageSize = size;
     }
 
     public AnimationRect getRect() {
@@ -30,5 +33,16 @@ public class VideoEventBean {
 
     public void setVideoPath(String videoPath) {
         this.videoPath = videoPath;
+    }
+
+    public String getImageSize() {
+        if (TextUtils.isEmpty(imageSize)) {
+            imageSize = "";
+        }
+        return imageSize;
+    }
+
+    public void setImageSize(String imageSize) {
+        this.imageSize = imageSize;
     }
 }

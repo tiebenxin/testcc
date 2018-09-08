@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.bumptech.glide.Glide;
 import com.lens.chatmodel.utils.SmileUtils;
 import com.lens.chatmodel.view.spannable.SpannableUtil;
 import com.lensim.fingerchat.commons.global.Route;
@@ -100,15 +99,15 @@ public class InnerCommentsAdapter extends BaseRecyclerAdapter<InnerCommentsAdapt
             holder.mLookupContent.setVisibility(View.GONE);
         }
 
-        String create_DT = item.getPHC_CreateDT();
+        String create_DT = item.getPHO_CreateDT();
         if (create_DT != null) {
             if(create_DT.contains(".")){
                 create_DT = create_DT.substring(0,create_DT.lastIndexOf("."));
             }
             holder.mLookupTimeStamp.setText(create_DT.replace("T", " "));
         }
-
-        String pho_imageName = item.getPHO_ImageName();
+        holder.mLookupPicture.setVisibility(View.GONE);
+       /* String pho_imageName = item.getPHO_ImageName();
         if (pho_imageName != null) {
             if (pho_imageName.endsWith(".mp4")) {
                 //视频，放缩略图
@@ -126,7 +125,7 @@ public class InnerCommentsAdapter extends BaseRecyclerAdapter<InnerCommentsAdapt
             }
         }else {
             holder.mLookupPicture.setVisibility(View.GONE);
-        }
+        }*/
     }
 
 

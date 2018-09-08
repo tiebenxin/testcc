@@ -149,8 +149,12 @@ public class ActivityNewFriends extends BaseActivity implements INewFriendItemCl
 
     @Override
     public void onDelete(int posi) {
-        if (null != mAdapter) {
-            mAdapter.removeItem(posi);
+        if (null != mAdapter && newFriendList != null) {
+            if (posi < newFriendList.size()) {
+                IChatUser user = newFriendList.get(posi);
+                ProviderUser.updateNewStatus(user.getUserId(), ESureType.NO.ordinal());
+                mAdapter.removeItem(posi);
+            }
         }
     }
 

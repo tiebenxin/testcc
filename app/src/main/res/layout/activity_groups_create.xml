@@ -12,7 +12,7 @@
 
         </com.lensim.fingerchat.commons.toolbar.FGToolbar>
 
-        <com.lensim.fingerchat.fingerchat.view.TagCloudView
+        <com.lens.chatmodel.view.TagCloudView
             android:id="@+id/GroupsTop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
             android:textSize="12sp"
             android:layout_marginTop="8dp"
             android:padding="8dp"/>
-        <com.lensim.fingerchat.fingerchat.view.TagCloudView
+        <com.lens.chatmodel.view.TagCloudView
             android:id="@+id/GroupsAll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

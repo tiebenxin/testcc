@@ -10,9 +10,7 @@
 
         <com.lensim.fingerchat.commons.toolbar.FGToolbar
             android:id="@+id/clock_in_toolbar"
-            style="@style/FGToolbarStyle">
-
-        </com.lensim.fingerchat.commons.toolbar.FGToolbar>
+            style="@style/FGToolbarStyleWithNoOverflow"/>
 
         <RelativeLayout
             android:id="@+id/mapholder"

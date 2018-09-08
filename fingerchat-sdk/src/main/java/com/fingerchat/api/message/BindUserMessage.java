@@ -38,6 +38,10 @@ public class BindUserMessage extends BaseMessage {
         return new BindUserMessage(Command.USER_UPDATE, connection);
     }
 
+    public static BindUserMessage changePassword(Connection connection) {
+        return new BindUserMessage(Command.CHANGE_PASS, connection);
+    }
+
     @Override
     protected void decode(byte[] body) {
         try {

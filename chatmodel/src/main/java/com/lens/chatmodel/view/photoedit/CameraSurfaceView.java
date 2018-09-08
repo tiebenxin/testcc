@@ -34,11 +34,9 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.PopupWindow;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
 import com.lens.chatmodel.R;
-import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.utils.BitmapUtil;
+import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.TDevice;
 import com.lens.chatmodel.ui.image.ImagePagerActivity.ImageSize;
@@ -56,6 +54,7 @@ import java.util.ArrayList;
  * Created by LY309313 on 2017/4/12.
  */
 public class CameraSurfaceView extends SurfaceView implements Runnable {
+
     private static final String TAG = "CameraSurfaceView";
     public static final int DRAW_NOTHING = 0x00;
     public static final int DRAW_PATH = 0X01;
@@ -64,6 +63,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
     public static final float MAX_SCALE = 4;// 最大的放缩比例
     public static final float MIN_SCALE = 0.5f;// 最小的放缩比例
     private static final int DEFAULT_WIDTH = 25;
+    private static final int BIT_SIZE = 10000000;
 
     private static final int WORD_SIZE = 50;
     private final int mBrushWidth;
@@ -131,11 +131,12 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
     private float textsLeft;
     private float textTop;
     private float textMargin;
+    private String resultImageUri;
 
     public CameraSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         final ViewConfiguration configuration = ViewConfiguration
-                .get(context);
+            .get(context);
         mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
         mTouchSlop = configuration.getScaledTouchSlop();
 
@@ -270,7 +271,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
                             mVelocityTracker.computeCurrentVelocity(1000);
 
                             final float vX = mVelocityTracker.getXVelocity(), vY = mVelocityTracker
-                                    .getYVelocity();
+                                .getYVelocity();
 
                             // If the velocity is greater than minVelocity, call
                             // listener
@@ -367,7 +368,8 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
             } else if (scale > MAX_SCALE) {//如果放缩量大于最高的就置为最高放缩比
                 scale = MAX_SCALE;
             }
-            Log.i(TAG, "缩放比例" + scale / value[Matrix.MSCALE_X] + ":" + Math.abs(mNewDist - mOldDist));
+            Log.i(TAG,
+                "缩放比例" + scale / value[Matrix.MSCALE_X] + ":" + Math.abs(mNewDist - mOldDist));
             scale = scale / value[Matrix.MSCALE_X];//计算出相对的放缩量，使矩阵的放缩量为放缩到计算出来的放缩量。
             //缩放
             matrix.postScale(scale, scale, center[0], center[1]);
@@ -377,7 +379,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
             //}textMatrix
             matrix.postRotate(degrees, center[0], center[1]);
             word.setMatrix(matrix);
-
 
             //mOldDist = mNewDist;
             post(this);
@@ -392,7 +393,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         //这个角度被叠加了
         double deg0 = Math.atan2(startPoint1.y - startPoint0.y, startPoint1.x - startPoint0.x);
         double deg1 = Math.atan2(y1 - y0, x1 - x0);
-
 
         startPoint0.x = (int) x0;
         startPoint0.y = (int) y0;
@@ -494,12 +494,12 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         int x = (int) ev.getX();
         int y = (int) ev.getY();
         if (x < mImageRect.left || x > mImageRect.right || y < mImageRect.top
-                || y > mImageRect.bottom) {
+            || y > mImageRect.bottom) {
             return;
         }
 
         float ratio = (mImageRect.right - mImageRect.left)
-                / (float) mImageWidth;
+            / (float) mImageWidth;
         x = (int) ((x - mImageRect.left) / ratio);
         y = (int) ((y - mImageRect.top) / ratio);
 
@@ -519,12 +519,12 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         int x = (int) getActiveX(ev);
         int y = (int) getActiveY(ev);
         if (x < mImageRect.left || x > mImageRect.right || y < mImageRect.top
-                || y > mImageRect.bottom) {
+            || y > mImageRect.bottom) {
             return;
         }
 
         float ratio = (mImageRect.right - mImageRect.left)
-                / (float) mImageWidth;
+            / (float) mImageWidth;
         x = (int) ((x - mImageRect.left) / ratio);
         y = (int) ((y - mImageRect.top) / ratio);
 
@@ -547,7 +547,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         }
 
         float ratio = (mImageRect.right - mImageRect.left)
-                / (float) mImageWidth;
+            / (float) mImageWidth;
         resultX = (int) ((x - mImageRect.left) / ratio);
         return resultX;
     }
@@ -562,7 +562,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         }
 
         float ratio = (mImageRect.bottom - mImageRect.top)
-                / (float) mImageHeight;
+            / (float) mImageHeight;
 
         resultY = (int) ((y - mImageRect.top) / ratio);
 
@@ -574,7 +574,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
     * */
     private int getRealDistance(float d) {
         float ratio = (mImageRect.bottom - mImageRect.top)
-                / (float) mImageHeight;
+            / (float) mImageHeight;
         return (int) (d / ratio);
     }
 
@@ -582,8 +582,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
      * 松开之后需要判断：
      * 1、缩放比是否小于1
      * bitmap 上下左右边界是否在屏幕里面
-     *
-     * @param ev
      */
     private void eventUp(MotionEvent ev) {
 
@@ -643,11 +641,11 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         int x = (int) ev.getX();
         int y = (int) ev.getY();
         if (x < mImageRect.left || x > mImageRect.right || y < mImageRect.top
-                || y > mImageRect.bottom) {
+            || y > mImageRect.bottom) {
             return;
         }
         float ratio = (mImageRect.right - mImageRect.left)
-                / (float) mImageWidth;
+            / (float) mImageWidth;
         x = (int) ((x - mImageRect.left) / ratio);
         y = (int) ((y - mImageRect.top) / ratio);
 
@@ -678,47 +676,50 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
      * 刷新绘画板
      */
     private void updatePathMosaic() {
-
-        if (mBitmapCopy != null) {
-            mBitmapCopy.recycle();
-        }
-        mBitmapCopy = Bitmap.createBitmap(mImageWidth, mImageHeight,
+        try {
+            if (mBitmapCopy != null) {
+                mBitmapCopy.recycle();
+            }
+            mBitmapCopy = Bitmap.createBitmap(mImageWidth, mImageHeight,
                 Bitmap.Config.ARGB_8888);
 
-        //触摸层，主要是生成指尖路径
-        Bitmap bmTouchLayer = Bitmap.createBitmap(mImageWidth, mImageHeight,
+            //触摸层，主要是生成指尖路径
+            Bitmap bmTouchLayer = Bitmap.createBitmap(mImageWidth, mImageHeight,
                 Bitmap.Config.ARGB_8888);
 
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStyle(Style.STROKE);
-        paint.setAntiAlias(true);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setPathEffect(new CornerPathEffect(10));
-        paint.setStrokeWidth(30);
-        paint.setColor(Color.BLUE);
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setStyle(Style.STROKE);
+            paint.setAntiAlias(true);
+            paint.setStrokeJoin(Paint.Join.ROUND);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setPathEffect(new CornerPathEffect(10));
+            paint.setStrokeWidth(30);
+            paint.setColor(Color.BLUE);
 
-        Canvas canvas = new Canvas(bmTouchLayer);
-        for (MosaicPath path : mosaicPaths) {
-            Path pathTemp = path.drawPath;
-            int drawWidth = path.paintWidth;
-            paint.setStrokeWidth(drawWidth);
-            canvas.drawPath(pathTemp, paint);
+            Canvas canvas = new Canvas(bmTouchLayer);
+            for (MosaicPath path : mosaicPaths) {
+                Path pathTemp = path.drawPath;
+                int drawWidth = path.paintWidth;
+                paint.setStrokeWidth(drawWidth);
+                canvas.drawPath(pathTemp, paint);
+            }
+
+            //绘制马赛克图层
+            canvas.setBitmap(mBitmapCopy);
+            canvas.drawARGB(0, 0, 0, 0);
+            canvas.drawBitmap(bmCoverLayer, 0, 0, null);
+
+            paint.reset();
+            paint.setAntiAlias(true);
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+            canvas.drawBitmap(bmTouchLayer, 0, 0, paint);
+            paint.setXfermode(null);
+            canvas.save();
+
+            bmTouchLayer.recycle();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        //绘制马赛克图层
-        canvas.setBitmap(mBitmapCopy);
-        canvas.drawARGB(0, 0, 0, 0);
-        canvas.drawBitmap(bmCoverLayer, 0, 0, null);
-
-        paint.reset();
-        paint.setAntiAlias(true);
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-        canvas.drawBitmap(bmTouchLayer, 0, 0, paint);
-        paint.setXfermode(null);
-        canvas.save();
-
-        bmTouchLayer.recycle();
     }
 
     private void drag(MotionEvent ev, float dx, float dy) {
@@ -734,12 +735,12 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         int x = (int) event.getX();
         int y = (int) event.getY();
         if (x < mImageRect.left || x > mImageRect.right || y < mImageRect.top
-                || y > mImageRect.bottom) {
+            || y > mImageRect.bottom) {
             return;
         }
 
         float ratio = (mImageRect.right - mImageRect.left)
-                / (float) mImageWidth;
+            / (float) mImageWidth;
         x = (int) ((x - mImageRect.left) / ratio);
         y = (int) ((y - mImageRect.top) / ratio);
 
@@ -762,9 +763,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
 
     /**
      * 缩放处理
-     *
-     * @param event
-     * @return
      */
     private boolean nothingEvent(MotionEvent event) {
         int count = event.getPointerCount();
@@ -806,7 +804,8 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
                             scale = scale / value[Matrix.MSCALE_X];//计算出相对的放缩量，使矩阵的放缩量为放缩到计算出来的放缩量。
                             matrix.postScale(scale, scale, px, py);
                         }
-                        Log.i(TAG, "" + scale / value[Matrix.MSCALE_X] + ":" + Math.abs(mNewDist - mOldDist));
+                        Log.i(TAG, "" + scale / value[Matrix.MSCALE_X] + ":" + Math
+                            .abs(mNewDist - mOldDist));
                         mOldDist = mNewDist;
                         post(this);
                     }
@@ -861,7 +860,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         }
 
         View contentView = LayoutInflater.from(getContext()).inflate(
-                R.layout.popup_input, null);
+            R.layout.popup_input, null);
         popupWindow = new InputTextWindow(contentView, (int) screenWidth, (int) screenHeight, true);
         popupWindow.setAnimationStyle(R.style.anim_popup_dir);
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
@@ -891,7 +890,8 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         key.setStyle(Style.FILL);
         key.setTextSize(getRealDistance(WORD_SIZE));
         key.setColor(color);
-        StaticLayout layout = new StaticLayout(text, key, mImageWidth, Layout.Alignment.ALIGN_NORMAL, 1.0F, 0.0F, true);
+        StaticLayout layout = new StaticLayout(text, key, mImageWidth,
+            Layout.Alignment.ALIGN_NORMAL, 1.0F, 0.0F, true);
 
         Paint paintRec = new Paint();
         paintRec.setStrokeWidth(getRealDistance(2));
@@ -902,11 +902,11 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         float textWidth = getWordsWidthReal(key, text);
         float textHeight = getWordsHeight(key, text);
 
-
         float realY = (mImageHeight - textHeight) / 2;
         float realX = (mImageWidth - textWidth) / 2;
         int dx = 10;
-        RectF rectFR = new RectF(realX - dx, realY, realX + textWidth + dx, mImageHeight / 2 + textHeight / 2);
+        RectF rectFR = new RectF(realX - dx, realY, realX + textWidth + dx,
+            mImageHeight / 2 + textHeight / 2);
 
         Word worReal = new Word(realX, realY, key, paintRec, text, layout);
         worReal.setRectF(rectFR);
@@ -922,7 +922,8 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         key.setStyle(Style.FILL);
         key.setTextSize(WORD_SIZE);
         key.setColor(color);
-        StaticLayout layout = new StaticLayout(text, key, (int) screenWidth, Layout.Alignment.ALIGN_NORMAL, 1.0F, 0.0F, true);
+        StaticLayout layout = new StaticLayout(text, key, (int) screenWidth,
+            Layout.Alignment.ALIGN_NORMAL, 1.0F, 0.0F, true);
 
         Paint paintRec = new Paint();
         paintRec.setStrokeWidth(2);
@@ -938,7 +939,8 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         textTop = screenHeight / 2 - textHeight / 2;
         //框与文字间间隙
         textMargin = 10;
-        RectF rectF = new RectF(textsLeft - textMargin, screenHeight / 2 - textHeight / 2, textsLeft + textWidth + textMargin, screenHeight / 2 + textHeight / 2);
+        RectF rectF = new RectF(textsLeft - textMargin, screenHeight / 2 - textHeight / 2,
+            textsLeft + textWidth + textMargin, screenHeight / 2 + textHeight / 2);
         Word wor = new Word(textsLeft, textTop, key, paintRec, text, layout);
         wor.setRectF(rectF);
         Matrix matrix = new Matrix();
@@ -1018,7 +1020,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         Paint.FontMetrics fm = paint.getFontMetrics();
         float mFontHeight = (int) (Math.ceil(fm.descent - fm.top));// 获得每行高度
 
-
         String[] arrs = null;
         if (s.contains("\n")) {
             arrs = s.split("\n");
@@ -1074,21 +1075,19 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
             if (word.getLayout() != null) {
                 mCanvas2.translate(word.getLeft(), word.getTop());//平移画布,StaticLayout默认是从0，0开始画
                 word.getLayout().draw(mCanvas2);
-
                 if (currentDraw == DRAW_WORD) {
                     mCanvas2.translate(-word.getLeft(), -word.getTop());//挪回来
                     RectF rectF = word.getRectF();
                     mCanvas2.drawRect(rectF, word.getPaintRect());
                 }
             } else {
-                mCanvas2.drawText(word.getWordString(), word.getLeft(), word.getTop(), word.getPaint());
-
+                mCanvas2
+                    .drawText(word.getWordString(), word.getLeft(), word.getTop(), word.getPaint());
                 if (currentDraw == DRAW_WORD) {
                     RectF rectF = word.getRectF();
                     mCanvas2.drawRect(rectF, word.getPaintRect());
                 }
             }
-
             mCanvas2.restore();
         }
 
@@ -1096,8 +1095,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
 
     /**
      * 画当前的图形
-     *
-     * @param canvas
      */
     private void drawCurrent(Canvas canvas) {
         switch (currentDraw) {
@@ -1117,12 +1114,11 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
     /**
      * 矢量旋转函数，求出与结束定点的x，y距离
      *
-     * @param px      x分量
-     * @param py      y分量
-     * @param ang     旋转角度
+     * @param px x分量
+     * @param py y分量
+     * @param ang 旋转角度
      * @param isChLen 是否改变长度
-     * @param newLen  新长度
-     * @return
+     * @param newLen 新长度
      */
     public double[] rotateVec(int px, int py, double ang, boolean isChLen, double newLen) {
 
@@ -1155,6 +1151,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
             showPop();
         } else if (currentDraw == DRAW_MOSAIC) {
             //需要绘制马赛克的时候，不能让缩放，要不然路径也会跟着变
+            updatePathMosaic();
             matrix.reset();
             post(this);
         }
@@ -1163,8 +1160,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
 
     /**
      * 返回一个画完的图片
-     *
-     * @return
      */
     public Bitmap getResultBitmap() {
         mCanvas = new Canvas(mBitmap);
@@ -1177,32 +1172,25 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
     }
 
     public void setOriginBitmap(String uri, final ImageSize imageSize) {
-        Glide.with(ContextHelper.getContext())
-            .load(uri)
-            .asBitmap()
-            .into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(Bitmap resource,
-                    GlideAnimation<? super Bitmap> glideAnimation) {
-                    if (resource != null){
-                        CameraSurfaceView.this.mBitmap = resource.copy(Bitmap.Config.RGB_565, true);
-                        mImageWidth = mBitmap.getWidth();
-                        mImageHeight = mBitmap.getHeight();
-                        screenWidth = TDevice.getScreenWidth();
-                        screenHeight = TDevice.getScreenHeight();
-                        int imageLeft = (int) ((screenWidth - imageSize.getWidth()) / 2);
-                        int imageTop = (int) ((screenHeight - imageSize.getHeight()) / 2);
-                        int imageRight = imageLeft + imageSize.getWidth();
-                        int imageBottom = imageTop + imageSize.getHeight();
-                        mImageRect = new Rect(imageLeft, imageTop, imageRight, imageBottom);
-                        Bitmap bitmapMosaic = getMosaic(resource);
-                        setMosaicResource(bitmapMosaic);
-                        init();
-                        post(CameraSurfaceView.this);
-                    }
-                }
-            });
+        resultImageUri = FileUtil.createImagePath();
+        Bitmap resource = BitmapUtil.compressBitmap(uri);
+        if (resource != null) {
+            screenWidth = TDevice.getScreenWidth();
+            screenHeight = TDevice.getScreenHeight();
+            CameraSurfaceView.this.mBitmap = resource.copy(Bitmap.Config.RGB_565, true);
+            mImageWidth = mBitmap.getWidth();
+            mImageHeight = mBitmap.getHeight();
 
+            int imageLeft = (int) ((screenWidth - imageSize.getWidth()) / 2);
+            int imageTop = (int) ((screenHeight - imageSize.getHeight()) / 2);
+            int imageRight = imageLeft + imageSize.getWidth();
+            int imageBottom = imageTop + imageSize.getHeight();
+            mImageRect = new Rect(imageLeft, imageTop, imageRight, imageBottom);
+            Bitmap bitmapMosaic = getMosaic(resource);
+            setMosaicResource(bitmapMosaic);
+            init();
+            post(CameraSurfaceView.this);
+        }
     }
 
     private void init() {
@@ -1211,7 +1199,6 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         linePaths = new ArrayList<>();
         lineTempPaths = new ArrayList<>();
         currentLinPath = new LinePath(new Path(), new Paint(paint));
-
     }
 
 
@@ -1227,9 +1214,8 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
         //马赛克半径
         int radius = 100;
 
-
         Bitmap mosaicBitmap = Bitmap.createBitmap(width, height,
-                Bitmap.Config.RGB_565);
+            Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mosaicBitmap);
 
         int horCount = (int) Math.ceil(width / (float) radius);
@@ -1280,7 +1266,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
 
     private Bitmap getBitmap(Bitmap bit) {
         Bitmap bitmap = Bitmap.createBitmap(mImageWidth, mImageHeight,
-                Bitmap.Config.RGB_565);
+            Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawBitmap(bit, 0, 0, null);
         canvas.save();
@@ -1366,6 +1352,7 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
     }
 
     public interface OnOptionListener {
+
         //开始绘制，需要将标题栏和工具栏收起来
         void onStartDraw();
 
@@ -1374,6 +1361,10 @@ public class CameraSurfaceView extends SurfaceView implements Runnable {
 
         //一次轻击事件
         void ontap();
+    }
+
+    public String getResultImageUri() {
+        return resultImageUri;
     }
 
 

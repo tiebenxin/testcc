@@ -1,7 +1,7 @@
 package com.lensim.fingerchat.commons.router;
 
 import android.util.Log;
-import com.example.annotation.RouteConfig;
+import com.lens.route.annotation.RouteConfig;
 import java.lang.reflect.Method;
 
 /**

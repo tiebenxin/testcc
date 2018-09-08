@@ -46,6 +46,8 @@
             android:id="@+id/bottom_tab_layout"
             android:layout_width="match_parent"
             app:tabIndicatorHeight="0dp"
+            app:tabPaddingStart="2dp"
+            app:tabPaddingEnd="2dp"
             android:layout_height="60dp"/>
     </LinearLayout>
 </layout>

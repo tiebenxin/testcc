@@ -2,6 +2,7 @@ package com.lensim.fingerchat.fingerchat.ui.work_center;
 
 import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 /**
@@ -10,20 +11,16 @@ import android.support.v7.widget.helper.ItemTouchHelper;
  * describe
  */
 
-public abstract class AbItemMoveCallBack extends ItemMoveHelper  {
+public abstract class AbItemMoveCallBack extends ItemTouchHelper.Callback  {
 
     private boolean mDragEnabled = true; //是否能够通过长按切换位置
-    private int mDragFirstPosition; //能够拖拽范围的第一个位置
-    private int mDragLastPosition; //能够拖拽范围的最后一个位置
 
-    RecyclerView.ViewHolder viewHolder;
+    private RecyclerView.ViewHolder viewHolder;
 
 
     @Override
     public boolean isLongPressDragEnabled() {
         setDragEnabled();
-        setDragFirstPosition();
-        setDragLastPosition();
         return mDragEnabled ;
     }
 
@@ -40,6 +37,15 @@ public abstract class AbItemMoveCallBack extends ItemMoveHelper  {
         return makeMovementFlags(dragFlags, swipeFlags);
     }
 
+    @Override
+    public boolean onMove(RecyclerView recyclerView, ViewHolder viewHolder, ViewHolder target) {
+        if (target.getAdapterPosition() <= getDragFirstPosition(viewHolder)
+            || target.getAdapterPosition() >= getDragLastPosition(viewHolder)) {
+            return true;
+        }
+        onMoveDrag(recyclerView, viewHolder, target);
+        return true;
+    }
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
@@ -59,26 +65,28 @@ public abstract class AbItemMoveCallBack extends ItemMoveHelper  {
      * @param dY           限制前的DY值
      * @return 限制后的DY值
      */
-//    private float getLimitedDy(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dY) {
-//        return dY;
-//    }
+    private float getLimitedDy(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dY) {
+        return dY;
+    }
     /**
      * 设置能否拖拽
      */
     private void setDragEnabled() {
         mDragEnabled = isDragEnabled(viewHolder);
     }
-    /**
-     * 设置拖拽范围的第一个位置
-     */
-    private void setDragFirstPosition() {
-        mDragFirstPosition = setFirstPosition(viewHolder);
-    }
-    /**
-     * 设置拖拽范围的最后一个位置
-     */
-    private void setDragLastPosition() {
-        mDragLastPosition = setLastPosition(viewHolder);
-    }
 
+
+    /**
+     * Item 切换位置时能移动的范围
+     */
+    abstract int getDragFirstPosition(RecyclerView.ViewHolder viewHolder);
+
+    /**
+     * Item 切换位置时能移动的范围
+     */
+    abstract int getDragLastPosition(RecyclerView.ViewHolder viewHolder);
+
+    abstract boolean isDragEnabled(RecyclerView.ViewHolder viewHolder);
+
+    abstract void onMoveDrag(RecyclerView recyclerView, ViewHolder viewHolder, ViewHolder target);
 }

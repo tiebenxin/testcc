@@ -1,5 +1,6 @@
 package com.lens.chatmodel.eventbus;
 
+import com.fingerchat.api.message.ExcuteResultMessage;
 import com.fingerchat.api.message.MucActionMessage;
 import com.fingerchat.api.message.MucMemberMessage;
 import com.fingerchat.api.message.MucMessage;
@@ -34,6 +35,8 @@ public class EventFactory implements IEventFactory {
                 return createMucActionMessage(object);
             case MUC_REFRESH_MESSAGE:
                 return createMucRefreshEvent(object);
+            case EXCUTE:
+                return createExcuteEvent(object);
             default:
                 return null;
         }
@@ -100,6 +103,13 @@ public class EventFactory implements IEventFactory {
     public IEventProduct createMucRefreshEvent(Object object) {
         if (object instanceof Integer) {
             return new MucRefreshEvent((Integer) object);
+        }
+        return null;
+    }
+
+    public IEventProduct createExcuteEvent(Object object) {
+        if (object instanceof ExcuteResultMessage) {
+            return new ExcuteEvent((ExcuteResultMessage) object);
         }
         return null;
     }

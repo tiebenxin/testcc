@@ -51,7 +51,7 @@ public abstract class BaseMVPFragment<V extends BaseMvpView, P extends BaseMvpPr
     public void onResume() {
         super.onResume();
         mProxy.onResume((V) this);
-        Log.e("perfect-mvp","V onResume");
+        Log.d("perfect-mvp","V onResume");
 //        mProxy.onResume((V) this);
     }
 

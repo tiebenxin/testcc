@@ -14,6 +14,7 @@ public class ActivityPath {
     public static final String PHOTOS_ACTIVITY_PATH = "com.lensim.fingerchat.fingerchat.ui.me.photo.PhotosActivity";
     public static final String USER_INFO_ACTIVITY_PATH = "com.lensim.fingerchat.fingerchat.ui.me.circle_friends.UserInfoActivity";
     public static final String USER_CONFLICT_ACTIVITY_PATH = "com.lensim.fingerchat.fingerchat.ui.login.UserConflictActivity";
+    public static final String CLOCK_DETAIL_ACTIVITY_PATH = "com.lensim.fingerchat.fingerchat.ui.work_center.sign.ClockInRecordDetailActivity";
 
     public static final String USER_ID = "user_id";
     public static final String USER = "user";

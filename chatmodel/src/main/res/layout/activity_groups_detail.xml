@@ -6,7 +6,7 @@
         android:orientation="vertical">
         <com.lensim.fingerchat.commons.toolbar.FGToolbar
             android:id="@+id/toolbar"
-            style="@style/FGToolbarStyle"/>
+            style="@style/FGToolbarStyleWithNoOverflow"/>
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"

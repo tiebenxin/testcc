@@ -3,16 +3,16 @@ package com.lens.chatmodel.adapter;
 
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.bumptech.glide.Glide;
 import com.lens.chatmodel.R;
+import com.lens.chatmodel.base.ChatEnvironment;
 import com.lens.chatmodel.bean.Emojicon;
 import com.lens.chatmodel.bean.Emojicon.Type;
 import com.lens.chatmodel.bean.body.ImageUploadEntity;
+import com.lens.chatmodel.helper.ImageHelper;
 import com.lens.chatmodel.utils.SmileUtils;
 import java.util.List;
 
@@ -57,10 +57,18 @@ public class EmojiconGridAdapter extends BaseAdapter {
             if (emojicon.getIcon() != 0) {
                 imageView.setImageResource(emojicon.getIcon());
             } else if (emojicon.getIconPath() != null) {
-                ImageUploadEntity entity = ImageUploadEntity.fromJson(emojicon.getIconPath());
-                if (entity != null) {
-                    Glide.with(context).load(entity.getOriginalUrl())
-                        .placeholder(R.drawable.ease_default_expression).into(imageView);
+                if (ChatEnvironment.getInstance().getEmojiconInfoProvider() != null) {
+                    Emojicon emo = ChatEnvironment.getInstance().getEmojiconInfoProvider()
+                        .getEmojiconInfo(emojicon.getIconPath());
+                    if (emo != null) {
+                        ImageHelper.loadGifLocal(emo.getBigIcon(), imageView);
+                    } else {
+                        ImageUploadEntity entity = ImageUploadEntity
+                            .fromJson(emojicon.getIconPath());
+                        if (entity != null) {
+                            ImageHelper.loadImageAndGif(entity.getOriginalUrl(), imageView);
+                        }
+                    }
                 }
             }
         }

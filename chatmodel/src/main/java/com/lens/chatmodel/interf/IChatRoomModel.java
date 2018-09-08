@@ -6,6 +6,7 @@ import com.lens.chatmodel.ChatEnum.EMessageType;
 import com.lens.chatmodel.ChatEnum.EPlayType;
 import com.lens.chatmodel.ChatEnum.ESendType;
 import com.lens.chatmodel.bean.body.BodyEntity;
+import java.util.List;
 
 /**
  * Created by LL130386 on 2017/12/6.
@@ -82,5 +83,13 @@ public interface IChatRoomModel {
     void setBody(String content);
 
     String getMsgId();
+
+    int getHasReaded();
+
+    String getReadedUserId();
+
+    List<String> getReadedUserList();
+
+    int getServerReaded();
 
 }

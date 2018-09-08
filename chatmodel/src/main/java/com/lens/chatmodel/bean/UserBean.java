@@ -11,6 +11,7 @@ import com.lens.chatmodel.ChatEnum.EChatType;
 import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lensim.fingerchat.commons.interf.IChatUser;
 import com.lensim.fingerchat.commons.utils.StringUtils;
+import java.util.List;
 
 /**
  * Created by LL130386 on 2018/1/4.
@@ -41,6 +42,7 @@ public class UserBean implements IChatUser, Parcelable, Comparable<UserBean> {
     private int mChatType;//单聊群来哦
     private int bgId;
     private String pinYin;
+    private List<String> groups;
 
     //群信息
     private String mucId;
@@ -151,16 +153,18 @@ public class UserBean implements IChatUser, Parcelable, Comparable<UserBean> {
         state = roster.getState();
         isQuit = roster.getIsQuit();
         mChatType = EChatType.PRIVATE.ordinal();
-        if (!TextUtils.isEmpty(userNick)) {
-            pinYin = StringUtils.getFullPinYin(userNick);
+        if (!TextUtils.isEmpty(remarkName)) {
+            pinYin = StringUtils.getFullPinYin(remarkName);
+            firstChar = StringUtils.getFristChar(remarkName);
         } else {
-            pinYin = "";
-        }
-
-        if (!TextUtils.isEmpty(userNick)) {
-            firstChar = StringUtils.getFristChar(userNick);
-        } else {
-            firstChar = "#";
+            if (!TextUtils.isEmpty(userNick)) {
+//                remarkName = userNick;
+                pinYin = StringUtils.getFullPinYin(userNick);
+                firstChar = StringUtils.getFristChar(userNick);
+            } else {
+                pinYin = "";
+                firstChar = "#";
+            }
         }
         if (!TextUtils.isEmpty(roster.getChatBg())) {
             bgId = Integer.parseInt(roster.getChatBg());
@@ -168,34 +172,37 @@ public class UserBean implements IChatUser, Parcelable, Comparable<UserBean> {
     }
 
     public void setBean(IChatUser user) {
-        account = user.getUserId();
-        userNick = user.getUserNick();
-        workAddress = user.getWorkAddress();
-        group = user.getGroup();
-        empName = user.getEmpName();
-        empNo = user.getEmpNo();
-        remarkName = user.getRemarkName();
-        sex = user.getSex();
-        image = user.getAvatarUrl();
-        jobName = user.getJobName();
-        dptName = user.getDptName();
-        dptNo = user.getDptNo();
+        account = StringUtils.checkEmptyString(user.getUserId());
+        userNick = StringUtils.checkEmptyString(user.getUserNick());
+        workAddress = StringUtils.checkEmptyString(user.getWorkAddress());
+        group = StringUtils.checkEmptyString(user.getGroup());
+        empName = StringUtils.checkEmptyString(user.getEmpName());
+        empNo = StringUtils.checkEmptyString(user.getEmpNo());
+        remarkName = StringUtils.checkEmptyString(user.getRemarkName());
+        sex = StringUtils.checkEmptyString(user.getSex());
+        image = StringUtils.checkEmptyString(user.getAvatarUrl());
+        jobName = StringUtils.checkEmptyString(user.getJobName());
+        dptName = StringUtils.checkEmptyString(user.getDptName());
+        dptNo = StringUtils.checkEmptyString(user.getDptNo());
         isValid = user.isValid() ? ESureType.YES.ordinal() : ESureType.NO.ordinal();
         isStar = user.isStar() ? ESureType.YES.ordinal() : ESureType.NO.ordinal();
         isBlock = user.isBlock() ? ESureType.YES.ordinal() : ESureType.NO.ordinal();
         state = user.getState();
         isQuit = user.isQuit() ? ESureType.YES.ordinal() : ESureType.NO.ordinal();
         mChatType = EChatType.PRIVATE.ordinal();
-        if (!TextUtils.isEmpty(userNick)) {
-            pinYin = StringUtils.getFullPinYin(userNick);
-        } else {
-            pinYin = "";
-        }
 
-        if (!TextUtils.isEmpty(userNick)) {
-            firstChar = StringUtils.getFristChar(userNick);
+        if (!TextUtils.isEmpty(remarkName)) {
+            pinYin = StringUtils.getFullPinYin(remarkName);
+            firstChar = StringUtils.getFristChar(remarkName);
         } else {
-            firstChar = "#";
+            if (!TextUtils.isEmpty(userNick)) {
+//                remarkName = userNick;
+                pinYin = StringUtils.getFullPinYin(userNick);
+                firstChar = StringUtils.getFristChar(userNick);
+            } else {
+                pinYin = "";
+                firstChar = "#";
+            }
         }
         bgId = user.getBgId();
 
@@ -569,5 +576,9 @@ public class UserBean implements IChatUser, Parcelable, Comparable<UserBean> {
     public int compareTo(@NonNull UserBean userBean) {
         return (TextUtils.isEmpty(this.getFirstChar()) ? "#" : this.getFirstChar())
             .compareTo(userBean.getFirstChar());
+    }
+
+    public List<String> getGroups() {
+        return StringUtils.getGroups(group);
     }
 }

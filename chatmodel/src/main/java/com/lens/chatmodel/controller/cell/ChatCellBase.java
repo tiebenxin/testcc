@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +10,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import com.fingerchat.proto.message.Resp.Message;
 import com.lens.chatmodel.ChatEnum.ECellEventType;
 import com.lens.chatmodel.ChatEnum.EChatCellLayout;
 import com.lens.chatmodel.ChatEnum.EMessageType;
@@ -35,12 +33,10 @@ import java.util.List;
 
 public abstract class ChatCellBase implements View.OnLongClickListener {
 
-    private final Context mContext;
     public IChatRoomModel mChatRoomModel;
     private final EChatCellLayout mCellLayout;
     public final IChatEventListener mEventListener;
     private final View viewControl;
-
     public TextView tv_time;
     public TextView tv_notify;
     public RelativeLayout rl_root;
@@ -66,13 +62,13 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
     private TextView tv_new;
 
 
-    protected ChatCellBase(Context context, EChatCellLayout cellLayout,
-        IChatEventListener listener, MessageAdapter adapter, int postion) {
+    protected ChatCellBase(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int postion) {
         super();
-        mContext = context;
         mCellLayout = cellLayout;
         mEventListener = listener;
-        viewControl = LayoutInflater.from(context).inflate(mCellLayout.LayoutId, null);
+        viewControl = LayoutInflater.from(ContextHelper.getContext())
+            .inflate(mCellLayout.LayoutId, null);
         mAdapter = adapter;
         currentPosition = postion;
         initView();
@@ -106,8 +102,7 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
                 @Override
                 public void onClick(View view) {
                     if (mChatRoomModel != null) {
-                        List<String> selectedChats = ((MessageAdapter) mAdapter)
-                            .getSelectedIds();
+                        List<String> selectedChats = mAdapter.getSelectedIds();
                         if (selectedChats != null) {
                             if (selectedChats.contains(mChatRoomModel.getMsgId())) {
                                 selectedChats.remove(mChatRoomModel.getMsgId());
@@ -180,16 +175,25 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
 
     public void showData() {
         setName();
-        if (ChatHelper.isSystemUser(mChatRoomModel.getTo())) {
-            ImageHelper.loadDrawableImage(R.drawable.ic_contact_server, iv_avatar);
-        } else {
-            ImageHelper.loadAvatarPrivate(mChatRoomModel.getAvatarUrl(), iv_avatar);
-        }
+        loadAvatar();
         updateSendState();
         setCheckView();
         setTime();
         showNew();
+    }
 
+    private void loadAvatar() {
+        if (iv_avatar == null) {
+            return;
+        }
+        if (mChatRoomModel.getMsgType() == EMessageType.OA && mChatRoomModel.isIncoming()) {
+            iv_avatar.setImageResource(R.drawable.ic_contact_server);
+        } else if (mChatRoomModel.getMsgType() == EMessageType.SYSTEM && mChatRoomModel
+            .isIncoming()) {
+            iv_avatar.setImageResource(R.drawable.ic_server);
+        } else {
+            ImageHelper.loadAvatarPrivate(mChatRoomModel.getAvatarUrl(), iv_avatar);
+        }
     }
 
     private void showNew() {
@@ -228,10 +232,13 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
 
     private void setCheckView() {
         if (mAdapter instanceof MessageAdapter) {
-
             if (fl_check != null) {
-                if (mChatRoomModel.getMsgType() == EMessageType.MULTIPLE
-                    || mChatRoomModel.getMsgType() == EMessageType.VOTE) {
+                if (mChatRoomModel.isSecret()
+                    || mChatRoomModel.getMsgType() == EMessageType.MULTIPLE
+                    || mChatRoomModel.getMsgType() == EMessageType.VOTE
+                    || mChatRoomModel.getMsgType() == EMessageType.VOICE
+                    || mChatRoomModel.getMsgType() == EMessageType.CARD
+                    || mChatRoomModel.getMsgType() == EMessageType.CONTACT) {
                     if (mAdapter.isShowCheckBox()) {
                         fl_check.setVisibility(View.INVISIBLE);
                     } else {
@@ -246,7 +253,6 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
                         iv_check.setImageResource(R.drawable.click_check_box);
                     } else {
                         iv_check.setImageResource(R.drawable.check_box);
-
                     }
                 } else {
                     fl_check.setVisibility(View.GONE);
@@ -259,6 +265,9 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
         if (!mChatRoomModel.isIncoming()) {
             System.out.println("更新发送状态：" + mChatRoomModel.getSendType().value);
             if (mChatRoomModel.getSendType() == ESendType.SENDING) {
+                if (mChatRoomModel.getMsgType() == EMessageType.TEXT) {
+                    return;
+                }
                 showProgress(true);
                 if (iv_status != null) {
                     iv_status.setVisibility(View.GONE);
@@ -266,6 +275,7 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
                 setErrorShow(false);
                 updateProgress(mChatRoomModel.getUploadProgress());
             } else if (mChatRoomModel.getSendType() == ESendType.MSG_SUCCESS) {
+                System.out.println("消息发送成功，更新发送状态：" + mChatRoomModel.getSendType().value);
                 showProgress(false);
                 if (iv_status != null) {
                     iv_status.setVisibility(View.GONE);
@@ -273,12 +283,21 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
                 }
                 setErrorShow(false);
             } else if (mChatRoomModel.getSendType() == ESendType.FILE_SUCCESS) {
+                System.out.println("文件发送成功，更新发送状态：" + mChatRoomModel.getSendType().value);
                 showProgress(false);
                 if (iv_status != null) {
                     iv_status.setVisibility(View.VISIBLE);
                 }
                 setErrorShow(true);
             } else if (mChatRoomModel.getSendType() == ESendType.ERROR) {
+                showProgress(false);
+                if (iv_status != null) {
+                    iv_status.setVisibility(View.VISIBLE);
+                    iv_status.requestFocus();
+                }
+                setErrorShow(true);
+            } else if (mChatRoomModel.getSendType() == ESendType.NET_ERROR
+                || mChatRoomModel.getSendType() == ESendType.ACK_ERROR) {
                 showProgress(false);
                 if (iv_status != null) {
                     iv_status.setVisibility(View.VISIBLE);
@@ -416,16 +435,46 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
         } else if (v instanceof ChatCellVideo) {
 
         } else if (v instanceof ChatCellVoice) {
-
+            collection = true;
+            transmit = false;
+            more = false;
         } else if (v instanceof ChatCellMulti) {
             transmit = false;
             collection = false;
+            more = false;
         } else if (v instanceof ChatCellEmoticon) {
-            addex = true;
-        } else if (v instanceof ChatCellBusinessCard) {
             collection = false;
+            if (((ChatCellEmoticon) v).isLocalGif) {
+                addex = false;
+            } else {
+                addex = true;
+            }
+        } else if (v instanceof ChatCellBusinessCard) {
+            transmit = false;
+            collection = false;
+            more = false;
         } else if (v instanceof ChatCellMap) {
             collection = false;
+        } else if (v instanceof ChatCellWorkLogin) {
+            transmit = false;
+            collection = false;
+            more = false;
+        } else if (v instanceof ChatCellOA) {
+            transmit = false;
+            collection = false;
+            more = false;
+        } else if (v instanceof ChatCellNotice) {
+            transmit = false;
+            collection = false;
+            more = false;
+        } else if (v instanceof ChatCellSystemNotice) {
+            transmit = false;
+            collection = false;
+            more = false;
+        } else if (v instanceof ChatCellSecret) {
+            transmit = false;
+            collection = false;
+            more = false;
         }
 
         getCustomContextMenu().setCanCopy(copy).setCanTransmit(transmit).setCanCancle(cancle)
@@ -433,15 +482,6 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
             .bindData(mChatRoomModel)
             .show(v.getView(), listener);
 
-    }
-
-
-    public void showCheckBox(boolean flag) {
-        if (flag) {
-            fl_check.setVisibility(View.VISIBLE);
-        } else {
-            fl_check.setVisibility(View.GONE);
-        }
     }
 
     public void onBubbleClick() {
@@ -466,5 +506,10 @@ public abstract class ChatCellBase implements View.OnLongClickListener {
         unreadPostion = position;
         System.out.println("unreadPostion = " + unreadPostion);
     }
+
+    public boolean isScrolling() {
+        return mAdapter.isScrolling();
+    }
+
 
 }

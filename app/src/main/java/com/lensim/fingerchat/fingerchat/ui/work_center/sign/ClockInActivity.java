@@ -25,6 +25,7 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.lens.chatmodel.bean.UserBean;
+import com.lens.chatmodel.manager.MessageManager;
 import com.lens.chatmodel.ui.group.Constant;
 import com.lens.chatmodel.ui.group.GroupSelectListActivity;
 import com.lensim.fingerchat.commons.base.BaseMvpActivity;
@@ -69,17 +70,18 @@ public class ClockInActivity extends BaseMvpActivity<ClockInView, ClockInPresent
         //清空缓存
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) &&
             null != getExternalFilesDir(Environment.DIRECTORY_PICTURES)) {
-            FileUtil.deleteDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath());
+            FileUtil.deleteDirectory(
+                getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath());
         }
     }
 
     private void initTitle() {
         ui.clockInToolbar.setTitleText("外出打卡");
         ui.clockInToolbar.setConfirmBt("记录", (view) -> {
-                Intent intent = new Intent(this, ClockInRecordActivity.class);
-                this.startActivity(intent);
-            });
-        initBackButton(ui.clockInToolbar,true);
+            Intent intent = new Intent(this, ClockInRecordActivity.class);
+            this.startActivity(intent);
+        });
+        initBackButton(ui.clockInToolbar, true);
     }
 
 
@@ -89,7 +91,8 @@ public class ClockInActivity extends BaseMvpActivity<ClockInView, ClockInPresent
         ui.statuImgContainer.setAdapter(adapter);
 
         adapter.setListener(() -> openActivity(this,
-            StringUtils.isEmpty(ui.tvLocation.getText().toString()) ? "" : ui.tvLocation.getText().toString(),
+            StringUtils.isEmpty(ui.tvLocation.getText().toString()) ? ""
+                : ui.tvLocation.getText().toString(),
             ClockInActivity.REQUEST_TAKE_PHOTO));
     }
 
@@ -121,6 +124,7 @@ public class ClockInActivity extends BaseMvpActivity<ClockInView, ClockInPresent
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.rotate_loading_btn);
         ui.loadingLocation.startAnimation(animation);
         hideKeyBoard();
+        MessageManager.getInstance().registerAckListener();
     }
 
     @Override
@@ -128,6 +132,8 @@ public class ClockInActivity extends BaseMvpActivity<ClockInView, ClockInPresent
         super.onStop();
         getMvpPresenter().onStop();
         ui.bmapView.onPause();
+        MessageManager.getInstance().removeAckListener();
+
     }
 
     @Override
@@ -140,7 +146,8 @@ public class ClockInActivity extends BaseMvpActivity<ClockInView, ClockInPresent
 
     @Override
     public void showInfoWindow(String name, String address, LatLng position, BaiduMap mBaiduMap) {
-        View view = LayoutInflater.from(ClockInActivity.this).inflate(R.layout.map_infowindow, null);
+        View view = LayoutInflater.from(ClockInActivity.this)
+            .inflate(R.layout.map_infowindow, null);
         TextView tvname = view.findViewById(R.id.infowindo_name);
         TextView tvAddress = view.findViewById(R.id.infowindo_address);
         tvname.setText(name);
@@ -156,7 +163,7 @@ public class ClockInActivity extends BaseMvpActivity<ClockInView, ClockInPresent
     }
 
     @Override
-    public void showClockInDialog(boolean isSuccess,String mAddress) {
+    public void showClockInDialog(boolean isSuccess, String mAddress) {
         if (isSuccess) {
             DialogUtil.getClockInDialog(ClockInActivity.this, true,
                 R.style.ClockinDialog, ui.tvTimeClockIn.getText().toString(), mAddress).show();

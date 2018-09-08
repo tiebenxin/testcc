@@ -1,5 +1,7 @@
 package com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter;
 
+import static com.lensim.fingerchat.commons.utils.CyptoUtils.DES_KEY;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
@@ -8,13 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.StringSignature;
@@ -25,11 +25,14 @@ import com.lens.chatmodel.ui.profile.FriendDetailActivity;
 import com.lens.chatmodel.ui.video.LookUpVideoActivity;
 import com.lens.chatmodel.utils.UrlUtils;
 import com.lensim.fingerchat.commons.app.AppConfig;
-import com.lensim.fingerchat.commons.global.Route;
+import com.lensim.fingerchat.commons.base.BaseResponse;
 import com.lensim.fingerchat.commons.helper.AnimationRect;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
 import com.lensim.fingerchat.commons.utils.CyptoConvertUtils;
+import com.lensim.fingerchat.commons.utils.CyptoUtils;
 import com.lensim.fingerchat.commons.utils.FileUtil;
+import com.lensim.fingerchat.commons.utils.ImageLoader;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
@@ -40,47 +43,44 @@ import com.lensim.fingerchat.components.popupwindow.ActionItem;
 import com.lensim.fingerchat.components.popupwindow.SnsPopupWindow;
 import com.lensim.fingerchat.components.widget.circle_friends.CollectDialog;
 import com.lensim.fingerchat.components.widget.circle_friends.CommentDialog;
-import com.lensim.fingerchat.data.Http;
-import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
-import com.lensim.fingerchat.data.me.CircleItem;
-import com.lensim.fingerchat.data.me.ZambiaEntity;
-import com.lensim.fingerchat.data.me.circle_friend.ContentEntity;
 import com.lensim.fingerchat.data.me.content.StoreManager;
 import com.lensim.fingerchat.data.repository.SPSaveHelper;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.api.CirclesFriendsApi;
+import com.lensim.fingerchat.fingerchat.api.DownloadApi;
 import com.lensim.fingerchat.fingerchat.base.BaseRecycleViewAdapter;
-import com.lensim.fingerchat.fingerchat.component.download.DownloadApi;
-import com.lensim.fingerchat.fingerchat.component.download.progress.DownloadProgressListener;
+import com.lensim.fingerchat.fingerchat.component.download.DownloadProgressListener;
 import com.lensim.fingerchat.fingerchat.databinding.ItemCircleViewBinding;
 import com.lensim.fingerchat.fingerchat.databinding.ItemHeadCircleBinding;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentBean;
+import com.lensim.fingerchat.fingerchat.model.bean.PhotoBean;
+import com.lensim.fingerchat.fingerchat.model.bean.ThumbsBean;
+import com.lensim.fingerchat.fingerchat.model.bean.UnReadCommentInfo;
+import com.lensim.fingerchat.fingerchat.model.bean.UnReadCommentInfo.UnReadCommentBean;
+import com.lensim.fingerchat.fingerchat.model.bean.UnReadCommentInfo.UnReadThumbsBean;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.CircleFirendsContract;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.CircleFriendsActivity;
-import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.CircleFriendsPresenter;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.LookupCommentActivity;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.viewholder.CircleViewHolder;
+import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.viewholder.HeaderViewHolder;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.viewholder.ImageViewHolder;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.viewholder.TextViewHolder;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.viewholder.VideoViewHolder;
-import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.viewholder.HeaderViewHolder;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.Content;
-import com.lensim.fingerchat.fingerchat.ui.me.utils.BitmapUtil;
 import com.lensim.fingerchat.fingerchat.ui.me.utils.CircleFriendsHelper;
 import com.lensim.fingerchat.fingerchat.ui.me.utils.DatasUtil;
 import com.lensim.fingerchat.fingerchat.ui.me.utils.SpliceUrl;
-import com.nostra13.universalimageloader.core.ImageLoader;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import io.reactivex.functions.Consumer;
 import me.jessyan.progressmanager.ProgressListener;
 import me.jessyan.progressmanager.ProgressManager;
 import me.jessyan.progressmanager.body.ProgressInfo;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, BaseRecycleViewAdapter.BaseRecycleViewHolder> {
+public class CircleFriendsAdapter extends BaseRecycleViewAdapter<PhotoBean, BaseRecycleViewAdapter.BaseRecycleViewHolder> {
     public static final int HEAD_VIEW_SIZE = 1;
 
     public final static int TYPE_HEAD = 0;
@@ -88,6 +88,11 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
     private Context context;
     private CircleFirendsContract.Presenter presenter;
     private OnItemClickListener onItemClickListener;
+    private UnReadCommentInfo unReadCommentInfo;
+    private CirclesFriendsApi circlesFriendsApi;
+    public CirclesFriendsApi getCirclesFriendsApi() {
+        return circlesFriendsApi == null ? new CirclesFriendsApi() : circlesFriendsApi;
+    }
 
     public CircleFriendsAdapter(Context context, CircleFirendsContract.Presenter presenter) {
         this.context = context;
@@ -104,17 +109,8 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             return TYPE_HEAD;
         }
 
-        int itemType = 0;
-        CircleItem item = datas.get(position - 1);
-        if (CircleItem.TYPE_IMG.equals(item.type)) {
-            itemType = CircleViewHolder.TYPE_IMAGE;
-        } else if (CircleItem.TYPE_VIDEO.equals(item.type)) {
-            itemType = CircleViewHolder.TYPE_VIDEO;
-        } else {
-            itemType = CircleViewHolder.TYPE_TEXT;
-        }
-
-        return itemType;
+        PhotoBean photoBean = datas.get(position - 1);
+        return photoBean.getType();
     }
 
     @Override
@@ -156,9 +152,10 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
                 binding.circleChangeText.setVisibility(View.GONE);
             }
 
-            String headImg = String.format(Route.obtainAvater, UserInfoRepository.getUserName());
-            ImageLoader.getInstance()
-                .displayImage(headImg, binding.circleItemHead, BitmapUtil.getAvatarOptions());
+            //String headImg = String.format(Route.obtainAvater, UserInfoRepository.getUserName());
+            String headImg = UserInfoRepository.getInstance().getUserInfo().getImage();
+            ImageLoader.loadAvatarPrivate(headImg, binding.circleItemHead);
+
             binding.circleUsername.setText(UserInfoRepository.getUsernick());
 
             binding.circleTheme.setOnClickListener(v -> {
@@ -185,17 +182,16 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             } else {
                 binding.llCircleNewMessage.setVisibility(View.VISIBLE);
                 binding.mCircleNewMessage.setText(newCount + "条新消息");
-//            String avatarUrl = LensImUtil.getAvatarPath(
-//                com.lens.lensfly.smack.account.AccountManager.getInstance().getLastCircleUser());
-//            Glide.with(context).load(avatarUrl).into(binding.imgNewCircleAvatar);
             }
 
             getNewCommentCount(binding, newCount);
 
             binding.llCircleNewMessage.setOnClickListener(v -> {
                 v.setVisibility(View.GONE);
+                Intent intent =new Intent(context, LookupCommentActivity.class);
+                intent.putExtra(LookupCommentActivity.UNREAD,unReadCommentInfo);
                 ((Activity) context).startActivityForResult
-                    (new Intent(context, LookupCommentActivity.class), 12);
+                    (intent, 12);
             });
         } else {
             CircleViewHolder holder = (CircleViewHolder) viewHolder;
@@ -203,22 +199,23 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             UIHelper.setTextSize(14, binding.nameTv, binding.contentTv, binding.txtHide,
                 binding.urlTipTv, binding.timeTv, binding.deleteBtn);
 
-            CircleItem circleItem = datas.get(position - HEAD_VIEW_SIZE);
-            final String content = CyptoConvertUtils.decryptString(circleItem.content);
-            String createTime = TimeUtils.progressDate(circleItem.createTime);
-            final List<ContentEntity> commentsDatas = circleItem.comments;
-            boolean hasFavort = circleItem.favorters != null && circleItem.favorters.size() > 0;
-            boolean hasComment = circleItem.comments != null && circleItem.comments.size() > 0;
+            PhotoBean photoBean = datas.get(position - HEAD_VIEW_SIZE);
+            final String content = CyptoConvertUtils.decryptString(photoBean.getPhotoContent());
+            String createTime = TimeUtils.progressDate(photoBean.getCreateDatetime());
 
-            ImageLoader.getInstance().displayImage(
-                circleItem.headUrl, binding.headIv, BitmapUtil.getAvatarOptions());
+
+            final List<CommentBean> commentsDatas = photoBean.getComments(); // TODO 评论
+            boolean hasFavort = photoBean.getThumbsUps() != null && photoBean.getThumbsUps().size() > 0;
+            boolean hasComment = photoBean.getComments() != null && photoBean.getComments().size() > 0;
+
+            ImageLoader.loadAvatarPrivate(photoBean.getUserImage(), binding.headIv);
 
             binding.headIv.setOnClickListener(v -> {
                 if (onItemClickListener != null) {
                     onItemClickListener.onIntemClick(v, position);
                 }
                 Intent intent = new Intent(context, FriendDetailActivity.class);
-                intent.putExtra(AppConfig.FRIEND_NAME, circleItem.userid);
+                intent.putExtra(AppConfig.FRIEND_NAME, photoBean.getPhotoCreator());
                 context.startActivity(intent);
             });
 
@@ -229,7 +226,7 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             });
 
             binding.nameTv.setText
-                (StringUtils.isEmpty(circleItem.username) ? circleItem.userid : circleItem.username);
+                (StringUtils.isEmpty(photoBean.getUserName()) ? photoBean.getPhotoCreator() : photoBean.getUserName());
             binding.timeTv.setText(createTime);
 
             if (StringUtils.isEmpty(content)) {
@@ -254,13 +251,13 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             });
 
             binding.contentTv.setOnLongClickListener(v -> {
-                showCollectWindow(circleItem, holder, false,
+                showCollectWindow(photoBean, holder, false,
                     binding.contentTv.getText().toString(), Content.MSG_TYPE_TEXT);
                 return true;
             });
 
             if (UserInfoRepository.getUserName().toLowerCase()
-                .equals(circleItem.userid.toLowerCase())) {
+                .equals(photoBean.getPhotoCreator().toLowerCase())) {
                 binding.deleteBtn.setVisibility(View.VISIBLE);
             } else {
                 binding.deleteBtn.setVisibility(View.GONE);
@@ -268,7 +265,7 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
 
             //删除
             binding.deleteBtn.setOnClickListener(v -> {
-                showDleteDialog(circleItem);
+                showDleteDialog(photoBean);
             });
 
             binding.favortListTv.setAdapter(holder.favortListAdapter);
@@ -280,7 +277,7 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             });
             //处理点赞列表
             if (hasFavort) {
-                handleFavort(holder, circleItem.favorters);
+                handleFavort(holder, photoBean.getThumbsUps());
                 binding.favortListTv.setVisibility(View.VISIBLE);
             } else {
                 binding.favortListTv.setVisibility(View.GONE);
@@ -289,19 +286,19 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             //处理评论列表
             if (hasComment) {
                 binding.commentList.setOnItemClick(commentPosition -> {
-                    ContentEntity commentItem = commentsDatas.get(commentPosition);
-                    if (UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid())) {
+                    CommentBean commentItem = commentsDatas.get(commentPosition);
+                    if (UserInfoRepository.getUserName().equals(commentItem.getCommentUserid())) {
                         //复制或者删除自己的评论
                         handleMyComment(holder, commentItem);
                     } else {
                         //回复别人的评论
-                        replyComment(holder, circleItem, commentItem, commentPosition);
+                        replyComment(holder, photoBean, commentItem, commentPosition);
                     }
                 });
                 //长按进行复制或者删除
                 binding.commentList.setOnItemLongClick(commentPosition -> {
-                    ContentEntity commentItem = commentsDatas.get(commentPosition);
-                    longClickCopy(commentItem);
+                    CommentBean commentItem = commentsDatas.get(commentPosition);
+                    longClickCopy(holder, commentItem);
                 });
 
                 holder.commentAdapter.setItems(commentsDatas);
@@ -321,7 +318,7 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
 
             //处理点赞，评论弹窗 popupwindow
             binding.snsBtn.setOnClickListener(v -> {
-                showSnsPopupWindow(v, holder, circleItem);
+                showSnsPopupWindow(v, holder, photoBean);
             });
 
             binding.urlTipTv.setVisibility(View.GONE);
@@ -329,7 +326,7 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
             switch (holder.viewType) {
                 case CircleViewHolder.TYPE_IMAGE: // 处理图片
                     ImageViewHolder imageViewHolder = (ImageViewHolder) holder;
-                    final List<String> photos = circleItem.photos;
+                    final List<String> photos = photoBean.getImageUrls();
                     if (photos != null && photos.size() > 0) {
                         imageViewHolder.multiImageView.setVisibility(View.VISIBLE);
                         imageViewHolder.multiImageView.setList(photos);
@@ -353,37 +350,38 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
                                 }
                             }
 
-                            StoreManager.getInstance().storeInit(circleItem.id, circleItem.userid,
-                                circleItem.username, circleItem.headUrl, Content.MSG_TYPE_PIC);
-
+                            StoreManager.getInstance().storeInit(photoBean.getPhotoId() + "", photoBean.getPhotoCreator(),
+                                photoBean.getUserName(), photoBean.getUserImage(), Content.MSG_TYPE_PIC);
+                    String collectInfo = photoBean.getPhotoSerno()+"&"+photoBean.getPhotoCreator()+"&"+photoBean.getUserName()+"&"+photoBean.getUserImage()
+                        +"&"+photoBean.getPhotoUrl();
                             Intent intent = GalleryAnimationActivity
-                                .newIntent(SpliceUrl.getUrls((ArrayList<String>) photos), null, animationRectArrayList, null, position1);
+                                .newIntent(SpliceUrl.getUrls((ArrayList<String>) photos), null, animationRectArrayList, null, position1,collectInfo);
                             context.startActivity(intent);
                         });
 
-                        imageViewHolder.multiImageView.setOnItemLongClickListener((view, position12) ->
-                            showCollectWindow(circleItem, imageViewHolder, false,
-                                photos.get(position), Content.MSG_TYPE_PIC));
-                    }else {
+                        /*imageViewHolder.multiImageView.setOnItemLongClickListener((view, position12) ->
+                            showCollectWindow(photoBean, imageViewHolder, false,
+                                photos.get(position), Content.MSG_TYPE_PIC));*/
+                    } else {
                         imageViewHolder.multiImageView.setVisibility(View.GONE);
                     }
                     break;
                 case CircleViewHolder.TYPE_VIDEO:
                     VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
                     //如果是自己发出的视频，则先看本地是否还存在这个视频
-                    final String videoPath = FileCache.getInstance().getVideoPath(circleItem.videoUrl);
+                    final String videoPath = FileCache.getInstance().getVideoPath(photoBean.getVideoUrl());
                     if (!StringUtils.isEmpty(videoPath) && FileUtil.checkFilePathExists(videoPath)) {
                         L.i("视频文件用的缓存");
-                        handleCacheVideo(videoViewHolder, circleItem, videoPath);
+                        handleCacheVideo(videoViewHolder, photoBean, videoPath);
                     } else {
                         videoViewHolder.ll_loading.setVisibility(View.VISIBLE);
                         videoViewHolder.img_loading.setVisibility(View.GONE);
                         L.i("视频文件没有缓存，开始下载");
-                        handleNetworkVideo(videoViewHolder, circleItem);
+                        handleNetworkVideo(videoViewHolder, photoBean);
                     }
                     videoViewHolder.layoutPlayer.setOnLongClickListener(v -> {
-                        showCollectWindow(circleItem, videoViewHolder, true,
-                            circleItem.videoUrl, Content.MSG_TYPE_VIDEO);
+                        showCollectWindow(photoBean, videoViewHolder, true,
+                            photoBean.getVideoUrl(), Content.MSG_TYPE_VIDEO);
                         return true;
                     });
                     break;
@@ -395,13 +393,12 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
     /**
      * 处理本地视频
      */
-    private void handleCacheVideo(@NonNull VideoViewHolder viewHolder, @NonNull CircleItem circleItem,
+    private void handleCacheVideo(@NonNull VideoViewHolder viewHolder, @NonNull PhotoBean circleItem,
                                   String videoPath) {
         viewHolder.videothumbnial.setVisibility(View.VISIBLE);
         viewHolder.videothumbnial.setAlpha(1f);
         Glide.with(context)
-            .load(circleItem.videoUrl
-                .replace(".mp4", ".jpg"))
+            .load(circleItem.getVideoThumbnail())
             .asBitmap()
             .centerCrop()
             .into(viewHolder.videothumbnial);
@@ -413,8 +410,8 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
     /**
      * 处理网络视频
      */
-    private void handleNetworkVideo(@NonNull VideoViewHolder viewHolder, @NonNull CircleItem circleItem) {
-        ProgressManager.getInstance().addResponseListener(circleItem.videoUrl, new ProgressListener() {
+    private void handleNetworkVideo(@NonNull VideoViewHolder viewHolder, @NonNull PhotoBean circleItem) {
+        ProgressManager.getInstance().addResponseListener(circleItem.getVideoUrl(), new ProgressListener() {
             @Override
             public void onError(long id, Exception e) {
             }
@@ -427,15 +424,15 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         DownloadProgressListener downloadProgressListener = (bytesRead, contentLength, done) -> {
 
         };
-        new DownloadApi(downloadProgressListener).downloadVideo(circleItem.videoUrl, bytes -> {
+        new DownloadApi(downloadProgressListener).downloadVideo(circleItem.getVideoUrl(), bytes -> {
             viewHolder.ll_loading.setVisibility(View.GONE);
             viewHolder.img_loading.setVisibility(View.VISIBLE);
             Glide.with(ContextHelper.getContext())
-                .load(circleItem.videoUrl.replace(".mp4", ".jpg"))
+                .load(circleItem.getVideoThumbnail())
                 .centerCrop()
                 .into(viewHolder.videothumbnial);
             viewHolder.layoutPlayer.setOnClickListener(v -> {
-                toPlayer(viewHolder.videothumbnial, circleItem.videoUrl, false);
+                toPlayer(viewHolder.videothumbnial, circleItem.getVideoUrl(), false);
             });
         });
     }
@@ -445,23 +442,29 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         return datas.size() + 1;
     }
 
-    private void showCollectWindow(CircleItem circleItem, CircleViewHolder viewHolder, boolean isVideo, String resPath,
+    private void showCollectWindow(PhotoBean photoBean, CircleViewHolder viewHolder, boolean isVideo, String resPath,
                                    int extraType) {
         CollectDialog dialog = new CollectDialog(context, isVideo);
         dialog.setCanceledOnTouchOutside(true);
         dialog.show();
         dialog.setCollectItemClickListener(
-            new PopupCollectClickListener(circleItem, resPath, viewHolder, extraType));
+            new PopupCollectClickListener(photoBean, resPath, viewHolder, extraType));
     }
 
     /**
      * 处理点赞，评论弹窗
      */
-    private void showSnsPopupWindow(View view, @NonNull CircleViewHolder viewHolder, @NonNull CircleItem circleItem) {
+    private void showSnsPopupWindow(View view, @NonNull CircleViewHolder viewHolder, @NonNull PhotoBean circleItem) {
         final SnsPopupWindow snsPopupWindow = viewHolder.snsPopupWindow;
         //判断是否已点赞
-        String curUserFavortId = circleItem.getCurUserFavortId(UserInfoRepository.getUserName());
-        if (!TextUtils.isEmpty(curUserFavortId)) {
+        boolean isThumbsUps = false;
+        for (ThumbsBean thumbsBean : circleItem.getThumbsUps()) {
+            if (thumbsBean.getThumbsUserId().equals(UserInfoRepository.getUserId())) {
+                isThumbsUps = true;
+                //return;
+            }
+        }
+        if (isThumbsUps) {
             snsPopupWindow.getmActionItems().get(0).mTitle = "取消";
         } else {
             snsPopupWindow.getmActionItems().get(0).mTitle = "点赞";
@@ -474,38 +477,50 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         snsPopupWindow.showPopupWindow(view);
     }
 
-    private void showDleteDialog(CircleItem circleItem) {
+    private void showDleteDialog(PhotoBean circleItem) {
         final NiftyDialogBuilder builder = NiftyDialogBuilder.getInstance(context);
         builder.withTitle("提示").withMessage("确定删除吗").withButton1Text("取消")
             .withButton2Text("删除")
             .setButton1Click(v1 -> builder.dismiss())
             .setButton2Click(v1 -> {
                 builder.dismiss();
-                presenter.deleteCircle(circleItem.id);
+                presenter.deleteCircle(circleItem.getPhotoSerno());
             }).show();
     }
 
     /**
      * 长按复制
      */
-    private void longClickCopy(@NonNull ContentEntity commentItem) {
+    private void longClickCopy(@NonNull CircleViewHolder viewHolder, @NonNull CommentBean commentItem) {
         CommentDialog dialog = new CommentDialog(
-            context, UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid()));
+            context, UserInfoRepository.getUserName().equals(commentItem.getCommentUserid()));
         dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(true);
         dialog.show();
         dialog.setCopyClickListener(() -> {
+            String commentContent = "";
+            try {
+                commentContent = CyptoUtils.DecryptDoNet(commentItem.getCommentContent(),DES_KEY);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             ClipboardManager clipboard =
                 (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(ClipData.newPlainText(null, commentItem.getPHC_Content()));
+            clipboard.setPrimaryClip(ClipData.newPlainText(null,commentContent));
+        });
+        dialog.setDeleteClickListener(() -> {
+            presenter.deleteComment(
+                viewHolder.getAdapterPosition() - HEAD_VIEW_SIZE,
+                commentItem.getCommentUserid(), commentItem.getPhotoSerno());
         });
     }
 
     /**
      * 回复评论
      */
-    private void replyComment(@NonNull CircleViewHolder viewHolder, @NonNull CircleItem circleItem,
-                              ContentEntity commentItem, int commentPosition) {
+    private void replyComment(@NonNull CircleViewHolder viewHolder, @NonNull PhotoBean circleItem,
+                              CommentBean commentItem, int commentPosition) {
         int circlePosition = viewHolder.getAdapterPosition() - HEAD_VIEW_SIZE;
         presenter.replyComment(circlePosition, circleItem, commentItem, commentPosition);
     }
@@ -513,9 +528,9 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
     /**
      * 复制或者删除自己的评论
      */
-    private void handleMyComment(@NonNull CircleViewHolder viewHolder, @NonNull ContentEntity commentItem) {
+    private void handleMyComment(@NonNull CircleViewHolder viewHolder, @NonNull CommentBean commentItem) {
         CommentDialog dialog = new CommentDialog(
-            context, UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid()));
+            context,true);
 
         dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(true);
@@ -523,7 +538,7 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         dialog.setDeleteClickListener(() ->
             presenter.deleteComment(
                 viewHolder.getAdapterPosition() - HEAD_VIEW_SIZE,
-                commentItem.getPHC_CommentUserid(), commentItem.getPHC_Serno())
+                commentItem.getCommentUserid(), commentItem.getCommentSerno())
         );
 
     }
@@ -531,11 +546,11 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
     /**
      * 处理点赞
      */
-    private void handleFavort(@NonNull CircleViewHolder viewHolder, @NonNull List<ZambiaEntity> favortItems) {
+    private void handleFavort(@NonNull CircleViewHolder viewHolder, @NonNull List<ThumbsBean> favortItems) {
         viewHolder.favortListAdapter.setSpanClickListener(position -> {
             Intent intent = new Intent(context, FriendDetailActivity.class);
             intent.putExtra(AppConfig.FRIEND_NAME,
-                favortItems.get(position).PHC_CommentUserid);
+                favortItems.get(position).getThumbsUserId());
             context.startActivity(intent);
         });
         viewHolder.favortListAdapter.setitems(DatasUtil.getFavortItems(favortItems));
@@ -558,11 +573,11 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         }
     }
 
-    private void toPlayer(@NonNull CircleItem item, @NonNull VideoViewHolder viewHolder, boolean isSilentPlay) {
+    private void toPlayer(@NonNull PhotoBean item, @NonNull VideoViewHolder viewHolder, boolean isSilentPlay) {
         AnimationRect rect = AnimationRect.buildFromImageView(viewHolder.videothumbnial);
-        if (!StringUtils.isEmpty(item.videoUrl)) {
+        if (!StringUtils.isEmpty(item.getVideoUrl())) {
             Intent intent = LookUpVideoActivity
-                .newIntent(context, rect, item.videoUrl, "circle");
+                .newIntent(context, rect, item.getVideoUrl(), "circle");
             intent.putExtra("isSilent", isSilentPlay);
             context.startActivity(intent);
         } else {
@@ -570,14 +585,29 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         }
     }
 
-    private void collect(CircleItem circleItem, String path, int mType) {
+    private void collect(PhotoBean circleItem, String path, int mType) {
         if (mType == Content.MSG_TYPE_TEXT) {
             StoreManager.getInstance()
-                .storeCircleText(circleItem.id, circleItem.userid, circleItem.username, path, circleItem.headUrl);
+                .storeCircleText(circleItem.getPhotoId() + "", circleItem.getPhotoCreator(),
+                    circleItem.getUserName(), path, circleItem.getUserImage());
         } else {
+            JSONObject jsonObject = new JSONObject();
+            try {
+            jsonObject.put("ImageSize",circleItem.getImageSize()+"");
+            jsonObject.put("userHeadImageStr",circleItem.getUserImage());
+            jsonObject.put("signContent","");
+            jsonObject.put("messageType","4");
+            jsonObject.put("ImageUrl",circleItem.getImageUrls().get(1));
+            jsonObject.put("type","0");
+            jsonObject.put("userName",circleItem.getUserName());
+            jsonObject.put("VideoUrl",path);
+            jsonObject.put("recordTime",TimeUtils.getDate());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             StoreManager.getInstance()
-                .storeCircleImageVideo(circleItem.id, circleItem.userid, circleItem.username, path,
-                    circleItem.headUrl, mType);
+                .storeCircleImageVideo(circleItem.getPhotoId() + "", circleItem.getPhotoCreator(), circleItem.getUserName(), jsonObject.toString(),
+                    circleItem.getUserImage(), path.contains(".mp4")?4:mType);
         }
     }
 
@@ -586,9 +616,9 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         private String path;
         private CircleViewHolder viewHolder;
         private int mType;
-        private CircleItem item;
+        private PhotoBean item;
 
-        private PopupCollectClickListener(CircleItem item, String resPath, CircleViewHolder viewHolder, int extraType) {
+        private PopupCollectClickListener(PhotoBean item, String resPath, CircleViewHolder viewHolder, int extraType) {
             this.path = resPath;
             this.mType = extraType;
             this.viewHolder = viewHolder;
@@ -613,9 +643,9 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
         //动态在列表中的位置
         private int mCirclePosition;
         private long mLasttime = 0;
-        private CircleItem mCircleItem;
+        private PhotoBean mCircleItem;
 
-        private PopupItemClickListener(int circlePosition, CircleItem circleItem) {
+        private PopupItemClickListener(int circlePosition, PhotoBean circleItem) {
             this.mCirclePosition = circlePosition;
             this.mCircleItem = circleItem;
         }
@@ -648,7 +678,45 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
      */
     @SuppressLint({"SetTextI18n", "CheckResult"})
     private void getNewCommentCount(ItemHeadCircleBinding binding, int newCount) {
-        Http.getNewCommentCount("getnewCommentNum", UserInfoRepository.getUserName())
+
+        getCirclesFriendsApi().getUnreadCommentInfo(UserInfoRepository.getUserId(),
+            new FXRxSubscriberHelper<BaseResponse<UnReadCommentInfo>>() {
+                @Override
+                public void _onNext(BaseResponse<UnReadCommentInfo> baseResponse) {
+                    if ("Ok".equals(baseResponse.getMessage())){
+                        int count = 0;
+                        String userImage = "";
+                        unReadCommentInfo = baseResponse.getContent();
+                        List<UnReadCommentBean> unReadComment = new ArrayList<>();
+
+                        for (UnReadCommentBean commentBean :baseResponse.getContent().getUnReadComment()){
+                            if (!UserInfoRepository.getUserId().equals(commentBean.getCommentUserid())){
+                                unReadComment.add(commentBean);
+                            }
+                        }
+                        List<UnReadThumbsBean> unReadThumbs = new ArrayList<>();
+                        for (UnReadThumbsBean unReadThumbsBean :baseResponse.getContent().getUnReadThumbs()){
+                            if (!UserInfoRepository.getUserId().equals(unReadThumbsBean.getThumbsUserId())){
+                                unReadThumbs.add(unReadThumbsBean);
+                            }
+                        }
+
+                        count = unReadComment.size()+unReadThumbs.size();
+                        if (unReadComment.size()>0){
+                            userImage = unReadComment.get(unReadComment.size()-1).getUserImage();
+                        }else if (unReadThumbs.size() > 0){
+                            userImage = unReadThumbs.get(unReadThumbs.size()-1).getUserImage();
+                        }
+                        if (count > 0){
+                            binding.llCircleNewMessage.setVisibility(View.VISIBLE);
+                            binding.mCircleNewMessage.setText(count + "条新消息");
+                            //ImageLoader.loadImage(String.format(Route.obtainAvater, userImage), binding.imgNewCircleAvatar);
+                            ImageLoader.loadImage(userImage, binding.imgNewCircleAvatar);
+                        }
+                    }
+                }
+            });
+        /*Http.getNewCommentCount("getnewCommentNum", UserInfoRepository.getUserName())
             .compose(RxSchedulers.io_main())
             .subscribe(
                 stringRetObjectResponse -> {
@@ -668,13 +736,11 @@ public class CircleFriendsAdapter extends BaseRecycleViewAdapter<CircleItem, Bas
                     if (!TextUtils.isEmpty(userID) && count != 0 && count != newCount) {
                         binding.llCircleNewMessage.setVisibility(View.VISIBLE);
                         binding.mCircleNewMessage.setText(count + "条新消息");
-                        Glide.with(context)
-                            .load(String.format(Route.obtainAvater, userID))
-                            .into(binding.imgNewCircleAvatar);
+                        ImageLoader.loadImage(String.format(Route.obtainAvater, userID), binding.imgNewCircleAvatar);
                     }
 
                 },
-                throwable -> Log.e(HeaderViewHolder.NEW_COMMENT_COUNT, throwable.getMessage()));
+                throwable -> Log.e(HeaderViewHolder.NEW_COMMENT_COUNT, throwable.getMessage()));*/
     }
 
 

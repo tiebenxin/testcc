@@ -11,14 +11,15 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.view.KeyEvent;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lensim.fingerchat.commons.base.BaseActivity;
-import com.lensim.fingerchat.commons.utils.T;
+import com.lensim.fingerchat.commons.base.BaseResponse;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
+import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.components.dialog.nifty_dialog.NiftyDialogBuilder;
 import com.lensim.fingerchat.components.helper.DivItemDecoration;
 import com.lensim.fingerchat.components.helper.OnDoubleClickListener;
@@ -30,13 +31,18 @@ import com.lensim.fingerchat.data.me.CircleItem;
 import com.lensim.fingerchat.data.me.NewComment;
 import com.lensim.fingerchat.data.repository.SPSaveHelper;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.api.CirclesFriendsApi;
 import com.lensim.fingerchat.fingerchat.databinding.ActivityLookupCommentBinding;
+import com.lensim.fingerchat.fingerchat.model.bean.UnReadCommentInfo;
+import com.lensim.fingerchat.fingerchat.model.bean.UnReadCommentInfo.UnReadCommentBean;
 import com.lensim.fingerchat.fingerchat.ui.me.photo.CommentDetailActivity;
 import com.lensim.fingerchat.fingerchat.ui.me.photo.InnerCommentsAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +59,7 @@ public class LookupCommentActivity extends BaseActivity {
     private final String XML_NAME = "SavedTimeStamp";
     private final String XML_KEY = "key";
     private final String TIME_FORMATER = "yyyy-MM-dd HH:mm:ss";
+    public static final String UNREAD = "unreads";
 
     private ActivityLookupCommentBinding ui;
 
@@ -77,9 +84,9 @@ public class LookupCommentActivity extends BaseActivity {
                 ui.recyclerViewComment.smoothScrollToPosition(0);
             }));
         initAdapter();
-        ui.mCommentRefresh.setOnLoadListener(() -> loadData(TYPE_LOADMORE, PAGE_NUM, getTimeStamp()));
+       /* ui.mCommentRefresh.setOnLoadListener(() -> loadData(TYPE_LOADMORE, PAGE_NUM, getTimeStamp()));
         ui.mCommentRefresh.setOnRefreshListener(() -> updateLoadData(TYPE_PULLREFRESH, null));
-        ui.mCommentRefresh.setRefreshing(true);
+        ui.mCommentRefresh.setRefreshing(false);*/
 
     }
 
@@ -99,15 +106,15 @@ public class LookupCommentActivity extends BaseActivity {
         mAdapter.setOnItemClickListener((view, position) -> {
             Intent intent = new Intent(this, CommentDetailActivity.class);
             NewComment newComment = mAdapter.getItem(position);
-            if (TextUtils.isEmpty(newComment.getPHO_ImagePath())) {
+            /*if (TextUtils.isEmpty(newComment.getPHO_ImagePath())) {
                 circleBlankDialog();
-            } else {
+            } else { }*/
+                intent.putExtra(CommentDetailActivity.PHOTO_SERO,newComment.getPHC_Serno());
                 intent.putExtra(CommentDetailActivity.NEW_COMEMNT, newComment);
                 if (items.containsKey(newComment.getPHO_Serno())) {
                     intent.putExtra(CommentDetailActivity.CIRCLE_ITEM, items.get(newComment.getPHO_Serno()));
                 }
                 startActivityForResult(intent, REQUEST_CODE);
-            }
         });
 
         ui.recyclerViewComment.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -133,13 +140,65 @@ public class LookupCommentActivity extends BaseActivity {
 
     @Override
     public void initData(Bundle savedInstanceState) {
+
         SPSaveHelper.setValue(UserInfoRepository.getUserName() + "circle_comment", 0);
         int type = getIntent().getIntExtra("lookcomment_type", 0);
-        if (type == 2) {
+        UnReadCommentInfo unReadCommentInfo = getIntent().getParcelableExtra(UNREAD);
+
+        List<NewComment> datas = new ArrayList<>();
+        if (unReadCommentInfo.getUnReadThumbs().size()>0){
+            for(int i = 0;i<unReadCommentInfo.getUnReadThumbs().size();i++){
+                NewComment newComment = new NewComment();
+                newComment.setTime(unReadCommentInfo.getUnReadThumbs().get(i).getThumbsTime());
+                newComment.setPHO_CreateDT(TimeUtils.timeFormat(unReadCommentInfo.getUnReadThumbs().get(i).getThumbsTime()));
+                newComment.setPHC_ID(unReadCommentInfo.getUnReadThumbs().get(i).getTId());
+                newComment.setPHC_Serno(unReadCommentInfo.getUnReadThumbs().get(i).getPhotoSerno());
+                newComment.setPHC_Content("");
+                newComment.setPHC_Zambia("1");
+                newComment.setPHC_CommentUserid(unReadCommentInfo.getUnReadThumbs().get(i).getThumbsUserId());
+                newComment.setPHC_CommentUsername(unReadCommentInfo.getUnReadThumbs().get(i).getThumbsUserName());
+                newComment.setPHO_ImageName("");
+                newComment.setPHO_ImagePath("");
+                newComment.setPHO_CreateUserID("");
+                newComment.setUSR_Name("");
+                datas.add(newComment);
+            }
+        }
+
+        if (unReadCommentInfo.getUnReadComment().size() >0 ){
+            for(UnReadCommentBean commentBean :unReadCommentInfo.getUnReadComment()){
+                NewComment newComment = new NewComment();
+                newComment.setTime(commentBean.getCommentTime());
+                newComment.setPHO_CreateDT(TimeUtils.timeFormat(commentBean.getCommentTime()));
+                newComment.setPHC_ID(commentBean.getCommentId());
+                newComment.setPHC_Serno(commentBean.getPhotoSerno());
+                newComment.setPHC_Content(commentBean.getCommentContent());
+                newComment.setPHC_Zambia("0");
+                newComment.setPHC_CommentUserid(commentBean.getCommentUserid());
+                newComment.setPHC_CommentUsername(commentBean.getCommentUsername());
+                newComment.setPHO_ImageName("");
+                newComment.setPHO_ImagePath(commentBean.getUserImage());
+                newComment.setPHO_CreateUserID(commentBean.getCreatorUserid());
+                newComment.setUSR_Name(commentBean.getCreatorUsername());
+                datas.add(newComment);
+            }
+        }
+
+        Collections.sort(datas, new Comparator<NewComment>() {
+            @Override
+            public int compare(NewComment newComment, NewComment t1) {
+                return (int) (newComment.getTime() - t1.getTime());
+            }
+        });
+
+        mAdapter.setItems(datas);
+        addSeeCommentTime();
+
+        /*if (type == 2) {
             loadData(TYPE_FIRST_TIME, PAGE_NUM, getTimeStamp());
         } else {
             loadData(TYPE_LOAD_NO_SEE, 0, "0");
-        }
+        }*/
     }
 
 
@@ -227,12 +286,14 @@ public class LookupCommentActivity extends BaseActivity {
     }
 
     private void addSeeCommentTime() {
-        Http.addSeeCommentTime("addSeeComment", UserInfoRepository.getUserName())
-            .compose(RxSchedulers.io_main())
-            .subscribe(stringRetObjectResponse -> {
+       new CirclesFriendsApi().seeCommentTime(UserInfoRepository.getUserName(),
+           new FXRxSubscriberHelper<BaseResponse>() {
+               @Override
+               public void _onNext(BaseResponse baseResponse) {
 
-                },
-            throwable -> T.show(throwable.getMessage()));
+               }
+           });
+
     }
 
     /***
@@ -293,10 +354,10 @@ public class LookupCommentActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                CircleItem item = data.getParcelableExtra("circleitem");
+                /*CircleItem item = data.getParcelableExtra("circleitem");
                 if (item != null) {
                     items.put(item.id, item);
-                }
+                }*/
                 if (data.getBooleanExtra("isDeleteCircle", false)) {
                     reload();
                 }

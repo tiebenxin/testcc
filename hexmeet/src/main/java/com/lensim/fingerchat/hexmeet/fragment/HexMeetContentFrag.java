@@ -875,8 +875,8 @@ public class HexMeetContentFrag extends Fragment {
 
         private void addPeople() {
             Intent intent = new Intent(getActivity(), GroupSelectListActivity.class);
-            intent.putExtra(Constant.GROUP_SELECT_MODE_OPERATION, Constant.GROUP_SELECT_MODE_CARD);
-            intent.putExtra(Constant.GROUP_SELECT_MODE_CARD_STR, resultChoosePeople);
+            intent.putExtra(Constant.KEY_OPERATION, Constant.GROUP_SELECT_MODE_CARD);
+            intent.putExtra(Constant.KEY_SELECT_USER, resultChoosePeople);
             startActivityForResult(intent, RequestCode.select_contact.ordinal());
         }
 

@@ -1,32 +1,28 @@
 package com.lensim.fingerchat.fingerchat.ui.me.collection;
 
 
+import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.view.KeyEvent;
-
 import com.lens.chatmodel.ui.image.MultiImageSelectorActivity;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.commons.map.MapPickerActivity;
 import com.lensim.fingerchat.commons.map.bean.MapInfoEntity;
-import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.NoteStringUtils;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.components.dialog.nifty_dialog.NiftyDialogBuilder;
 import com.lensim.fingerchat.data.bean.ImageBean;
 import com.lensim.fingerchat.data.me.content.CollectionManager;
+import com.lensim.fingerchat.data.me.content.FavJson;
 import com.lensim.fingerchat.data.me.content.StoreManager;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.databinding.ActivityNoteBinding;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.note.NoteImageView;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.note.RichTextEditor;
 import com.lensim.fingerchat.fingerchat.ui.work_center.sign.ClockInRecordDetailActivity;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -35,8 +31,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-
-import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 收藏——笔记
@@ -56,10 +53,10 @@ public class NoteActivity extends BaseActivity {
     private long contentLength;
     private ArrayList<String> pictures = new ArrayList<>();
     ActivityNoteBinding ui;
-    private long favId;
+    private FavJson favId;
 
     public static void openActivity(Activity context, int requestCode, String content,
-                                    long favId) {
+                                    FavJson favId) {
         Intent intent = new Intent(context, NoteActivity.class);
         intent.putExtra(ClockInRecordDetailActivity.PARAMS_CONTENT, content);
         intent.putExtra(PARAMS_TIMESTAMP, favId);
@@ -76,7 +73,7 @@ public class NoteActivity extends BaseActivity {
         ui.imgbtnLocation.setOnClickListener(v -> getLocation());
 
         String content = getIntent().getStringExtra(PARAMS_CONTENT);
-        favId = getIntent().getLongExtra(PARAMS_TIMESTAMP, 0);
+        favId = (FavJson) getIntent().getSerializableExtra(PARAMS_TIMESTAMP);
         if (!StringUtils.isEmpty(content)) {
             contentLength = content.length();
             showDataSync(content);
@@ -250,7 +247,9 @@ public class NoteActivity extends BaseActivity {
             })
             .setButton2Click(v -> {
                 builder.dismiss();
-                CollectionManager.getInstance().deleteByFavId(favId);
+                if (null != favId ){
+                    CollectionManager.getInstance().deleteByFavId(favId.getFavMsgId());
+                }
                 StoreManager.getInstance().storeNote(new Date().getTime() + "", content);
                 saveChanges(true);
             })

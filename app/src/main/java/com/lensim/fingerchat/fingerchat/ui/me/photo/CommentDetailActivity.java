@@ -6,13 +6,14 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.view.KeyEvent;
-import com.example.annotation.Path;
+import com.lens.route.annotation.Path;
 import com.lensim.fingerchat.commons.base.FGActivity;
 import com.lensim.fingerchat.commons.router.ActivityPath;
 import com.lensim.fingerchat.data.me.CircleItem;
 import com.lensim.fingerchat.data.me.NewComment;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.databinding.ActivityCommentDetailBinding;
+import com.lensim.fingerchat.fingerchat.model.bean.PhotoBean;
 
 /**
  * Created by ll147996 on 2017/12/15.
@@ -24,10 +25,12 @@ public class CommentDetailActivity extends FGActivity {
 
     public static final String NEW_COMEMNT = "newComment";
     public static final String CIRCLE_ITEM = "circleItem";
+    public static final String PHOTO_SERO = "photoSerno";
 
     private NewComment newComment;
     private CommentDetailFragment fragment;
     private ActivityCommentDetailBinding ui;
+    private PhotoBean photoBean;
 
     @Override
     public void initView() {
@@ -40,15 +43,17 @@ public class CommentDetailActivity extends FGActivity {
     public void initData(Bundle savedInstanceState) {
 
         newComment = getIntent().getParcelableExtra(NEW_COMEMNT);
+        String pSero = getIntent().getStringExtra(PHOTO_SERO);
         CircleItem item = getIntent().getParcelableExtra(CIRCLE_ITEM);
+
         if (savedInstanceState != null) {
             fragment = (CommentDetailFragment) getSupportFragmentManager().getFragment(savedInstanceState, newComment.getPHO_Serno());
             if (fragment == null) {
-                fragment = CommentDetailFragment.newInstance(newComment, item);
+                fragment = CommentDetailFragment.newInstance(newComment, photoBean,pSero);
             }
             getSupportFragmentManager().beginTransaction().add(R.id.mFragmentContainer, fragment).commit();
         } else {
-            fragment = CommentDetailFragment.newInstance(newComment, item);
+            fragment = CommentDetailFragment.newInstance(newComment, photoBean,pSero);
             getSupportFragmentManager().beginTransaction().add(R.id.mFragmentContainer, fragment).commit();
         }
     }

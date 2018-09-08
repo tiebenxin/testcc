@@ -1,6 +1,8 @@
 package com.lensim.fingerchat.fingerchat.ui.me.photo;
 
 
+import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -12,33 +14,33 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.signature.StringSignature;
-import com.example.annotation.Path;
 import com.lens.chatmodel.ui.image.LookUpPhotosActivity;
 import com.lens.chatmodel.ui.image.MultiImageSelectorActivity;
+import com.lens.route.annotation.Path;
 import com.lensim.fingerchat.commons.app.AppConfig;
+import com.lensim.fingerchat.commons.base.BaseResponse;
 import com.lensim.fingerchat.commons.base.FGActivity;
 import com.lensim.fingerchat.commons.global.Route;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
 import com.lensim.fingerchat.commons.router.ActivityPath;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.StringUtils;
+import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.components.adapter.multitype.MultiTypeAdapter;
-import com.lensim.fingerchat.data.Http;
-import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.NewComment;
-import com.lensim.fingerchat.data.me.circle_friend.FriendCircleEntity;
+import com.lensim.fingerchat.data.me.circle_friend.FxPhotosBean;
 import com.lensim.fingerchat.data.repository.SPSaveHelper;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.api.CirclesFriendsApi;
 import com.lensim.fingerchat.fingerchat.databinding.ActivityPhotosBinding;
-import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.LookupCommentActivity;
+import com.lensim.fingerchat.fingerchat.model.bean.FriendCircleInfo;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.viewholder.HeaderViewHolder;
 import com.lensim.fingerchat.fingerchat.ui.me.photo.photos_adapter_multitype.PhotosHeaderVH;
 import com.lensim.fingerchat.fingerchat.ui.me.photo.photos_adapter_multitype.PhotosViewHolder;
@@ -46,7 +48,6 @@ import com.lensim.fingerchat.fingerchat.ui.me.photo.photos_adapter_multitype.Tex
 import com.lensim.fingerchat.fingerchat.ui.me.utils.CircleFriendsHelper;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,10 +66,15 @@ public class PhotosActivity extends FGActivity {
     public static final int COMMENT_ACTIVITY_REQUEST_CODE = 191;
 
 
-    private List<FriendCircleEntity> entities;
+    private List<FxPhotosBean> entities;
     private String username;
     private boolean isMyPhoto;
     private MultiTypeAdapter mAdapter;
+    private CirclesFriendsApi api;
+    public CirclesFriendsApi getCirclesFriendsApi() {
+        return api == null ? new CirclesFriendsApi() : api;
+    }
+
 
     private final DisplayImageOptions options =
         new DisplayImageOptions.Builder().cacheInMemory(true).cacheOnDisk(true)
@@ -88,9 +94,10 @@ public class PhotosActivity extends FGActivity {
         initBackButton(ui.toolbar, true);
 
         ui.mLookUpAllComment.setOnClickListener((view) -> {
-            Intent intent = new Intent(this, LookupCommentActivity.class);
+            showToast("查看所有评论");
+            /*Intent intent = new Intent(this, LookupCommentActivity.class);
             intent.putExtra("lookcomment_type", 2);
-            startActivityForResult(intent, COMMENT_ACTIVITY_REQUEST_CODE);
+            startActivityForResult(intent, COMMENT_ACTIVITY_REQUEST_CODE);*/
         });
     }
 
@@ -119,20 +126,6 @@ public class PhotosActivity extends FGActivity {
             ui.circleUsername.setText(UserInfoRepository.getUsernick());
         } else {
             ui.mLookUpAllComment.setVisibility(View.GONE);
-//            try {
-//                String account = AccountManager.getInstance().getUserjid();
-//                String friendName = username;
-//                String user = friendName + "@" + ConnectionItem.DEFAULT_SERVER_NAME;
-//                RosterContactTemp rosterContact = RosterManager.getInstance()
-//                    .getRosterContact(account, user);
-//                if (rosterContact != null && !TextUtils.isEmpty(rosterContact.getNick())) {
-//                    circleUsername.setText(rosterContact.getNick());
-//                }
-//            } catch (NullPointerException e) {
-//                e.printStackTrace();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
         }
         prepareAdapter(isMyPhoto);
         updateCircle();
@@ -141,14 +134,13 @@ public class PhotosActivity extends FGActivity {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                Glide.with(ContextHelper.getContext()).resumeRequests();
+
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState != RecyclerView.SCROLL_STATE_IDLE) {
-                    Glide.with(ContextHelper.getContext()).pauseRequests();
                     ImageLoader.getInstance().pause();
                 } else {
                     ImageLoader.getInstance().resume();
@@ -171,15 +163,15 @@ public class PhotosActivity extends FGActivity {
 
         mAdapter = new MultiTypeAdapter();
         mAdapter.register(String.class, headerViewHolder);
-        mAdapter.register(FriendCircleEntity.class, photosViewHolder);
+        mAdapter.register(FxPhotosBean.class, photosViewHolder);
         mAdapter.register(NewComment.class, textViewHolder);
         ui.recycler.setAdapter(mAdapter);
-        mAdapter.setItems(getItems(entities));
+        //mAdapter.setItems(getItems(entities));
         ui.recycler.setItemAnimator(new DefaultItemAnimator());
 
         photosViewHolder.setOnItemClickListener((entity, position) -> {
                 Intent intent = new Intent(this, LookUpPhotosActivity.class);
-                intent.putParcelableArrayListExtra(LookUpPhotosActivity.FRIEND_CIRCLE_ENTITY_LIST, (ArrayList<FriendCircleEntity>) entities);
+                intent.putExtra(LookUpPhotosActivity.FRIEND_CIRCLE_ENTITY_LIST, (ArrayList<FxPhotosBean>) entities);
                 intent.putExtra(LookUpPhotosActivity.POSITION, position);
                 startActivityForResult(intent, 0);
             }
@@ -201,13 +193,18 @@ public class PhotosActivity extends FGActivity {
 
     @SuppressLint("CheckResult")
     private void updateCircle() {
-        Http.getPhotos("getphoto", username)
-            .compose(RxSchedulers.io_main())
-            .subscribe(friendCircleEntities -> {
-                    entities.addAll(friendCircleEntities);
-                    mAdapter.setItems(getItems(entities));
-                },
-                throwable -> Log.e("updateCircle", throwable.getMessage()));
+        getCirclesFriendsApi().getInfoListById(username,
+            new FXRxSubscriberHelper<BaseResponse<FriendCircleInfo>>() {
+                @Override
+                public void _onNext(BaseResponse<FriendCircleInfo> baseResponse) {
+                    if ("Ok".equals(baseResponse.getMessage())){
+                        List<FxPhotosBean> list = baseResponse.getContent().getFxNewPhotos();
+                        entities.addAll(list);
+                        mAdapter.setItems(getItems(entities));
+                    }
+                }
+            });
+
     }
 
     @Override
@@ -240,8 +237,10 @@ public class PhotosActivity extends FGActivity {
         } else if (requestCode == AppConfig.REQUEST_VIDEO) {
             if (resultCode == 102) {
                 String path = data.getStringExtra("videoPath");
+                String imagePath = data.getStringExtra("framePicPath");
                 Intent intent = new Intent(this, VideoStatuActivity.class);
                 intent.putExtra(VideoStatuActivity.PATH, path);
+                intent.putExtra(VideoStatuActivity.PATH_IMAGE, imagePath);
                 startActivityForResult(intent, PHOTOS_REQUEST_NEW_STATUS);
             }
         } else if (requestCode == PHOTOS_REQUEST_NEW_STATUS) {
@@ -261,9 +260,9 @@ public class PhotosActivity extends FGActivity {
         if (delete_circle_id == null) {
             return;
         }
-        FriendCircleEntity e = null;
-        for (FriendCircleEntity entity : entities) {
-            if (entity.getPHO_Serno().equals(delete_circle_id)) {
+        FxPhotosBean e = null;
+        for (FxPhotosBean entity : entities) {
+            if (entity.getPhotoSerno().equals(delete_circle_id)) {
                 e = entity;
                 break;
             }
@@ -279,10 +278,10 @@ public class PhotosActivity extends FGActivity {
         if (delete_circle_id == null || delete_circle_id.isEmpty()) {
             return;
         }
-        FriendCircleEntity e = null;
+        FxPhotosBean e = null;
         for (String circleID : delete_circle_id) {
-            for (FriendCircleEntity entity : entities) {
-                if (entity.getPHO_Serno().equals(circleID)) {
+            for (FxPhotosBean entity : entities) {
+                if ((""+entity.getPhotoId()).equals(circleID)) {
                     e = entity;
                     break;
                 }
@@ -296,19 +295,21 @@ public class PhotosActivity extends FGActivity {
     }
 
 
-    private List<Object> getItems(@NonNull List<FriendCircleEntity> entities) {
+    private List<Object> getItems(@NonNull List<FxPhotosBean> entities) {
         List<Object> items = new ArrayList<>();
         if (isMyPhoto) items.add("");
-        for (FriendCircleEntity item : entities) {
-            if (Integer.parseInt(item.getPHO_ImageNUM()) > 0) {
+        for (FxPhotosBean item : entities) {
+            if (item.getPhotoFileNum() > 0 || item.getPhotoFilenames().contains(".mp4")) {
                 items.add(item);
             } else {
                 NewComment newComment = new NewComment();
-                newComment.setPHO_Serno(item.getPHO_Serno());
-                newComment.setPHO_CreateUserID(item.getPHO_CreateUserID());
-                newComment.setUSR_Name(item.getUSR_Name());
-                newComment.setPHO_Content(item.getPHO_Content());
-                newComment.setPHO_CreateDT(item.getPHO_CreateDT());
+                newComment.setPHO_Serno(item.getPhotoSerno());
+                newComment.setPHO_CreateUserID(item.getPhotoCreator());
+                newComment.setUSR_Name(item.getPhotoCreator());
+                newComment.setPHO_Content(item.getPhotoContent());
+                newComment.setPHO_ImagePath(item.getPhotoUrl());
+                newComment.setPHO_ImageName(item.getPhotoFilenames());
+                newComment.setPHO_CreateDT(TimeUtils.timeFormat(item.getCreateDatetime()));
                 items.add(newComment);
             }
         }
@@ -325,4 +326,6 @@ public class PhotosActivity extends FGActivity {
             return super.onKeyDown(keyCode, event);
         }
     }
+
+
 }

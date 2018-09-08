@@ -5,6 +5,8 @@ import android.text.TextUtils;
 
 import com.fingerchat.proto.message.Muc;
 import com.lens.chatmodel.bean.AllResult;
+import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.db.DBHelper;
 import com.lensim.fingerchat.db.DaoManager;
 
 import java.util.List;
@@ -41,13 +43,14 @@ public class MucInfo {
         return null;
     }
 
-    public static boolean insertMultipleMucInfo(Context context, List<Muc.MucItem> mucItems,String currentUserId) {
-        if (context != null && mucItems != null && mucItems.size() > 0) {
-            MucInfoDao dao = new MucInfoDao(context, DaoManager.getUserID());
-            return dao.insertMultiple(context, mucItems,currentUserId);
-        }
-        return false;
-    }
+//    public static boolean insertMultipleMucInfo(Context context, List<Muc.MucItem> mucItems,
+//        String currentUserId) {
+//        if (context != null && mucItems != null && mucItems.size() > 0) {
+//            MucInfoDao dao = new MucInfoDao(context, DaoManager.getUserID());
+//            return dao.insertMultiple(context, mucItems, currentUserId);
+//        }
+//        return false;
+//    }
 
     /**
      * 查询单个群信息
@@ -60,7 +63,7 @@ public class MucInfo {
         return null;
     }
 
-    public static boolean delGroupUser(Context context, String mucId) {
+    public static boolean delMucInfo(Context context, String mucId) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
             MucInfoDao dao = new MucInfoDao(context, DaoManager.getUserID());
             return dao.delete(mucId);
@@ -94,13 +97,15 @@ public class MucInfo {
     /**
      * 全量修改mucInfo
      */
-    public static boolean updateMucInfo(Context context, String mucId, Muc.MucItem mucItem,String currentUserId) {
+    public static boolean updateMucInfo(Context context, String mucId, Muc.MucItem mucItem,
+        String currentUserId) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
             MucInfoDao dao = new MucInfoDao(context, DaoManager.getUserID());
-            return dao.updateMucInfo(mucId, mucItem,currentUserId);
+            return dao.updateMucInfo(mucId, mucItem, currentUserId);
         }
         return false;
     }
+
 
     /**
      * 批量对比更新数据库
@@ -139,6 +144,14 @@ public class MucInfo {
         return 0;
     }
 
+    public static boolean updateNoDisturb(String mucId, boolean isNoDisturb) {
+        if (!TextUtils.isEmpty(mucId)) {
+            MucInfoDao dao = new MucInfoDao(ContextHelper.getContext(), DaoManager.getUserID());
+            return dao.markNoDisturb(mucId, isNoDisturb);
+        }
+        return false;
+    }
+
     /**
      * 获取群聊天背景
      *
@@ -175,6 +188,16 @@ public class MucInfo {
         return null;
     }
 
+    /**
+     * 删除当前群所有成员
+     */
+    public static boolean deleAllMembers(Context context, String mucId) {
+        if (context != null && !TextUtils.isEmpty(mucId)) {
+            return MucUser.delGroupUser(context, mucId);
+        }
+        return false;
+    }
+
     public static AllResult selectMucByContent(Context context, String key) {
         if (context != null && !TextUtils.isEmpty(key)) {
             MucInfoDao dao = new MucInfoDao(context, DaoManager.getUserID());
@@ -186,7 +209,7 @@ public class MucInfo {
     /**
      * 查询群备注名
      */
-    public static List<String> selectMucUserNick(Context context, String mucId) {
+    public static List<String> selectMucUserNickList(Context context, String mucId) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
             return MucUser.qMucUserNicks(context, mucId);
         }
@@ -214,4 +237,29 @@ public class MucInfo {
         }
         return "";
     }
+
+    /**
+     * 群备注名
+     */
+    public static String getMucUserNick(Context context, String mucId) {
+        if (context != null && !TextUtils.isEmpty(mucId)) {
+            MucInfoDao dao = new MucInfoDao(context, DaoManager.getUserID());
+            return dao.getMucUserNick(mucId);
+        }
+        return "";
+    }
+
+    /**
+     * 获取群成员总数
+     *
+     * @return int
+     */
+    public static int getMucMemberCount(String mucId) {
+        if (!TextUtils.isEmpty(mucId)) {
+            MucInfoDao dao = new MucInfoDao(ContextHelper.getContext(), DaoManager.getUserID());
+            return dao.getMucMemberCount(mucId);
+        }
+        return 0;
+    }
+
 }

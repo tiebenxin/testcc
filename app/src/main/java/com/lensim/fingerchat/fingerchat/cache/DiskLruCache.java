@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
 
 
 /**
- * A cache that uses a bounded amount of space on a filesystem. Each cache
+ * CommentResponse cache that uses a bounded amount of space on a filesystem. Each cache
  * entry has a string key and a fixed number of values. Each key must match
  * the regex <strong>[a-z0-9_-]{1,120}</strong>. Values are byte sequences,
  * accessible as streams or files. Each value must be between {@code 0} and
@@ -101,7 +101,7 @@ public final class DiskLruCache implements Closeable {
   private static final String READ = "READ";
 
     /*
-     * This cache uses a journal file named "journal". A typical journal file
+     * This cache uses a journal file named "journal". CommentResponse typical journal file
      * looks like this:
      *     libcore.io.DiskLruCache
      *     1
@@ -129,13 +129,13 @@ public final class DiskLruCache implements Closeable {
      *     action. DIRTY lines without a matching CLEAN or REMOVE indicate that
      *     temporary files may need to be deleted.
      *   o CLEAN lines track a cache entry that has been successfully published
-     *     and may be read. A publish line is followed by the lengths of each of
+     *     and may be read. CommentResponse publish line is followed by the lengths of each of
      *     its values.
      *   o READ lines track accesses for LRU.
      *   o REMOVE lines track entries that have been deleted.
      *
      * The journal file is appended to as cache operations occur. The journal may
-     * occasionally be compacted by dropping redundant lines. A temporary file named
+     * occasionally be compacted by dropping redundant lines. CommentResponse temporary file named
      * "journal.tmp" will be used during compaction; that file should be deleted if
      * it exists when the cache is opened.
      */
@@ -155,7 +155,7 @@ public final class DiskLruCache implements Closeable {
 
   /**
    * To differentiate between old and current snapshots, each entry is given
-   * a sequence number each time an edit is committed. A snapshot is stale if
+   * a sequence number each time an edit is committed. CommentResponse snapshot is stale if
    * its sequence number is not equal to its entry's sequence number.
    */
   private long nextSequenceNumber = 0;
@@ -432,7 +432,7 @@ public final class DiskLruCache implements Closeable {
         ins[i] = new FileInputStream(entry.getCleanFile(i));
       }
     } catch (FileNotFoundException e) {
-      // A file must have been deleted manually!
+      // CommentResponse file must have been deleted manually!
       for (int i = 0; i < valueCount; i++) {
         if (ins[i] != null) {
           Util.closeQuietly(ins[i]);
@@ -676,7 +676,7 @@ public final class DiskLruCache implements Closeable {
     return Util.readFully(new InputStreamReader(in, Util.UTF_8));
   }
 
-  /** A snapshot of the values for an entry. */
+  /** CommentResponse snapshot of the values for an entry. */
   public final class Snapshot implements Closeable {
     private final String key;
     private final long sequenceNumber;

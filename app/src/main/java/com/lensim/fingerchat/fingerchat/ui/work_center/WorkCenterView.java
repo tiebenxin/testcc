@@ -3,6 +3,7 @@ package com.lensim.fingerchat.fingerchat.ui.work_center;
 
 
 import com.lensim.fingerchat.commons.mvp.view.ProcessMvpView;
+import com.lensim.fingerchat.data.work_center.WorkItem;
 
 
 import java.util.List;
@@ -15,7 +16,10 @@ import java.util.List;
 
 public interface WorkCenterView extends ProcessMvpView {
 
-    void setItems(List<Object> items);
+    void setItems(List<?> items);
     void showIdentifyDialog();
-    void startBrowserActivity(String url, String title);
+    void startBrowserActivity(String url, String title, int isHasNav);
+    List<?> getItems();
+    void toHexMeetActivity();
+    void showMsg(String msg);
 }

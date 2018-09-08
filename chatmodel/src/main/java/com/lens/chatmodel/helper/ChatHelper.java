@@ -5,11 +5,8 @@ import android.text.TextUtils;
 import android.widget.ImageView;
 import com.fingerchat.proto.message.BaseChat.MessageType;
 import com.fingerchat.proto.message.Muc;
-import com.fingerchat.proto.message.Muc.MOption;
 import com.fingerchat.proto.message.Muc.MucAction;
 import com.fingerchat.proto.message.Muc.MucItem;
-import com.fingerchat.proto.message.Muc.Role;
-import com.fingerchat.proto.message.MucChat;
 import com.lens.chatmodel.ChatEnum.EActionType;
 import com.lens.chatmodel.ChatEnum.EChatBgId;
 import com.lens.chatmodel.ChatEnum.EChatType;
@@ -18,12 +15,9 @@ import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.bean.body.BodyEntity;
-import com.lens.chatmodel.db.MucInfo;
 import com.lens.chatmodel.interf.IChatRoomModel;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
-import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -36,6 +30,9 @@ public class ChatHelper {
     public static long MINUTE = SECOND * 60;
     public static long HOUR = MINUTE * 60;
     public static long DAY = HOUR * 24;
+
+    public static String MYTIP = "mytip";
+    public static String MYTIP_SYS = "mytip_system";
 
     public static boolean isGroupChat(int chatType) {
         if (chatType < 0) {
@@ -92,15 +89,92 @@ public class ChatHelper {
                     return "[OA消息]";
                 case MULTIPLE:
                     return "[转发消息]";
+                case NOTICE:
+                    if (isShakeMessage(text)) {
+                        return "[抖动消息]";
+                    } else {
+                        return text;
+                    }
                 default:
                     return text;
             }
         }
     }
 
+    public static String getHint(IChatRoomModel model) {
+        if (model.isSecret()) {
+            return "[密信]";
+        } else if (model.getCancel() == 1) {
+            if (model.isIncoming()) {
+                return String
+                    .format(ContextHelper.getString(R.string.cancel_message), model.getNick());
+
+            } else {
+                return ContextHelper.getString(R.string.cancel_message_you);
+
+            }
+        } else {
+            EMessageType type = model.getMsgType();
+            if (TextUtils.isEmpty(model.getContent())) {
+                switch (type) {
+                    case CONTACT:
+                        return "[个人名片]";
+                    case MAP:
+                        return "[位置]";
+                    case VOTE:
+                        return "[投票]";
+                    case SYSTEM:
+                        return "[系统消息]";
+                    case FACE:
+                        return "[动态表情]";
+                    default:
+                        return "";
+                }
+            } else {
+                switch (type) {
+                    case VOICE:
+                        return "[语音]";
+                    case IMAGE:
+                        return "[图片]";
+                    case VIDEO:
+                        return "[视频]";
+                    case FACE:
+                        return "[动态表情]";
+                    case CONTACT:
+                        return "[个人名片]";
+                    case CARD:
+                        return "[签到]";
+                    case MAP:
+                        return "[位置]";
+                    case VOTE:
+                        return "[投票]";
+                    case SYSTEM:
+                        return "[系统消息]";
+                    case OA:
+                        return "[OA消息]";
+                    case NOTICE:
+                        return "[抖动消息]";
+                    case MULTIPLE:
+                        return "[转发消息]";
+                    default:
+                        return model.getContent();
+                }
+            }
+
+        }
+    }
+
 
     public static String getUserNick(String nick, String userId) {
         return TextUtils.isEmpty(nick) ? userId : nick;
+    }
+
+    public static boolean isAtMessage(String text, String userNick, String userId) {
+        if (!TextUtils.isEmpty(text) && (text.contains("@" + userNick) || text
+            .contains("@" + userId))) {
+            return true;
+        }
+        return false;
     }
 
     public static MessageType getMessageType(EMessageType type) {
@@ -203,51 +277,6 @@ public class ChatHelper {
         return null;
     }
 
-    public static MucAction getActionType(EActionType action) {
-        MucAction.Builder builder = MucAction.newBuilder();
-        switch (action) {
-            case CREATE:
-                builder.setAction(MOption.Create);
-            case INVITE:
-                builder.setAction(MOption.Invite);
-            case JOIN:
-                builder.setAction(MOption.Join);
-            case KICK:
-                builder.setAction(MOption.Kick);
-            case LEAVE:
-                builder.setAction(MOption.Leave);
-            case DESTROY:
-                builder.setAction(MOption.Destory);
-            case CHANGE_ROLE:
-                builder.setAction(MOption.ChangeRole);
-            case MQUERY:
-                builder.setAction(MOption.MQuery);
-            case UPDATE_CONFIG:
-                builder.setAction(MOption.UpdateConfig);
-        }
-        return builder.build();
-    }
-
-    public static String getActionText(EActionType type, String userNick, String content) {
-        String resultContent = "";
-        switch (type) {
-            case CREATE:
-                resultContent = userNick + "创建了群";
-                break;
-            case UPDATE_CONFIG:
-                resultContent = userNick + "修改了群资料";
-                break;
-        }
-        return resultContent;
-    }
-
-    private static String getOptionalText(String text) {
-        if ("".equals(text)) {
-            return "";
-        } else {
-            return " (" + text + ")";
-        }
-    }
 
     public static String getTimeLength(int time, EMessageType type) {
         if (time <= 0) {
@@ -325,7 +354,7 @@ public class ChatHelper {
             return;
         }
         entity.setBody("");
-        entity.setSecret(true);
+        entity.setSecret(1);
         model.setBody(BodyEntity.toJson(entity));
     }
 
@@ -336,9 +365,9 @@ public class ChatHelper {
             case "2":
                 return EMessageType.IMAGE;
             case "3":
-                return EMessageType.VIDEO;
+                return EMessageType.VOICE;
             case "4":
-                return EMessageType.FACE;
+                return EMessageType.VIDEO;
             default:
                 return EMessageType.TEXT;
         }
@@ -350,9 +379,9 @@ public class ChatHelper {
                 return "1";
             case IMAGE:
                 return "2";
-            case VIDEO:
+            case VOICE:
                 return "3";
-            case FACE:
+            case VIDEO:
                 return "4";
             default:
                 return "1";
@@ -370,21 +399,11 @@ public class ChatHelper {
         return false;
     }
 
-    public static boolean isNeedConfirm(MucItem item) {
+    public static boolean isNeedConfirm(MucItem item, String userId) {
         if (item == null) {
             return false;
         }
-        if (!isOwerMuc(item) && item.getNeedConfirm() == ESureType.YES.ordinal()) {
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean isOwerMuc(MucItem item) {
-        if (item == null) {
-            return false;
-        }
-        if (item.getPConfig() != null && item.getPConfig().getRole() == Role.Owner) {
+        if (!isMucOwer(item, userId) && item.getNeedConfirm() == ESureType.YES.ordinal()) {
             return true;
         }
         return false;
@@ -411,7 +430,27 @@ public class ChatHelper {
     * */
     public static boolean isSystemUser(String userId) {
         if (!TextUtils.isEmpty(userId)) {
-            if (userId.equalsIgnoreCase("小秘书")) {
+            if (userId.equalsIgnoreCase("小秘书") || userId.equalsIgnoreCase("系统消息") || isMytipUser(
+                userId) || isMytipSystemUser(userId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isMytipUser(String userId) {
+        if (!TextUtils.isEmpty(userId)) {
+            if ((userId.toLowerCase().contains(MYTIP) && !isMytipSystemUser(userId)) || userId
+                .contains("小秘书")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isMytipSystemUser(String userId) {
+        if (!TextUtils.isEmpty(userId)) {
+            if (userId.toLowerCase().contains(MYTIP_SYS) || userId.equalsIgnoreCase("系统消息")) {
                 return true;
             }
         }
@@ -459,6 +498,26 @@ public class ChatHelper {
             if (url.contains("http") || url.contains("https")) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    /*
+    * 是否是抖动消息
+    * */
+    public static boolean isShakeMessage(IChatRoomModel model) {
+        if (model != null && model.getMsgType() == EMessageType.NOTICE && model.getContent()
+            .equalsIgnoreCase(ContextHelper.getString(R.string.shake_content))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean isShakeMessage(String text) {
+        if (!TextUtils.isEmpty(text) && text
+            .equalsIgnoreCase(ContextHelper.getString(R.string.shake_content))) {
+            return true;
         }
         return false;
     }

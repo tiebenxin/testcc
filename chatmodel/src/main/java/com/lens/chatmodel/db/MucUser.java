@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.fingerchat.proto.message.Muc;
+import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.db.DaoManager;
 
 import java.util.List;
@@ -15,15 +16,17 @@ import java.util.List;
 
 public class MucUser {
 
-    public static boolean insertMultipleGroupUser(Context context, List<Muc.MucMemberItem> mucItems, String mucId) {
+    public static boolean updateMultipleGroupUser(Context context, List<Muc.MucMemberItem> mucItems,
+        String mucId, String creator) {
         if (context != null && mucItems != null && mucItems.size() > 0) {
             MucUserDao dao = new MucUserDao(context, DaoManager.getUserID());
-            return dao.insertMultiple(mucItems, mucId);
+            return dao.updateMultiple(mucItems, mucId, creator);
         }
         return false;
     }
 
-    public static List<Muc.MucMemberItem> selectByGroupId(Context context, String mucId, int count) {
+    public static List<Muc.MucMemberItem> selectByGroupId(Context context, String mucId,
+        int count) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
             MucUserDao dao = new MucUserDao(context, DaoManager.getUserID());
             return dao.selectAllById(mucId, count);
@@ -33,10 +36,6 @@ public class MucUser {
 
     /**
      * 删除群成员
-     *
-     * @param context
-     * @param mucId
-     * @return
      */
     public static boolean delGroupUser(Context context, String mucId) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
@@ -48,11 +47,6 @@ public class MucUser {
 
     /**
      * 移除群的某个成员
-     *
-     * @param context
-     * @param mucId
-     * @param userId
-     * @return
      */
     public static boolean delGroupUserByUserId(Context context, String mucId, String userId) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
@@ -64,16 +58,9 @@ public class MucUser {
 
     /**
      * 修改某个字段
-     *
-     * @param context
-     * @param mucId
-     * @param userId
-     * @param lineName
-     * @param values
-     * @return
      */
     public static boolean updateById(Context context, String mucId, String userId, String lineName,
-                                     Object values) {
+        Object values) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
             MucUserDao dao = new MucUserDao(context, DaoManager.getUserID());
             return dao.updateById(mucId, userId, lineName, values);
@@ -83,11 +70,6 @@ public class MucUser {
 
     /**
      * 查询单个群成员
-     *
-     * @param context
-     * @param mucId
-     * @param userId
-     * @return
      */
     public static Muc.MucMemberItem selectUserById(Context context, String mucId, String userId) {
         if (context != null && !TextUtils.isEmpty(mucId)) {
@@ -111,5 +93,25 @@ public class MucUser {
             return dao.qMucUserNick(mucId);
         }
         return null;
+    }
+
+    //获取群备注名
+    public static String getMucUserNick(Context context, String mucId, String userId) {
+        if (context != null && !TextUtils.isEmpty(mucId)) {
+            MucUserDao dao = new MucUserDao(context, DaoManager.getUserID());
+            return dao.getMucNick(mucId, userId);
+        }
+        return null;
+    }
+
+    public static boolean deleteMemberUser(String mucId, String userId) {
+        MucUserDao dao = new MucUserDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.deleteMemberUser(mucId, userId);
+    }
+
+    public static boolean updateMemberNickAndAvatar(String mucId, String userId, String mucNick,
+        String avatar) {
+        MucUserDao dao = new MucUserDao(ContextHelper.getContext(), DaoManager.getUserID());
+        return dao.updateMemberNickAndAvatar(mucId, userId, mucNick, avatar);
     }
 }

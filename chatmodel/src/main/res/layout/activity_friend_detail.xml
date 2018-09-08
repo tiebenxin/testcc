@@ -4,8 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
     <!--<include-->
-        <!--android:id="@+id/detail_toolbar"-->
-        <!--layout="@layout/fg_toolbar"/>-->
+    <!--android:id="@+id/detail_toolbar"-->
+    <!--layout="@layout/fg_toolbar"/>-->
 
     <com.lensim.fingerchat.commons.toolbar.FGToolbar
         android:id="@+id/viewTitleBar"
@@ -34,7 +34,9 @@
                     android:layout_height="70dp"
                     android:layout_gravity="center_vertical"
                     android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"/>
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/default_avatar_private"/>
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -71,13 +73,12 @@
 
             </LinearLayout>
 
-            <FrameLayout
-                android:id="@+id/fl_group_root"
+            <LinearLayout
+                android:id="@+id/ll_group_root"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
-                android:background="@color/white"
-                >
+                android:background="@color/white">
                 <TextView
                     android:id="@+id/divide_group_names"
                     android:layout_width="wrap_content"
@@ -85,17 +86,33 @@
                     android:layout_gravity="center_vertical"
                     android:padding="15dp"
                     android:gravity="center"
-                    android:text="@string/divide_group"
+                    android:text="@string/remark_and_group"
                     android:textColor="@color/primary_text"
                     android:textSize="16sp"/>
+
+                <TextView
+                    android:id="@+id/tv_group_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical|right"
+                    android:paddingTop="@dimen/dimen_15"
+                    android:paddingBottom="@dimen/dimen_15"
+                    android:ellipsize="end"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:text="  "
+                    android:textColor="@color/black_33"
+                    android:textSize="@dimen/dimen_14_sp"/>
+
                 <ImageView
+                    android:id="@+id/iv_arrow"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:layout_gravity="end|center_vertical"
-                    android:src="@drawable/right_arrow"
-                    />
-            </FrameLayout>
+                    android:padding="@dimen/dimen_10"
+                    android:layout_gravity="center"
+                    android:src="@drawable/right_arrow"/>
+            </LinearLayout>
 
 
             <LinearLayout
@@ -146,8 +163,7 @@
                 android:id="@+id/fl_detail_root"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                >
+                android:background="@color/white">
                 <TextView
                     android:id="@+id/tv_private_info"
                     android:layout_width="wrap_content"
@@ -173,7 +189,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="20dp"
                 android:layout_gravity="center_horizontal"
-                android:padding="5dp"
+                android:padding="15dp"
                 android:background="@drawable/green_btn_selector"
                 android:text="@string/confirm_add_friend"/>
         </LinearLayout>

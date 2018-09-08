@@ -2,6 +2,7 @@ package com.lens.chatmodel.ui.image;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,10 +20,12 @@ import com.lens.chatmodel.R;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
+import com.lensim.fingerchat.commons.utils.BitmapUtil;
 import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.components.widget.ViewPagerFixed;
 import com.lensim.fingerchat.data.bean.ImageBean;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -175,7 +178,7 @@ public class PhotoPreviewActivity extends BaseActivity implements View.OnClickLi
     }
 
     private void initToolBar() {
-        initBackButton(toolbar,true);
+        initBackButton(toolbar, true);
     }
 
     private void initConfirmButton() {
@@ -198,10 +201,17 @@ public class PhotoPreviewActivity extends BaseActivity implements View.OnClickLi
 
         int i = view.getId();
         if (i == R.id.mPhotoPreviewOrigin) {
+            if (selectedImages.size() >= 9) {
+                T.showShort(R.string.max_images);
+                return;
+            }
             useOrigin = !useOrigin;
             if (useOrigin) {
                 mPhotoPreviewOriginImage
                     .setImageResource(R.drawable.btn_radio_on_focused_holo_light);
+                if (!selectedImages.contains(image)) {
+                    selectImage();
+                }
             } else {
                 mPhotoPreviewOriginImage
                     .setImageResource(R.drawable.btn_radio_off_pressed_holo_dark);
@@ -221,17 +231,7 @@ public class PhotoPreviewActivity extends BaseActivity implements View.OnClickLi
                 }
 
             } else {
-
-                if (selectedImages.size() >= 9) {
-                    T.showShort(R.string.max_images);
-                    return;
-                }
-                selectedImages.add(image);
-                toolbar.resetConfirmBt("发送(" + selectedImages.size() + "/9)", true);
-                mPhotoPreviewSelectImage.setImageResource(R.drawable.click_check_box);
-                totalSize += FileUtil.getFileSize(image.path);
-                String fileSize = Formatter.formatFileSize(this, totalSize);
-                mPhotoPreviewOriginSize.setText("原图(" + fileSize + ")");
+                selectImage();
             }
             initConfirmButton();
             mPagerAdapter.notifyDataSetChanged();
@@ -330,5 +330,19 @@ public class PhotoPreviewActivity extends BaseActivity implements View.OnClickLi
             mPhotoPreviewEdit.setVisibility(View.VISIBLE);
             mPhotoPreviewOrigin.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void selectImage() {
+        if (selectedImages.size() >= 9) {
+            T.showShort(R.string.max_images);
+            return;
+        }
+        selectedImages.add(image);
+        toolbar.resetConfirmBt("发送(" + selectedImages.size() + "/9)", true);
+        mPhotoPreviewSelectImage.setImageResource(R.drawable.click_check_box);
+        totalSize += FileUtil.getFileSize(image.path);
+        String fileSize = Formatter.formatFileSize(this, totalSize);
+        mPhotoPreviewOriginSize.setText("原图(" + fileSize + ")");
+
     }
 }

@@ -81,6 +81,12 @@ public abstract class BaseFGMessage implements IChatRoomModel {
                 } else {
                     layout = EChatCellLayout.VOTE_SEND;
                 }
+            } else if (getMsgType() == EMessageType.CARD) {
+                if (isIncoming()) {
+                    layout = EChatCellLayout.WORK_LOGIN_RECEIVED;
+                } else {
+                    layout = EChatCellLayout.WORK_LOGIN_SEND;
+                }
             } else if (getMsgType() == EMessageType.MULTIPLE) {
                 if (isIncoming()) {
                     layout = EChatCellLayout.MULTI_RECEIVED;
@@ -90,11 +96,7 @@ public abstract class BaseFGMessage implements IChatRoomModel {
             } else if (getMsgType() == EMessageType.ACTION) {
                 layout = EChatCellLayout.CHAT_ACTION;
             } else if (getMsgType() == EMessageType.NOTICE) {
-                if (getCancel() == ESureType.NO.ordinal()) {//推送消息
-                    layout = EChatCellLayout.SYSTEM;
-                } else {//cancel消息
-                    layout = EChatCellLayout.CHAT_ACTION;
-                }
+                layout = EChatCellLayout.NOTICE;
             } else if (getMsgType() == EMessageType.OA) {
                 layout = EChatCellLayout.OA;
             } else if (getMsgType() == EMessageType.SYSTEM) {

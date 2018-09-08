@@ -10,20 +10,18 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.lens.core.componet.log.DLog;
 import com.lensim.fingerchat.commons.helper.AppManager;
-import com.lensim.fingerchat.data.Http;
-import com.lensim.fingerchat.data.RxSchedulers;
-import com.lensim.fingerchat.data.observer.FGObserver;
+import com.lensim.fingerchat.fingerchat.api.SystemApi;
+import com.lensim.fingerchat.commons.base.BaseResponse;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import okhttp3.ResponseBody;
 
 /**
  * 全局捕获异常
@@ -172,21 +170,14 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         printWriter.close();
         String result = writer.toString();
         paramsMap.put("content", result);
-        try {
-            String time = format.format(new Date());
-            paramsMap.put("crashDate", time);
-        } catch (Exception e) {
-            Log.e(TAG, "an error occured while writing file...", e);
-        }
+        paramsMap.put("crashDate", System.currentTimeMillis() + "");
 
         // 发送至服务器
-        Http.uploadLogger(paramsMap)
-            .compose(RxSchedulers.compose())
-            .subscribe(new FGObserver<ResponseBody>() {
-                @Override
-                public void onHandleSuccess(ResponseBody responseBody) {
-                    // 不做处理
-                }
-            });
+        new SystemApi().uploadLogger(paramsMap, new FXRxSubscriberHelper<BaseResponse>() {
+            @Override
+            public void _onNext(BaseResponse baseResponse) {
+                DLog.i("错误日志上传成功");
+            }
+        });
     }
 }

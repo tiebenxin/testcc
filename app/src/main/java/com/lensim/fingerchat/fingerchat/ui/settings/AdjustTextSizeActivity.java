@@ -98,8 +98,6 @@ public class AdjustTextSizeActivity extends BaseActivity {
 
                 }
             });
-
     }
-
 
 }

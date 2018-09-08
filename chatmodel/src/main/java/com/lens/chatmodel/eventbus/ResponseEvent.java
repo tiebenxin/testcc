@@ -10,11 +10,9 @@ import com.lensim.fingerchat.commons.interf.IEventProduct;
 public class ResponseEvent implements IEventProduct {
 
     private RespMessage mPacket;
-    private int type;
 
     public ResponseEvent(RespMessage packet) {
         mPacket = packet;
-        type = ResponseType.getType(packet);
     }
 
     public void setPacket(RespMessage packet) {
@@ -25,13 +23,6 @@ public class ResponseEvent implements IEventProduct {
         return mPacket;
     }
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
 
     public int getCode() {
         return mPacket.response.getCode();

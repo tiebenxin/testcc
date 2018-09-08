@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 
@@ -18,6 +19,7 @@ public class AccoutAndSafeActivity extends BaseActivity {
     private TextView tv_change_pwd;
 
     private FGToolbar toolbar;
+
     @Override
     public void initView() {
         setContentView(R.layout.activity_accoutandsafe);
@@ -41,7 +43,10 @@ public class AccoutAndSafeActivity extends BaseActivity {
         tv_change_pwd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplication(),ChangePassWordActivity.class));
+                //修改密码，不需要code
+                Intent intent = ChangePasswordActivity
+                    .newIntent(AccoutAndSafeActivity.this, 0, UserInfoRepository.getUserId(), "");
+                startActivityForResult(intent,0);
                 finish();
             }
         });

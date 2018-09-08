@@ -3,6 +3,8 @@ package com.fingerchat.api.client;
 import com.fingerchat.api.ClientListener;
 import com.fingerchat.api.IMClient;
 import com.fingerchat.api.message.BaseMessage;
+import com.fingerchat.api.message.ExcuteResultMessage;
+import com.fingerchat.api.message.ReadAckMessage;
 import com.fingerchat.api.message.RespMessage;
 import com.fingerchat.api.util.thread.ExecutorManager;
 
@@ -57,16 +59,30 @@ public class DefaultClientListener implements ClientListener {
     }
 
     @Override
-    public void onReceiveMessage( BaseMessage message) {
-        if(listener != null){
+    public void onReceiveMessage(BaseMessage message) {
+        if (listener != null) {
             listener.onReceiveMessage(message);
         }
     }
 
     @Override
     public void onResponse(RespMessage response) {
-        if(listener!=null){
+        if (listener != null) {
             listener.onResponse(response);
+        }
+    }
+
+    @Override
+    public void onExcute(ExcuteResultMessage message) {
+        if (listener != null) {
+            listener.onExcute(message);
+        }
+    }
+
+    @Override
+    public void onRead(ReadAckMessage message) {
+        if (listener != null) {
+            listener.onRead(message);
         }
     }
 

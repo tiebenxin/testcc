@@ -12,7 +12,6 @@ import com.lens.chatmodel.db.MucInfo;
 import com.lens.chatmodel.helper.ChatHelper;
 import com.lensim.fingerchat.commons.widgt.AvatarImageView;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,11 +20,11 @@ import java.util.List;
 
 public class AdapterGroupList extends AbstractRecyclerAdapter<Muc.MucItem> {
 
-    public void setListener(OnItemClick listener) {
+    public void setListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
-    private OnItemClick listener;
+    private OnItemClickListener listener;
     private boolean isAll = false;
 
     public AdapterGroupList(Context ctx, List<Muc.MucItem> data) {
@@ -83,22 +82,8 @@ public class AdapterGroupList extends AbstractRecyclerAdapter<Muc.MucItem> {
         }
         Muc.MucItem mucItem = mBeanList.get(position);
         holder.tvName.setText(mucItem.getMucname());
-        holder.friendRoot.setOnClickListener((v) -> listener.onitemClick(position));
-        holder.ivHeader.setDrawText(MucInfo.selectMucUserNick(mContext, mucItem.getMucid()));
-    }
-
-    private List<String> resultMucAvatar(Muc.MucItem mucItem) {
-        List<String> mucAvatar = new ArrayList<>();
-        if (mucItem != null) {
-            List<Muc.MucMemberItem> memberItems = mucItem.getMembersList();
-            if (memberItems != null && memberItems.size() > 0) {
-                for (int position = 0;
-                    position < (memberItems.size() >= 9 ? 9 : memberItems.size()); position++) {
-                    mucAvatar.add(memberItems.get(position).getAvatar());
-                }
-            }
-        }
-        return mucAvatar;
+        holder.friendRoot.setOnClickListener((v) -> listener.onItemClick(position));
+        holder.ivHeader.setDrawText(MucInfo.selectMucUserNickList(mContext, mucItem.getMucid()));
     }
 
     class GroupListHolder extends RecyclerView.ViewHolder {
@@ -117,8 +102,8 @@ public class AdapterGroupList extends AbstractRecyclerAdapter<Muc.MucItem> {
         }
     }
 
-    interface OnItemClick {
+    interface OnItemClickListener {
 
-        void onitemClick(int positioin);
+        void onItemClick(int position);
     }
 }

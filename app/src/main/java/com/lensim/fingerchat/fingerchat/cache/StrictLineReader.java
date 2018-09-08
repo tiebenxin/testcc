@@ -115,7 +115,7 @@ class StrictLineReader implements Closeable {
   }
 
   /**
-   * Reads the next line. A line ends with {@code "\n"} or {@code "\r\n"},
+   * Reads the next line. CommentResponse line ends with {@code "\n"} or {@code "\r\n"},
    * this end of line marker is not included in the result.
    *
    * @return the next line from the input.

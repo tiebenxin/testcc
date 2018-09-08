@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build.VERSION_CODES;
 import android.support.annotation.RequiresApi;
@@ -8,10 +7,7 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
-import com.lens.chatmodel.ChatEnum.EActionType;
 import com.lens.chatmodel.ChatEnum.EChatCellLayout;
-import com.lens.chatmodel.ChatEnum.EMessageType;
-import com.lens.chatmodel.R;
 import com.lens.chatmodel.adapter.MessageAdapter;
 import com.lens.chatmodel.helper.MsgTagHandler;
 import com.lens.chatmodel.im_service.FingerIM;
@@ -33,10 +29,9 @@ import java.util.ArrayList;
 public class ChatCellAction extends ChatCellBase implements IActionTagClickListener {
 
 
-    protected ChatCellAction(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int postion) {
-        super(context, cellLayout, listener, adapter, postion);
+    protected ChatCellAction(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int postion) {
+        super(cellLayout, listener, adapter, postion);
     }
 
 
@@ -51,43 +46,9 @@ public class ChatCellAction extends ChatCellBase implements IActionTagClickListe
 
     @RequiresApi(api = VERSION_CODES.N)
     private void initText(TextView tv_msg, String content, String msgId) {
-        if (isNotice()) {
-            if (isCancel()) {
-                if (mChatRoomModel.isIncoming()) {
-                    tv_msg.setText(String.format(ContextHelper.getString(R.string.cancel_message),
-                        mChatRoomModel.getNick()));
-                } else {
-                    tv_msg.setText(ContextHelper.getString(R.string.cancel_message_you));
-                }
-            } else {
-                tv_msg.setMovementMethod(LinkMovementMethod.getInstance());
-                tv_msg.setText(Html.fromHtml(content, null,
-                    new MsgTagHandler(ContextHelper.getContext(), true, msgId, this)));
-            }
-        } else {
-            tv_msg.setMovementMethod(LinkMovementMethod.getInstance());
-            tv_msg.setText(Html.fromHtml(content, null,
-                new MsgTagHandler(ContextHelper.getContext(), true, msgId, this)));
-        }
-
-    }
-
-    private boolean isNotice() {
-        if ((mChatRoomModel.getActionType() == EActionType.NONE
-            && mChatRoomModel.getMsgType() == EMessageType.ACTION)
-            || mChatRoomModel.getMsgType() == EMessageType.NOTICE) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean isCancel() {
-        if (mChatRoomModel.getCancel() == 1) {
-            return true;
-        } else {
-            return false;
-        }
+        tv_msg.setMovementMethod(LinkMovementMethod.getInstance());
+        tv_msg.setText(Html.fromHtml(content, null,
+            new MsgTagHandler(ContextHelper.getContext(), true, msgId, this)));
     }
 
 

@@ -1,6 +1,16 @@
 package com.lens.chatmodel.ui.message;
 
+import static com.lens.chatmodel.ui.video.CameraActivity.BUTTON_STATE_BOTH;
+import static com.lensim.fingerchat.commons.app.AppConfig.EX_KEY;
+import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_EX;
+import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_IMAGE;
+import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_TRANSFOR;
+import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_VIDEO;
+import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_VOTE;
+import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
+
 import android.Manifest;
+import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -9,26 +19,34 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.RelativeLayout;
-
 import android.widget.TextView;
 import com.example.webview.BrowserActivity;
 import com.fingerchat.api.client.ClientConfig;
 import com.fingerchat.api.listener.AckListener;
 import com.fingerchat.api.message.AckMessage;
+import com.fingerchat.api.message.ExcuteResultMessage;
+import com.fingerchat.api.message.RespMessage;
+import com.fingerchat.proto.message.Excute.ExcuteMessage;
+import com.fingerchat.proto.message.Excute.ExcuteType;
 import com.fingerchat.proto.message.Muc.MucItem;
 import com.fingerchat.proto.message.MucChat.RoomMessage;
 import com.fingerchat.proto.message.PrivateChat.PrivateMessage;
-import com.lens.chatmodel.ChatEnum;
+import com.fingerchat.proto.message.ReadAck.ReadedMessageList;
 import com.lens.chatmodel.ChatEnum.EActivityNum;
 import com.lens.chatmodel.ChatEnum.ECellEventType;
 import com.lens.chatmodel.ChatEnum.EChatType;
@@ -53,6 +71,7 @@ import com.lens.chatmodel.bean.VideoEventBean;
 import com.lens.chatmodel.bean.body.BodyEntity;
 import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lens.chatmodel.bean.body.MapBody;
+import com.lens.chatmodel.bean.body.PushBody;
 import com.lens.chatmodel.bean.body.VideoUploadEntity;
 import com.lens.chatmodel.bean.body.VoiceUploadEntity;
 import com.lens.chatmodel.bean.body.VoteBody;
@@ -63,14 +82,18 @@ import com.lens.chatmodel.controller.ControllerChatAttachBottom;
 import com.lens.chatmodel.controller.ControllerNewMessage;
 import com.lens.chatmodel.controller.cell.FactoryChatCell;
 import com.lens.chatmodel.db.MucInfo;
+import com.lens.chatmodel.db.MucUser;
 import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.eventbus.ChatMessageEvent;
 import com.lens.chatmodel.eventbus.EventEnum;
 import com.lens.chatmodel.eventbus.EventFactory;
+import com.lens.chatmodel.eventbus.ExcuteEvent;
 import com.lens.chatmodel.eventbus.RefreshEntity;
 import com.lens.chatmodel.eventbus.RefreshEvent;
+import com.lens.chatmodel.eventbus.ResponseEvent;
 import com.lens.chatmodel.helper.ChatHelper;
+import com.lens.chatmodel.im_service.FingerIM;
 import com.lens.chatmodel.interf.IChatBottomAttachListener;
 import com.lens.chatmodel.interf.IChatEventListener;
 import com.lens.chatmodel.interf.IChatRoomModel;
@@ -87,8 +110,8 @@ import com.lens.chatmodel.ui.profile.FriendDetailActivity;
 import com.lens.chatmodel.ui.video.CameraActivity;
 import com.lens.chatmodel.ui.video.LookUpVideoActivity;
 import com.lens.chatmodel.utils.SmileUtils;
-import com.lens.chatmodel.view.ChatMessageList;
 import com.lens.chatmodel.view.CustomContextMenu;
+import com.lens.chatmodel.view.chat.ChatMessageList;
 import com.lens.chatmodel.view.emoji.ChatInputMenu;
 import com.lens.chatmodel.view.emoji.ChatInputMenu.ChatInputMenuListener;
 import com.lens.chatmodel.view.emoji.EmotionKeyboard;
@@ -97,6 +120,8 @@ import com.lens.chatmodel.view.voice_recorder_view.VoiceRecorderView.EaseVoiceRe
 import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.app.AppManager;
 import com.lensim.fingerchat.commons.authority.AuthorityManager;
+import com.lensim.fingerchat.commons.global.Common;
+import com.lensim.fingerchat.commons.global.CommonEnum.ELogType;
 import com.lensim.fingerchat.commons.global.CommonEnum.EUploadFileType;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.helper.GsonHelper;
@@ -108,6 +133,7 @@ import com.lensim.fingerchat.commons.permission.EPermission;
 import com.lensim.fingerchat.commons.router.ActivityPath;
 import com.lensim.fingerchat.commons.router.ActivitysRouter;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
+import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.SPHelper;
 import com.lensim.fingerchat.commons.utils.T;
@@ -115,17 +141,21 @@ import com.lensim.fingerchat.commons.utils.TDevice;
 import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.components.pulltorefresh.XCPullToLoadMoreListView;
 import com.lensim.fingerchat.data.Api;
+import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.data.bean.ImageBean;
+import com.lensim.fingerchat.data.help_class.IDataRequestListener;
 import com.lensim.fingerchat.data.help_class.IUploadListener;
+import com.lensim.fingerchat.data.help_class.TokenHelper;
+import com.lensim.fingerchat.data.login.SSOTokenRepository;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.content.CollectionManager;
 import com.lensim.fingerchat.data.me.content.FavJson;
 import com.lensim.fingerchat.data.me.content.StoreManager;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
+import com.lensim.fingerchat.data.observer.FGObserver;
+import com.lensim.fingerchat.data.response.ResponseObject;
+import com.lensim.fingerchat.data.work_center.OAToken;
+import com.lensim.fingerchat.data.work_center.OATokenRepository;
+import com.lensim.fingerchat.data.work_center.SignInJsonRet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,13 +167,11 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-
-import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_EX;
-import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_IMAGE;
-import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_TRANSFOR;
-import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_VIDEO;
-import static com.lensim.fingerchat.commons.app.AppConfig.REQUEST_VOTE;
-import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by LL130386 on 2017/12/5.
@@ -152,10 +180,17 @@ import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast
 public class ChatActivity extends BaseUserInfoActivity implements AckListener, IChatEventListener {
 
     public final static int MAP_FOR_CHAT = 3990;
-    public final static int INPUT_AND_RECORDING = 1 << 3;
     public final static int INPUTTING = 1 << 1;
     public final static int RECORDING = 1 << 2;
+    public final static int INPUT_AND_RECORDING = 1 << 3;
+    public final static int READ = 1 << 4;//服务器已读
     public final static int MIN_UNREAD_COUNT = 15;
+    public final static int MIN_TEXT = 1 << 10;
+
+    private int CAMARA_PERMISSON_REQUEST_CODE = 1;
+    private int LOCATION_PERMISSON_REQUEST_CODE = 2;
+
+
     private String userId;
     private ChatInputMenu mInputMenu;
     private List<EmojiconGroupEntity> emojiconGroupList;
@@ -180,6 +215,8 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 ChatActivity.this.sendMessage(EMessageType.INPUTING);
             } else if (msg.what == RECORDING) {
                 ChatActivity.this.sendMessage(EMessageType.RECORDING);
+            } else if (msg.what == READ) {
+                ChatActivity.this.sendMessage();
             }
         }
     };
@@ -204,6 +241,12 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
     private int noDisturb;
     private RelativeLayout mChatContentView;
     private TextView tv_success;
+    private boolean hasDraft;
+    private String mucUserNick;
+    private boolean isSendingHypertext = false;//是否正在发送富文本
+    private List<String> sendTexts;
+    private int textPosition;
+    private boolean isInbottom = true;
 
     public static Intent createChatIntent(Context context, String user, String nick, int chatType,
         int backId, int disturb, int top) {
@@ -263,7 +306,11 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                         .selectRosterSingle(ContextHelper.getContext(), userId);
                     if (userBean == null) {
                         String nick = intent.getStringExtra("nick");
-                        int chatType = intent.getIntExtra("chat_type", -1);
+                        int chatType = intent.getIntExtra("chat_type", 1);
+                        if (chatType == EChatType.GROUP.ordinal()) {
+                            mucUserNick = MucUser
+                                .getMucUserNick(ContextHelper.getContext(), userId, getUserId());
+                        }
                         userBean = new UserBean();
                         userBean.setUserId(userId);
                         if (!TextUtils.isEmpty(nick)) {
@@ -290,7 +337,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                     userBean = new UserBean();
                     userBean.setUserId(userId);
                     userBean.setRemarkName(userId);
-                    userBean.setChatType(0);
+                    userBean.setChatType(1);
                     userBean.setBgId(0);
                 }
             }
@@ -312,6 +359,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         }
     }
 
+    @RequiresApi(api = VERSION_CODES.M)
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void initView() {
@@ -334,8 +382,14 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
         viewNewMessage = new ControllerNewMessage(findViewById(R.id.viewNewMessage));
         viewNewMessage.setClickListener(() -> {
-            scrollChatToPostion(mAdapter.getTotalItemsCount() - unreadCount - 1);
+            int position = mAdapter.getTotalItemsCount() - unreadCount;
+            if (position >= 0) {
+                scrollChatToPostion(position);
+            } else {
+                scrollChatToPostion(0);
+            }
             viewNewMessage.setVisible(false);
+
         });
 
         viewAttachBottom = new ControllerChatAttachBottom(this,
@@ -357,12 +411,17 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             }
 
             @Override
-            public void clickCollect() {
-                if (mAdapter.getSelectedIds() != null && mAdapter.getSelectedIds().size() > 0) {
-                    mInputMenu.setVisibility(View.VISIBLE);
-                    viewAttachBottom.setVisible(false);
-                    mAdapter.hideBottomMenu();
-                }
+            public void clickCollect() {//收藏
+                T.show(ContextHelper.getString(R.string.no_surport_function));
+                mInputMenu.setVisibility(View.VISIBLE);
+                viewAttachBottom.setVisible(false);
+                mAdapter.hideBottomMenu();
+                return;
+//                if (mAdapter.getSelectedIds() != null && mAdapter.getSelectedIds().size() > 0) {
+//                    mInputMenu.setVisibility(View.VISIBLE);
+//                    viewAttachBottom.setVisible(false);
+//                    mAdapter.hideBottomMenu();
+//                }
             }
 
             @Override
@@ -415,13 +474,44 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             hideInput();
             return false;
         });
+
+        chatMessageList.getListView().getListView().setOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                switch (scrollState) {
+                    case SCROLL_STATE_IDLE://滚动结束
+                        System.out.println("onScrollStateChanged=" + SCROLL_STATE_IDLE);
+                        mHandler.sendEmptyMessageDelayed(READ, 500);
+                        break;
+                    case SCROLL_STATE_FLING://快速滚动
+                        System.out.println("onScrollStateChanged=" + SCROLL_STATE_FLING);
+                        break;
+                    case SCROLL_STATE_TOUCH_SCROLL://手动滚动
+                        System.out.println("onScrollStateChanged=" + SCROLL_STATE_TOUCH_SCROLL);
+                        break;
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+                int totalItemCount) {
+                System.out.println("firstVisibleItem=" + firstVisibleItem + "--visibleItemCount="
+                    + visibleItemCount + "--totalItemCount=" + totalItemCount);
+                if (firstVisibleItem + visibleItemCount == totalItemCount) {
+                    isInbottom = true;
+                } else {
+                    isInbottom = false;
+                }
+                checkMessageReaded(firstVisibleItem, visibleItemCount);
+            }
+        });
         mInputMenu.setChatInputMenuListener(new ChatInputMenuListener() {
             @Override
             public void onSendMessage(String content) {
                 if (mHandler != null) {
                     mHandler.removeMessages(INPUTTING);
                 }
-                sendMessage(content, EMessageType.TEXT);
+                sendTextMessage(content, EMessageType.TEXT);
                 //清空atUser
                 atUsers.clear();
             }
@@ -429,6 +519,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             @Override
             public void onBigExpressionClicked(
                 Emojicon emojicon) {
+                if (isSecret) {//密信不能发表情
+                    T.show("动态表情不能发送密信");
+                    return;
+                }
                 if (emojicon.getIdentityCode()
                     .equals("add_ex")) {
                     startActivityForResult(
@@ -463,6 +557,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
             @Override
             public void onPrivateCall() {//@功能
+                if (hasDraft) {
+                    hasDraft = false;
+                    return;
+                }
                 if (userBean != null
                     && userBean.getChatType()
                     == EChatType.GROUP.ordinal()) {
@@ -514,10 +612,6 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         scrollChat(ESCrollType.BOTTOM);
     }
 
-    private void setChatBackGround(int chagBg) {
-        mChatContentView.setBackground(ChatHelper.getChatBackGround(chagBg));
-    }
-
     private void updateChatBackGround() {
         if (userBean == null) {
             return;
@@ -540,6 +634,14 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 userBean.getUserId()));
         if (!ChatHelper.isSystemUser(userBean.getUserId())) {//非系统用户
             toolbar.setBtImageDrawable(getDrawableId(), v -> {
+//                if (userBean.getChatType() == EChatType.GROUP.ordinal()) {
+//                    MucMemberItem memberItem = MucUser
+//                        .selectUserById(ContextHelper.getContext(), userId, getUserId());
+//                    if (memberItem == null) {
+//                        T.show("你已经不是该群成员，不能查看该群信息");
+//                        return;
+//                    }
+//                }
                 Bundle bundle = new Bundle();
                 bundle.putString("mucId", userId);
                 bundle.putString("mucName", ChatHelper
@@ -571,6 +673,9 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         super.initData(savedInstanceState);
         String draft = SPHelper.getString(getUserId() + "&" + userBean.getUserId(), "");
         if (!TextUtils.isEmpty(draft)) {
+            if (draft.startsWith("@")) {
+                hasDraft = true;
+            }
             mInputMenu.setEmojicon(SmileUtils.getSmiledText(this, draft, TDevice.sp2px(14)));
         }
 
@@ -619,10 +724,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
         if (Build.VERSION.SDK_INT >= 23) {
             int CamaraPermisson = ContextCompat
-                .checkSelfPermission(ChatActivity.this, Manifest.permission.RECORD_AUDIO);
+                .checkSelfPermission(ChatActivity.this, permission.RECORD_AUDIO);
             if (CamaraPermisson != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(ChatActivity.this,
-                    new String[]{Manifest.permission.RECORD_AUDIO}
+                    new String[]{permission.RECORD_AUDIO}
                     , CamaraPermissonRequestCode);
             } else {
                 viewRecorder.setVisibility(View.VISIBLE);
@@ -704,7 +809,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         if (mAdapter.getTotalItemsCount() <= 0 || isFirstUpdate) {
             loadChat(mCurrrentPage);
         }
-        scrollChat(ESCrollType.BOTTOM);
+        if (isInbottom) {
+            scrollChat(ESCrollType.BOTTOM);
+        }
+
 
     }
 
@@ -721,7 +829,9 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             MessageManager.getInstance().setMessageChange(false);
             initToolbar();
         }
+        checkAndLoadEmoticon();
     }
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -769,7 +879,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         if (mCustomContextMenu != null) {
             mAdapter.setCustomContextMenu(mCustomContextMenu);
         }
-        mAdapter.setViewFactory(new FactoryChatCell(this, mAdapter, this));
+        mAdapter.setViewFactory(new FactoryChatCell(mAdapter, this));
 
         mAdapter.setBottomShowListener(show -> isSelectedChat(show));
         mAdapter.setUser(userId);
@@ -783,9 +893,16 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         if (page != mCurrrentPage) {
             mCurrrentPage = page;
         }
-        List<IChatRoomModel> messages = ProviderChat
-            .selectMsgAsPage(ContextHelper.getContext(), userId, page, 20,
-                ChatHelper.isGroupChat(userBean.getChatType()));
+        List<IChatRoomModel> messages;
+        if (unreadCount > 20 && page == 0) {
+            messages = ProviderChat
+                .selectMsgAsPage(ContextHelper.getContext(), userId, page, unreadCount + 20,
+                    ChatHelper.isGroupChat(userBean.getChatType()));
+        } else {
+            messages = ProviderChat
+                .selectMsgAsPage(ContextHelper.getContext(), userId, page, 20,
+                    ChatHelper.isGroupChat(userBean.getChatType()));
+        }
         if (messages != null) {
             mAdapter.setData(messages, mCurrrentPage);
         }
@@ -839,26 +956,48 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
                             });
                 });
-        mInputMenu
-            .registerExtendMenuItem(ContextHelper.getString(R.string.take_photo),
-                R.drawable.chat_photo,
-                2, (itemId, view) -> {
-                    ChatEnvironment.getInstance().getPermissionExecutor()
-                        .checkPermission(ChatActivity.this,
-                            EPermission.CAMERA, (permission, isGranted, withAsk) -> {
-                                if (permission == EPermission.CAMERA && isGranted) {
-                                    CameraActivity.start(ChatActivity.this, REQUEST_VIDEO);
-                                }
-                            });
-                });
+        mInputMenu.registerExtendMenuItem(ContextHelper.getString(R.string.take_photo),
+            R.drawable.chat_photo,
+            2, (itemId, view) -> {
+                if (Build.VERSION.SDK_INT >= 23) {
+                    int CamaraPermisson = ContextCompat
+                        .checkSelfPermission(ChatActivity.this, permission.CAMERA);
+                    int ReCordPermisson = ContextCompat
+                        .checkSelfPermission(ChatActivity.this, permission.RECORD_AUDIO);
+                    if (CamaraPermisson != PackageManager.PERMISSION_GRANTED
+                        || ReCordPermisson != PackageManager.PERMISSION_GRANTED) {
+                        //如果设置中权限是禁止的咋返回false;如果是提示咋返回的是true
+                        //在禁止的情况下，动态请求权限是无效果的
+                        boolean isCameraBaned = ActivityCompat
+                            .shouldShowRequestPermissionRationale(ChatActivity.this,
+                                permission.CAMERA);
+                        if (isCameraBaned) {
+                            ActivityCompat.requestPermissions(ChatActivity.this,
+                                new String[]{permission.CAMERA, permission.RECORD_AUDIO},
+                                CAMARA_PERMISSON_REQUEST_CODE);
+                        } else {
+                            T.show("相机权限被禁止，请将其设置为允许或者提示,才能使用该功能");
+                        }
+                    } else {
+                        toCamera();
+                    }
+                } else {
+                    toCamera();
+                }
+            });
 
         mInputMenu
             .registerExtendMenuItem(ContextHelper.getString(R.string.shake), R.drawable.chat_jitter,
                 3, (itemId, view) -> {
-                    if (System.currentTimeMillis() - shakeDate < 2 * 60 * 1000) {
+                    if (isSecret) {
+                        T.showShort(R.string.secret_no_support);
+                        return;
+                    }
+                    if (System.currentTimeMillis() - shakeDate < 2 * 1000) {
                         showToast("间隔过短");
                     } else {
-                        sendMessage("发送一条抖动消息", EMessageType.TEXT);
+                        String shakeContent = ContextHelper.getString(R.string.shake_content);
+                        sendMessage(shakeContent, EMessageType.NOTICE);
                         shakeDate = System.currentTimeMillis();
 
                     }
@@ -866,6 +1005,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
         mInputMenu.registerExtendMenuItem(ContextHelper.getString(R.string.calling_card),
             R.drawable.share_card, 4, (itemId, view) -> {
+                if (isSecret) {
+                    T.showShort(R.string.secret_no_support);
+                    return;
+                }
                 Intent intent = TransforMsgActivity
                     .newBusinessCardIntent(ChatActivity.this, userId,
                         ChatHelper
@@ -875,6 +1018,11 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             });
         mInputMenu.registerExtendMenuItem(ContextHelper.getString(R.string.pop_menu_collect),
             R.drawable.collection, 5, (itemId, view) -> {
+                if (isSecret) {
+                    T.showShort(R.string.secret_no_support);
+                    return;
+                }
+//                showToast("此功能暂未开放");
                 Intent intent = ActivitysRouter.getInstance().invoke(ChatActivity.this,
                     ActivityPath.COLLECTION_ACTIVITY_PATH);
                 intent.putExtra("activity", ChatActivity.class.getSimpleName());
@@ -884,15 +1032,31 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
         mInputMenu
             .registerExtendMenuItem(ContextHelper.getString(R.string.position), R.drawable.position,
-                6, (itemId, view) -> ChatEnvironment.getInstance()
-                    .getPermissionExecutor()
-                    .checkPermission(ChatActivity.this,
-                        EPermission.CAMERA, (permission, isGranted, withAsk) -> {
-                            if (permission == EPermission.CAMERA && isGranted) {
-                                MapPickerActivity
-                                    .openActivity(ChatActivity.this, MAP_FOR_CHAT, null);
+                6, (itemId, view) -> {
+                    if (Build.VERSION.SDK_INT >= 23) {
+                        int loacationPermisson = ContextCompat
+                            .checkSelfPermission(ChatActivity.this,
+                                permission.ACCESS_FINE_LOCATION);
+                        if (loacationPermisson != PackageManager.PERMISSION_GRANTED) {
+                            //如果设置中权限是禁止的咋返回false;如果是提示咋返回的是true
+                            //在禁止的情况下，动态请求权限是无效果的
+                            boolean isCameraBaned = ActivityCompat
+                                .shouldShowRequestPermissionRationale(ChatActivity.this,
+                                    permission.ACCESS_FINE_LOCATION);
+                            if (isCameraBaned) {
+                                ActivityCompat.requestPermissions(ChatActivity.this,
+                                    new String[]{permission.ACCESS_FINE_LOCATION},
+                                    LOCATION_PERMISSON_REQUEST_CODE);
+                            } else {
+                                T.show("位置权限被禁止，请将其设置为允许或者提示,才能使用该功能");
                             }
-                        }));
+                        } else {
+                            toMap();
+                        }
+                    } else {
+                        toMap();
+                    }
+                });
 
         if (userBean.getChatType() == EChatType.GROUP.ordinal()) {
             mInputMenu.registerExtendMenuItem("投票", R.drawable.vote, 7,
@@ -903,6 +1067,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
     //投票
     private void toVote() {
+        if (isSecret) {
+            T.showShort(R.string.secret_no_support);
+            return;
+        }
         Intent intent = new Intent(this, BrowserActivity.class);
         String url = String.format(Api.URL_VOTE, getUserId(), getUserNick(), userId);
         Uri uri = Uri.parse(url);
@@ -920,6 +1088,20 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         intent.putExtra("title", "投票");
         intent.putExtra("user", userId);
         startActivity(intent);
+    }
+
+    private void toCamera() {
+        CameraActivity
+            .start(ChatActivity.this, REQUEST_VIDEO, BUTTON_STATE_BOTH);
+    }
+
+    private void toMap() {
+        if (isSecret) {
+            T.showShort(R.string.secret_no_support);
+            return;
+        }
+        MapPickerActivity
+            .openActivity(ChatActivity.this, MAP_FOR_CHAT, null);
     }
 
     @Override
@@ -940,11 +1122,15 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 List<String> urls = new ArrayList<>();
                 for (int i = 0; i < beans.size(); i++) {
                     ImageBean bean = beans.get(i);
-                    urls.add(bean.path);
-                    EUploadFileType type = ContextHelper.configFileType(bean.path);
+                    String path = bean.path;
+                    if (TextUtils.isEmpty(path)) {
+                        return;
+                    }
+                    urls.add(path);
+                    EUploadFileType type = ContextHelper.configFileType(path);
                     if (type != null && getMessageType(type) != null) {
                         ImageUploadEntity entity = ImageUploadEntity
-                            .createEntity(bean.path, bean.size, "", "");
+                            .createEntity(path, bean.size, "", "");
                         IChatRoomModel message = createMessage(ImageUploadEntity.toJson(entity),
                             getMessageType(type));
                         uploadMap.put(i, message);
@@ -992,10 +1178,17 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                     body.setLocationName(mapInfoEntity.getAddressName());
                     body.setLatitude(mapInfoEntity.getLatitude());
                     body.setLongitude(mapInfoEntity.getLongitude());
-                    body.setSecret(isSecret);
+                    body.setSecret(isSecret ? 1 : 0);
                     if (ChatHelper.isGroupChat(userBean.getChatType())) {
-                        body.setMucNickName(getUserNick());
+                        String mucUserNick = MucUser
+                            .getMucUserNick(ContextHelper.getContext(), userBean.getUserId(),
+                                getUserId());
+                        body.setMucNickName(
+                            ChatHelper.getUserRemarkName(mucUserNick, getUserNick(), getUserId()));
                         body.setSenderAvatar(getUserAvatar());
+                        body.setGroupName(userBean.getUserNick());
+                    } else {
+                        body.setMucNickName(getUserNick());
                     }
                     sendMessage(body.toJson(), EMessageType.MAP);
                 }
@@ -1013,10 +1206,17 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 String result = data.getStringExtra("vote_message");
                 if (result != null && !TextUtils.isEmpty(result)) {
                     VoteBody body = GsonHelper.getObject(result, VoteBody.class);
-                    body.setSecret(isSecret);
+                    body.setSecret(isSecret ? 1 : 0);
                     if (ChatHelper.isGroupChat(userBean.getChatType())) {
-                        body.setMucNickName(getUserNick());
+                        String mucUserNick = MucUser
+                            .getMucUserNick(ContextHelper.getContext(), userBean.getUserId(),
+                                getUserId());
+                        body.setMucNickName(
+                            ChatHelper.getUserRemarkName(mucUserNick, getUserNick(), getUserId()));
                         body.setSenderAvatar(getUserAvatar());
+                        body.setGroupName(userBean.getUserNick());
+                    } else {
+                        body.setMucNickName(getUserNick());
                     }
                     sendMessage(body.toJson(), EMessageType.VOTE);
                 }
@@ -1035,7 +1235,9 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 if (!atUsers.contains(userBean)) {
                     atUsers.add(userBean);
                     String text = mInputMenu.getText();
-                    mInputMenu.setEmojicon(text + userBean.getRemarkName() + " ");
+                    String userNick = ChatHelper
+                        .getUserNick(userBean.getUserNick(), userBean.getUserId());
+                    mInputMenu.setEmojicon(text + userNick + " ");
                 }
             }
         } else if (requestCode == AppConfig.REQUEST_CHANGE_CONFIG) {//更新聊天配置信息
@@ -1044,10 +1246,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                     int chatBg = data.getIntExtra("chat_bg", 0);
                     userBean.setBgId(chatBg);
                     updateChatBackGround();
-                } else {//刷新数据
-                    loadChat(0);
-                    scrollChat(ESCrollType.BOTTOM);
                 }
+            } else {//刷新数据
+                loadChat(0);
+                scrollChat(ESCrollType.BOTTOM);
             }
         } else if (requestCode == REQUEST_TRANSFOR) {
             if (resultCode == RESULT_OK) {
@@ -1059,7 +1261,11 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                     }
                 }, 1200);
             }
-        }
+        } /*else if (requestCode == REQUEST_PREVIEW_SECRET) {
+            if (mAdapter != null) {
+                mAdapter.notifyDataSetChanged();
+            }
+        }*/
     }
 
 
@@ -1110,12 +1316,11 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                                             bodyEntity = MessageManager.getInstance()
                                                 .createBody(ImageUploadEntity.toJson(entity),
                                                     isSecret, message.getMsgType(), getUserAvatar(),
-                                                    getUserNick());
+                                                    getUserNick(), userBean.getRemarkName());
                                         } else {
                                             bodyEntity = MessageManager.getInstance()
                                                 .createBody(ImageUploadEntity.toJson(entity),
-                                                    isSecret,
-                                                    message.getMsgType());
+                                                    isSecret, message.getMsgType(), getUserNick());
                                         }
                                         message.setUploadUrl(BodyEntity.toJson(bodyEntity));
 
@@ -1171,11 +1376,12 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                                 if (ChatHelper.isGroupChat(userBean.getChatType())) {
                                     bodyEntity = MessageManager.getInstance()
                                         .createBody(ImageUploadEntity.toJson(entity), isSecret,
-                                            message.getMsgType(), getUserAvatar(), getUserNick());
+                                            message.getMsgType(), getUserAvatar(), getUserNick(),
+                                            userBean.getRemarkName());
                                 } else {
                                     bodyEntity = MessageManager.getInstance()
                                         .createBody(ImageUploadEntity.toJson(entity), isSecret,
-                                            message.getMsgType());
+                                            message.getMsgType(), getUserNick());
                                 }
                                 message.setUploadUrl(BodyEntity.toJson(bodyEntity));
                             }
@@ -1235,11 +1441,11 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                                         bodyEntity = MessageManager.getInstance()
                                             .createBody(VoiceUploadEntity.toJson(entity), isSecret,
                                                 message.getMsgType(), getUserAvatar(),
-                                                getUserNick());
+                                                getUserNick(), userBean.getRemarkName());
                                     } else {
                                         bodyEntity = MessageManager.getInstance()
                                             .createBody(VoiceUploadEntity.toJson(entity), isSecret,
-                                                message.getMsgType());
+                                                message.getMsgType(), getUserNick());
                                     }
 
                                     message.setUploadUrl(BodyEntity.toJson(bodyEntity));
@@ -1334,11 +1540,11 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                                         bodyEntity = MessageManager.getInstance()
                                             .createBody(VideoUploadEntity.toJson(entity), isSecret,
                                                 message.getMsgType(), getUserAvatar(),
-                                                getUserNick());
+                                                getUserNick(), userBean.getRemarkName());
                                     } else {
                                         bodyEntity = MessageManager.getInstance()
                                             .createBody(VideoUploadEntity.toJson(entity), isSecret,
-                                                message.getMsgType());
+                                                message.getMsgType(), getUserNick());
                                     }
                                     message.setUploadUrl(BodyEntity.toJson(bodyEntity));
                                 }
@@ -1387,11 +1593,12 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                                 if (ChatHelper.isGroupChat(userBean.getChatType())) {
                                     bodyEntity = MessageManager.getInstance()
                                         .createBody(ImageUploadEntity.toJson(entity), isSecret,
-                                            message.getMsgType(), getUserAvatar(), getUserNick());
+                                            message.getMsgType(), getUserAvatar(), getUserNick(),
+                                            userBean.getRemarkName());
                                 } else {
                                     bodyEntity = MessageManager.getInstance()
                                         .createBody(ImageUploadEntity.toJson(entity), isSecret,
-                                            message.getMsgType());
+                                            message.getMsgType(), getUserNick());
                                 }
                                 message.setUploadUrl(BodyEntity.toJson(bodyEntity));
                                 message.setSendType(ESendType.FILE_SUCCESS);
@@ -1477,19 +1684,39 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             } else {
                 message.setGroupChat(true);
             }
+            message.setHasReaded(1);
+            message.setServerReaded(1);
         } else {
             if (!TextUtils.isEmpty(content) && !TextUtils.isEmpty(userId) && !TextUtils
                 .isEmpty(getUserId())) {
                 if (type == EMessageType.MAP || type == EMessageType.VOTE) {
                     message.setContent(content);
+                    if (ChatHelper.isGroupChat(userBean.getChatType())) {
+                        String muckNick = MucUser
+                            .getMucUserNick(ContextHelper.getContext(), userBean.getUserId(),
+                                getUserId());
+                        message.setGroupChat(true);
+                        message.setNick(muckNick);
+                    } else {
+                        message.setGroupChat(false);
+                        message.setNick(getUserNick());
+                    }
                 } else {
                     BodyEntity entity;
                     if (ChatHelper.isGroupChat(userBean.getChatType())) {
+                        String muckNick = MucUser
+                            .getMucUserNick(ContextHelper.getContext(), userBean.getUserId(),
+                                getUserId());
                         entity = MessageManager.getInstance()
-                            .createBody(content, isSecret, type, getUserAvatar(), getUserNick());
+                            .createBody(content, isSecret, type, getUserAvatar(),
+                                muckNick, userBean.getRemarkName());
+                        message.setGroupChat(true);
+                        message.setNick(muckNick);
                     } else {
                         entity = MessageManager.getInstance()
-                            .createBody(content, isSecret, type);
+                            .createBody(content, isSecret, type, getUserNick());
+                        message.setGroupChat(false);
+                        message.setNick(getUserNick());
                     }
                     message.setContent(BodyEntity.toJson(entity));
 
@@ -1503,27 +1730,26 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 message.setSecret(isSecret);
                 message.setSendType(ESendType.SENDING);
                 message.setIncoming(false);
-                message.setNick(getUserNick());
-                if (userBean.getChatType() == EChatType.PRIVATE.ordinal()) {
-                    message.setGroupChat(false);
-                } else {
-                    message.setGroupChat(true);
-                }
+                message.setHasReaded(1);
+                message.setServerReaded(1);
             }
         }
         return message;
     }
 
-    //发送atAll消息
-
+    //发送atAll消息，群聊
     private void sendMessage(String content, EMessageType type, boolean isAtAll) {
         if (isAtAll) {
             String msgId = UUID.randomUUID().toString();
             IChatRoomModel message = null;
             if (!TextUtils.isEmpty(content) && !TextUtils.isEmpty(userId) && !TextUtils
                 .isEmpty(getUserId())) {
+                String muckNick = MucUser
+                    .getMucUserNick(ContextHelper.getContext(), userBean.getMucId(),
+                        getUserId());
                 BodyEntity entity = MessageManager.getInstance()
-                    .createBody(content, isSecret, type);
+                    .createBody(content, isSecret, type, getUserAvatar(), muckNick,
+                        userBean.getRemarkName());
                 RoomMessage.Builder builder = RoomMessage.newBuilder();
                 builder.setId(msgId);
                 builder.setMucid(userId);
@@ -1531,7 +1757,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 builder.setTime(System.currentTimeMillis());
                 builder.setContent(BodyEntity.toJson(entity));
                 builder.setType(ChatHelper.getMessageType(type));
-                builder.setAtAll(ChatEnum.ESureType.YES.value);
+                builder.setAtAll(ESureType.YES.value);
                 message = createMessageBean(builder.build(), checkIsSecret());
             }
             addMessage(message);
@@ -1540,6 +1766,52 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             doSendSuccess(msgId, System.currentTimeMillis());
             scrollChat(ESCrollType.BOTTOM);
         }
+    }
+
+    //发送无需上传文件的消息
+    private void sendTextMessage(String content, EMessageType type) {
+        int totalSize = content.length();
+        if (totalSize <= MIN_TEXT) {
+            isSendingHypertext = false;
+            IChatRoomModel message = createMessage(content, type);
+            addMessage(message);
+            saveMessage(message);
+            MessageManager.getInstance().sendMessage(message);
+            scrollChat(ESCrollType.BOTTOM);
+        } else {
+            System.out.println("totalSize=" + totalSize);
+            isSendingHypertext = true;
+            int per = totalSize / MIN_TEXT;
+            if (per > 10) {
+                T.show("文本长度不能超过10240");
+                return;
+            }
+            if (totalSize > per * MIN_TEXT) {
+                per = per + 1;
+            }
+            sendTexts = new ArrayList<>();
+            for (int i = 0; i < per; i++) {
+                if (i < per - 1) {
+                    sendTexts.add(content.substring(i * MIN_TEXT, (i + 1) * MIN_TEXT));
+                } else {
+                    sendTexts.add(content.substring(i * MIN_TEXT, totalSize));
+                }
+            }
+            sendHypertext(sendTexts, 0);
+        }
+    }
+
+    //分段发送富文本
+    private void sendHypertext(List<String> list, int position) {
+        if (position == list.size() - 1) {
+            isSendingHypertext = false;
+        }
+        textPosition = position;
+        IChatRoomModel message = createMessage(list.get(position), EMessageType.TEXT);
+        addMessage(message);
+        saveMessage(message);
+        MessageManager.getInstance().sendMessage(message);
+        scrollChat(ESCrollType.BOTTOM);
     }
 
     //发送无需上传文件的消息
@@ -1556,6 +1828,14 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         IChatRoomModel message = createMessage("", type);
         MessageManager.getInstance().sendMessage(message);
         scrollChat(ESCrollType.BOTTOM);
+    }
+
+    //发送已读
+    private void sendMessage() {
+        Map<String, IChatRoomModel> map = MessageManager.getInstance().getSequenceReadedChatMap();
+        if (map != null && map.size() > 0) {
+            MessageManager.getInstance().sendReadMessage();
+        }
     }
 
 
@@ -1591,6 +1871,8 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             bean.setIncoming(false);
             bean.setGroupChat(false);
             bean.setNick(getUserNick());
+            bean.setHasReaded(1);//本地已读
+            bean.setServerReaded(1);//服务器未读
         } else if (message instanceof RoomMessage) {
             RoomMessage roomMessage = (RoomMessage) message;
             RoomMessage.Builder builder = roomMessage.toBuilder();
@@ -1608,12 +1890,14 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             bean.setSendType(ESendType.SENDING);
             bean.setGroupChat(true);
             bean.setIncoming(false);
+            bean.setHasReaded(1);
+            bean.setServerReaded(1);//服务器未读
         }
         return bean;
     }
 
     private void saveMessage(IChatRoomModel message) {
-        ProviderChat.insertPrivateMessage(ContextHelper.getContext(), message);
+        ProviderChat.insertMessageAsyn(ContextHelper.getContext(), message);
         if (message.isGroupChat()) {
             MessageManager.getInstance()
                 .saveRecent(message, userBean.getAvatarUrl(), ChatHelper
@@ -1662,7 +1946,6 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                             mHandler.sendEmptyMessage(INPUT_AND_RECORDING);
                             updateToolBarTitle(message);
                         } else {
-//                            addMessage(message);
                             loadChat(0);
                             scrollChat(ESCrollType.BOTTOM);
                         }
@@ -1685,8 +1968,33 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                         //发送@All消息
                         sendMessage(
                             "@所有人\n" + MucInfo.selectByMucId(getApplicationContext(), userId)
-                                .getSubject(), ChatEnum.EMessageType.TEXT, true);
+                                .getSubject(), EMessageType.TEXT, true);
                     }
+                }
+            } else if (event instanceof ExcuteEvent) {
+                ExcuteResultMessage message = ((ExcuteEvent) event).getPacket();
+                int code = message.message.getCode();
+                if (code == Common.EMOTICON_SAVE_SUCCESS) {
+                    String result = message.message.getResult();
+                    if (!TextUtils.isEmpty(result)) {
+                        saveEmoticon(result);
+                        T.show("保存成功");
+                    } else {
+                        T.show("保存失败");
+                    }
+                } else if (code == Common.EMOTICON_SAVE_ERROR) {
+                    T.show("保存失败");
+                } else if (code == Common.EMOTICON_QUERY_SUCCESS) {
+                    String result = message.message.getResult();
+                    if (!TextUtils.isEmpty(result)) {
+                        saveEmoticon(result);
+                    }
+                }
+            } else if (event instanceof ResponseEvent) {
+                RespMessage message = ((ResponseEvent) event).getPacket();
+                int code = message.response.getCode();
+                if (code == Common.INVITE_DUMPLICATED) {
+                    T.show("已发送");
                 }
             }
         }
@@ -1760,6 +2068,13 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         return true;
     }
 
+    private boolean isReadMapValid(Map<String, ReadedMessageList> map) {
+        if (map == null || map.size() <= 0) {
+            return false;
+        }
+        return true;
+    }
+
 
     private void doSendError(String msgId) {
         Map<String, IChatRoomModel> sequenceMap = MessageManager.getInstance().getSequenceMap();
@@ -1787,6 +2102,29 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                         sequenceMap.remove(msgId);
                         mAdapter.onChange();
                     }
+
+                    if (isSendingHypertext) {
+                        sendHypertext(sendTexts, ++textPosition);
+                    }
+                }
+            }, 200);
+        }
+    }
+
+
+    private void doReadMessageSendSuccess(String msgId) {
+        Map<String, ReadedMessageList> sequenceMap = MessageManager.getInstance()
+            .getSequenceReadedMessageMap();
+        if (isReadMapValid(sequenceMap) && sequenceMap.get(msgId) != null) {
+            System.out.println("成功已读消息id:" + msgId + "--" + sequenceMap.get(msgId).getId());
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (sequenceMap.get(msgId) != null) {
+                        ProviderChat.updateServerReaded(sequenceMap.get(msgId).getId());
+                        sequenceMap.remove(msgId);
+                        mAdapter.onChange();
+                    }
                 }
             }, 200);
         }
@@ -1798,11 +2136,20 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             case CURRENT:
                 break;
             case BOTTOM:
+//                if (!isInbottom) {
+//                    return;
+//                }
                 if (mListView.getLastVisiblePosition() > 0
                     && mListView.getLastVisiblePosition() >= mAdapter.getTotalItemsCount() - 2) {
                     return;
                 }
-                chatMessageList.scrollDown();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        chatMessageList.requestFocusFromTouch();
+                        chatMessageList.scrollDown();
+                    }
+                }, 100);
                 break;
             case TOP:
                 chatMessageList.scrollUp();
@@ -1826,10 +2173,10 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 //        return false;
 //    }
 
-    public void resetExpression(String data) {
+    public void resetExpression(String date) {
         //mInputMenu.removeEmojiconGroup(3);
         emojiconGroupList.remove(3);
-        emojiconGroupList.add(EmojiconDefaultGroupData.getCustomData(data));
+        emojiconGroupList.add(EmojiconDefaultGroupData.getCustomData(date));
         mInputMenu.addEmojiconGroup(emojiconGroupList);
     }
 
@@ -1856,12 +2203,15 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
         super.onPause();
         saveDraft();
         hideInput();
+        ClientConfig.I.removeListener(AckListener.class, this);
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        ProviderChat.markReaded(this, userId, true);
+//        ProviderChat.markReaded(this, userId, true);
+        ProviderChat.updateHasReaded(userId, true);
         MessageManager.getInstance().setCurrentChat("");
         notifyRecentMessage();
         NotifyManager.getInstance().removeMessageNotification(getUserId(), userId);
@@ -1879,7 +2229,6 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
     protected void onDestroy() {
         super.onDestroy();
         MessageManager.getInstance().clearSequenceMap();
-        ClientConfig.I.removeListener(AckListener.class, this);
         stopInpputTimer();
     }
 
@@ -1890,6 +2239,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             String msgId = message.ack.getIdList().get(0);
             long time = message.ack.getTime();
             doSendSuccess(msgId, time);
+//            doReadMessageSendSuccess(msgId);
         }
     }
 
@@ -1923,7 +2273,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                     Intent intent = GalleryAnimationActivity
                         .newIntent(bean.getUrls(), bean.getMsgIds(), bean.getRects(),
                             bean.getBooleanLists(),
-                            bean.getPosition());
+                            bean.getPosition(), "");
                     startActivity(intent);
                 }
 
@@ -1970,14 +2320,8 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 intentSecret.putExtra("type", model.getMsgType().value);
                 intentSecret.putExtra("msgId", model.getMsgId());
                 intentSecret.putExtra("content", model.getBody());
-                ChatHelper.destroySecretMsg(model);
-                MessageManager.getInstance()
-                    .destryMessageContent(ContextHelper.getContext(), model.getMsgId(),
-                        model.getBody());
                 startActivity(intentSecret);
-                mAdapter.notifyDataSetChanged();
                 break;
-
             case VOTE_CLICK:
                 if (o2 != null && o2 instanceof VoteEntity) {
                     VoteEntity voteEntity = (VoteEntity) o2;
@@ -1989,7 +2333,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 if (o2 instanceof String) {
                     String data = (String) o2;
                     if (!TextUtils.isEmpty(data)) {
-                        resetExpression(data);
+                        addEmoticon(data);
                     }
                 }
                 break;
@@ -2020,6 +2364,9 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                     intent = FriendDetailActivity.createNormalIntent(this, model.getFrom());
                 } else {
                     if (model.isIncoming()) {
+                        if (ChatHelper.isSystemUser(model.getTo())) {
+                            return;
+                        }
                         intent = FriendDetailActivity.createNormalIntent(this, model.getTo());
                     } else {
                         intent = FriendDetailActivity.createNormalIntent(this, model.getFrom());
@@ -2027,12 +2374,33 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 }
                 startActivity(intent);
                 break;
+            case CLOCK_CLICK:
+                Intent intentClock = ActivitysRouter.getInstance()
+                    .invoke(this, ActivityPath.CLOCK_DETAIL_ACTIVITY_PATH);
+                intentClock.putExtra("content", (SignInJsonRet) o2);
+                startActivity(intentClock);
+                break;
+            case OA_CLICK:
+                if (o2 != null && o2 instanceof PushBody) {
+                    PushBody body = (PushBody) o2;
+                    if (TokenHelper.isOATokenValid(getUserId())) {
+                        toOpenUrl(body.getActionUrl(), body.getTitle(),
+                            OATokenRepository.getToken());
+                    } else {
+                        getOAToken(body);
+                    }
+                }
+                break;
+            case READED:
+                if (model != null) {
+                    MessageDetailActivity.startActivity(this, (MessageBean) model);
+                }
+                break;
         }
-
     }
 
     private void collectMessage(IChatRoomModel message) {
-        if (!CollectionManager.getInstance().checkDuplicateByID(message.getMsgId())) {
+        if (!CollectionManager.getInstance().checkItemExistByID(message.getMsgId())) {
             FavJson store = new FavJson();
 
             if (message.isIncoming()) {
@@ -2046,18 +2414,18 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 } else {
                     store.setFavCreaterAvatar(getUserAvatar());
                 }
-                store.setFavContent(message.getContent());
+                //store.setFavContent(message.getContent());
                 store.setFavUrl(message.getContent());
             } else {
                 if (message.getMsgType() == EMessageType.IMAGE
                     || message.getMsgType() == EMessageType.VIDEO
                     || message.getMsgType() == EMessageType.VOICE) {
-                    store.setFavContent(message.getUploadUrl());
+                    // store.setFavContent(message.getUploadUrl());
                 } else {
                     if (message.getMsgType() == EMessageType.TEXT) {
-                        store.setFavContent(message.getContent());
+                        //store.setFavContent(message.getContent());
                     } else {
-                        store.setFavContent(message.getBody());
+                        //store.setFavContent(message.getBody());
                     }
                 }
                 store.setFavUrl(message.getUploadUrl());
@@ -2067,12 +2435,20 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 store.setProviderNick(getUserNick());
 
             }
+            String content = null;
+            try {
+                content = getFavContent(message);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            store.setFavContent(TextUtils.isEmpty(content) ? "" : content);
             store.setFavMsgId(message.getMsgId());
             store.setFavProvider(getUserId());
             store.setFavType(ChatHelper.getFavType(message.getMsgType()));
             store.setFavCreater(UserInfoRepository.getUserName());
             store.setFavTime(TimeUtils.getDate());
             store.setFavDes("");
+            store.setFavId(System.currentTimeMillis());
             StoreManager.getInstance().upload(store);
         } else {
             T.show("已收藏，请勿重复");
@@ -2084,9 +2460,11 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
             ClipboardManager clipboard = (ClipboardManager) getSystemService(
                 Context.CLIPBOARD_SERVICE);
             clipboard.setPrimaryClip(ClipData.newPlainText(null, model.getContent()));
+            uploadCopyLog(model.getContent());
         } else {
             if (AuthorityManager.getInstance().copyInside()) {
                 AuthorityManager.getInstance().copy(model.getContent());
+                uploadCopyLog(model.getContent());
             } else {
                 T.show("请申请权限");
             }
@@ -2095,5 +2473,217 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
     private void showTransforSuccess(boolean var) {
         tv_success.setVisibility(var ? View.VISIBLE : View.GONE);
+    }
+
+    private void getOAToken(PushBody body) {
+        /**
+         * 单点登录 拿到Token，存SP
+         **/
+        String fgToken = SSOTokenRepository.getToken();
+        if (TextUtils.isEmpty(fgToken)) {
+            T.show("请退出登录，获取飞鸽Token");
+            return;
+        }
+        HttpUtils.getInstance().getOAToken(fgToken)
+            .compose(RxSchedulers.compose())
+            .subscribe(new FGObserver<ResponseObject<OAToken>>(false) {
+                @Override
+                public void onHandleSuccess(ResponseObject<OAToken> response) {
+                    if (response.code == 10) {
+                        OAToken token = response.result;
+                        if (token != null) {
+                            String oaToken = token.oaToken;
+                            if (!TextUtils.isEmpty(oaToken)) {
+                                toOpenUrl(body.getActionUrl(), body.getTitle(), oaToken);
+                            } else {
+                                T.show("获取OAToken失败");
+                            }
+                        } else {
+                            T.show("获取OAToken失败");
+                        }
+                    } else {
+                        T.show("获取OAToken失败");
+                    }
+                }
+            });
+
+
+    }
+
+    private void toOpenUrl(String url, String title, String token) {
+        Intent intent = new Intent(this, BrowserActivity.class);
+        StringBuilder builder = new StringBuilder(url);
+        if (!url.contains("?")) {
+            builder.append("?").append("&token=")
+                .append(token);
+        } else {
+            builder.append("&token=")
+                .append(token);
+        }
+        Uri uri = Uri.parse(builder.toString());
+        intent.setData(uri);
+        intent.putExtra("title", title);
+        startActivity(intent);
+    }
+
+    private String getFavContent(IChatRoomModel message) throws JSONException {
+
+        JSONObject jsonObject = new JSONObject();
+        if (message.getMsgType() == EMessageType.TEXT) {
+            jsonObject.put("userHeadImageStr", message.getAvatarUrl());
+            jsonObject.put("signContent", "");
+            jsonObject.put("messageType", "1");
+            jsonObject.put("type", message.isGroupChat() ? "1" : "0");
+            jsonObject.put("userName", message.getFrom());
+            jsonObject.put("recordTime", TimeUtils.getDate());
+            jsonObject.put("content", message.getContent());
+
+        } else if (message.getMsgType() == EMessageType.IMAGE) {
+
+            JSONObject json = new JSONObject(message.getContent());
+            //JSONObject json1 = new JSONObject(json.getString("body"));
+            jsonObject.put("OriginalSzie", json.optString("OriginalSzie"));
+            jsonObject.put("userHeadImageStr", message.getAvatarUrl());
+            jsonObject.put("OriginalUrl", json.optString("OriginalUrl"));
+            jsonObject.put("signContent", "");
+            jsonObject.put("messageType", "2");
+            jsonObject.put("type", message.isGroupChat() ? "1" : "0");
+            jsonObject.put("ThumbnailUrl", json.optString("ThumbnailUrl"));
+            jsonObject.put("ThumbnailSize", json.optString("ThumbnailSize"));
+            jsonObject.put("recordTime", TimeUtils.getDate());
+
+        } else if (message.getMsgType() == EMessageType.VIDEO) {
+            JSONObject json = new JSONObject(message.getContent());
+            jsonObject.put("ImageSize", json.optString("ImageSize"));
+            jsonObject.put("userHeadImageStr", message.getAvatarUrl());
+            jsonObject.put("signContent", "");
+            jsonObject.put("messageType", "4");
+            jsonObject.put("ImageUrl", json.optString("ImageUrl"));
+            jsonObject.put("type", message.isGroupChat() ? "1" : "0");
+            if (json.has("mucNickName")) {
+                jsonObject.put("userName", json.optString("mucNickName"));
+            } else {
+                jsonObject.put("userName", message.getFrom());
+            }
+            jsonObject.put("VideoUrl", json.optString("VideoUrl"));
+            jsonObject.put("recordTime", TimeUtils.getDate());
+        } else if (message.getMsgType() == EMessageType.VOICE) {
+            JSONObject object = new JSONObject(message.getBody());
+            jsonObject.put("userHeadImageStr", message.getAvatarUrl());
+            jsonObject.put("signContent", "");
+            jsonObject.put("messageType", "3");
+            jsonObject.put("voiceLenth", object.optString("timeLength"));
+            jsonObject.put("type", message.isGroupChat() ? "1" : "0");
+            if (object.has("mucNickName")) {
+                jsonObject.put("userName", object.optString("mucNickName"));
+            } else {
+                jsonObject.put("userName", message.getFrom());
+            }
+            jsonObject.put("recordTime", TimeUtils.getDate());
+            if (message.isIncoming()) {
+                jsonObject.put("content", object.optString("body"));
+            } else {
+                JSONObject j = new JSONObject(message.getUploadUrl());
+                jsonObject.put("content", j.optString("VoiceUrl"));
+            }
+
+        }
+        return jsonObject.toString();
+    }
+
+    private void uploadCopyLog(String content) {
+        String copyText = FileUtil
+            .uploadUserOption(content, getUserId(), "a_copy_text");
+        HttpUtils.getInstance().uploadLogger(copyText,
+            ELogType.COPY, new IDataRequestListener() {
+                @Override
+                public void loadFailure(String reason) {
+                    L.d("上传失败");
+                }
+
+                @Override
+                public void loadSuccess(Object object) {
+                    L.d("上传成功");
+                }
+            });
+    }
+
+    private void addEmoticon(String json) {
+        String emoJson = SPHelper.getString(EX_KEY);
+        if (!TextUtils.isEmpty(emoJson)) {
+            if (!emoJson.contains(json)) {
+                ExcuteMessage message = MessageManager.getInstance()
+                    .createExcuteBody(ExcuteType.EMOTICON_SAVE, json);
+                if (message != null) {
+                    FingerIM.I.excute(message);
+                }
+            } else {
+                T.show("已添加，请勿重复添加");
+            }
+        }
+
+    }
+
+    private void saveEmoticon(String json) {
+        SPHelper.remove(AppConfig.EX_KEY);
+        SPHelper.saveValue(AppConfig.EX_KEY, json);
+        resetExpression(json);
+    }
+
+    private void checkAndLoadEmoticon() {
+        String emoticon = SPHelper.getString(EX_KEY);
+        if (TextUtils.isEmpty(emoticon)) {
+            ExcuteMessage message = MessageManager.getInstance()
+                .createExcuteBody(ExcuteType.EMOTICON_QUERY, getUserId());
+            if (message != null) {
+                FingerIM.I.excute(message);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+        @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMARA_PERMISSON_REQUEST_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                toCamera();
+            } else {
+                //用户勾选了不再询问
+                //提示用户手动打开权限
+                if (!ActivityCompat
+                    .shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+                    T.show("相机权限已被禁止");
+                }
+            }
+        } else if (requestCode == LOCATION_PERMISSON_REQUEST_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                toMap();
+            } else {
+                //用户勾选了不再询问
+                //提示用户手动打开权限
+                if (!ActivityCompat
+                    .shouldShowRequestPermissionRationale(this, permission.ACCESS_FINE_LOCATION)) {
+                    T.show("位置权限已被禁止");
+                }
+            }
+        }
+    }
+
+    private void checkMessageReaded(int firstVisibleItem, int visibleItemCount) {
+        if (mAdapter != null) {
+            for (int i = firstVisibleItem; i < firstVisibleItem + visibleItemCount; i++) {
+                IChatRoomModel model = mAdapter.getItem(i);
+                if (model.isIncoming() && model.getMsgType() == EMessageType.TEXT
+                    && model.getServerReaded() == 1) {
+                    Map<String, IChatRoomModel> map = MessageManager.getInstance()
+                        .getSequenceReadedChatMap();
+                    if (!map.containsKey(model.getMsgId())) {
+                        map.put(model.getMsgId(), model);
+                    }
+                }
+            }
+            mHandler.sendEmptyMessageDelayed(READ, 500);
+        }
     }
 }

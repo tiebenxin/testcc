@@ -35,10 +35,8 @@ public class ChatEnum {
         BUSINESS_CARD_RECEIVED(R.layout.chatcell_card_received),
         BUSINESS_CARD_SEND(R.layout.chatcell_card_send),
 
-        NOTICE_ACTION(R.layout.chatcell_picture_received),
-
-        WORK_LOGIN_RECEIVED(R.layout.chatcell_picture_received),
-        WORK_LOGIN_SEND(R.layout.chatcell_picture_send),
+        WORK_LOGIN_RECEIVED(R.layout.chatcell_signin_received),
+        WORK_LOGIN_SEND(R.layout.chatcell_signin_send),
 
         MULTI_RECEIVED(R.layout.chatcell_multi_received),
         MULTI_SEND(R.layout.chatcell_multi_sent),
@@ -47,7 +45,7 @@ public class ChatEnum {
 
         CHAT_ACTION(R.layout.chatcell_action),
 
-        NOTICE(R.layout.chatcell_oa_received),
+        NOTICE(R.layout.chatcell_action),
 
         OA(R.layout.chatcell_oa_received),
 
@@ -199,7 +197,10 @@ public class ChatEnum {
         COLLECT_MSG(13),
         TRANSFER_MSG(14),
         CANCEL(15),
-        AVATAR(16);
+        AVATAR(16),
+        CLOCK_CLICK(17),
+        OA_CLICK(18),
+        READED(19);
 
 
         public final int value;
@@ -231,7 +232,9 @@ public class ChatEnum {
         SENDING(0),
         FILE_SUCCESS(1),//文件上传成功
         MSG_SUCCESS(2),//消息发送成功
-        ERROR(3);
+        ERROR(3),//有网络,后台发送错误
+        NET_ERROR(4),//无网络，发送失败
+        ACK_ERROR(5);//有网络，二次回执发送失败
 
 
         public final int value;
@@ -641,10 +644,11 @@ public class ChatEnum {
      * 通讯录关系状态
      * */
     public enum ERelationStatus {
-        FRIEND(0),//是好友
+        NO_FRIEND(0),//非好友
         INVITE(1),//非好友，我邀请
         RECEIVE(2),//非好友，我被邀请
-        SELF(3);//自己
+        SELF(3),//自己
+        FRIEND(4);//好友
 
 
         public final int value;
@@ -662,7 +666,7 @@ public class ChatEnum {
                 }
             }
             if (result == null) {
-                result = ERelationStatus.FRIEND;
+                result = ERelationStatus.NO_FRIEND;
             }
             return result;
         }
@@ -697,6 +701,8 @@ public class ChatEnum {
         MUC_MEMBER_MESSAGE(5),
         MSG_ACK_MSG(6),//二次回执消息
         FG_PUSH_MESSAGE(7),//推送消息
+        EXCUTE_MESSAGE(8),//推送消息
+        READ_MESSAGE(9),//已读消息
 
         NET_STATUS(10);//网络状态
 
@@ -731,7 +737,9 @@ public class ChatEnum {
         LOGIN_CONFLICTED(2),//登录冲突
         ERROR_CONNECT(3),//服务器断开链接
         ERROR_LOGIN(4),//207未登录,被服务器踢出登录
-        ERROR_NET(5);//无可用网络
+        ERROR_NET(5),//无可用网络
+        LOGIN_SUCCESS(6),//登录成功
+        LOGIN_CONFLICTED_PSW(7);//登录冲突,密码被修改
 
 
         public final int value;
@@ -785,6 +793,4 @@ public class ChatEnum {
             return result;
         }
     }
-
-
 }

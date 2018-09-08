@@ -48,9 +48,7 @@ public class ChatEnvironment {
      */
     public void initExpresionProvider() {
         LensEmojiProvider provider = new LensEmojiProvider(EmojiconDefaultGroupData.getData());
-
         setEmojiconInfoProvider(provider);
-
     }
 
     /**

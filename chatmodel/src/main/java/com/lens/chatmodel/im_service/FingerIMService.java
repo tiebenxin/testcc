@@ -15,6 +15,7 @@ import com.fingerchat.api.listener.ConflictListener;
 import com.fingerchat.api.listener.MucListener;
 import com.fingerchat.api.message.BaseMessage;
 import com.fingerchat.api.message.ConflictMessage;
+import com.fingerchat.api.message.ExcuteResultMessage;
 import com.fingerchat.api.message.FGPushMessage;
 import com.fingerchat.api.message.MessageAckMessage;
 import com.fingerchat.api.message.MucActionMessage;
@@ -23,12 +24,14 @@ import com.fingerchat.api.message.MucMemberMessage;
 import com.fingerchat.api.message.MucMessage;
 import com.fingerchat.api.message.OfflineMessage;
 import com.fingerchat.api.message.PrivateChatMessage;
+import com.fingerchat.api.message.ReadAckMessage;
 import com.fingerchat.api.message.RespMessage;
 import com.fingerchat.api.message.RosterMessage;
 import com.lens.chatmodel.ChatEnum.EIMType;
 import com.lens.chatmodel.ChatEnum.ENetStatus;
 import com.lens.chatmodel.eventbus.EventEnum;
 import com.lens.chatmodel.eventbus.EventFactory;
+import com.lens.chatmodel.eventbus.ExcuteEvent;
 import com.lens.chatmodel.eventbus.MucGroupMessageEvent;
 import com.lens.chatmodel.eventbus.MucMemberMessageEvent;
 import com.lens.chatmodel.eventbus.NetStatusEvent;
@@ -37,6 +40,7 @@ import com.lens.chatmodel.eventbus.RosterEvent;
 import com.lens.chatmodel.manager.MessageManager;
 import com.lens.chatmodel.manager.MucManager;
 import com.lens.chatmodel.manager.SmartPingManager;
+import com.lensim.fingerchat.commons.global.Common;
 import org.greenrobot.eventbus.EventBus;
 
 
@@ -52,6 +56,8 @@ public final class FingerIMService extends Service implements ClientListener, Co
     private MucGroupMessageEvent mucGroupMessageEvent;
     private MucMemberMessageEvent mucMemberMessageEvent;
     private NetStatusEvent netStatusEvent;
+    private ExcuteEvent excuteEvent;
+
 
     @Nullable
     @Override
@@ -102,10 +108,9 @@ public final class FingerIMService extends Service implements ClientListener, Co
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         FingerIM.I.destroy();
         //注销群Action
-        ClientConfig.I.registerListener(MucListener.class, MucManager.getInstance());
+        ClientConfig.I.removeListener(MucListener.class, MucManager.getInstance());
         ClientConfig.I.removeListener(ConflictListener.class, this);
     }
 
@@ -118,7 +123,7 @@ public final class FingerIMService extends Service implements ClientListener, Co
     @Override
     public void onConnected(IMClient client) {
         System.out.println("链接成功");
-        updateNetStatus(ENetStatus.SUCCESS_ON_SERVICE);
+//        updateNetStatus(ENetStatus.SUCCESS_ON_SERVICE);
     }
 
     @Override
@@ -132,9 +137,11 @@ public final class FingerIMService extends Service implements ClientListener, Co
 
     @Override
     public void onHandshakeOk(IMClient client, int heartbeat) {
+        updateNetStatus(ENetStatus.SUCCESS_ON_SERVICE);
         System.out.println("握手成功");
         SmartPingManager manager = SmartPingManager.getInstanceFor(client.getConnection());
         manager.pingServerIfNecessary();
+
     }
 
     @Override
@@ -171,6 +178,7 @@ public final class FingerIMService extends Service implements ClientListener, Co
                         .getItemCount());
             postEvent(EIMType.MUC_MEMBER_MESSAGE, message);
         } else if (message instanceof OfflineMessage) {//离线消息
+            System.out.println("接受到OfflineMessage");
             postEvent(EIMType.OFFLINE_MESSAGE, message);
         } else if (message instanceof MessageAckMessage) {
             FingerIM.I.ack(((MessageAckMessage) message).message.getId(0));
@@ -195,6 +203,18 @@ public final class FingerIMService extends Service implements ClientListener, Co
 
     }
 
+    @Override
+    public void onExcute(ExcuteResultMessage message) {
+        postEvent(EIMType.EXCUTE_MESSAGE, message);
+
+
+    }
+
+    @Override
+    public void onRead(ReadAckMessage message) {
+        postEvent(EIMType.READ_MESSAGE, message);
+    }
+
     private void postEvent(EIMType type, BaseMessage message) {
         switch (type) {
             case ROSTER_MESSAGE:
@@ -210,6 +230,8 @@ public final class FingerIMService extends Service implements ClientListener, Co
             case PRIVATE_MESSAGE:
             case GROUP_MESSAGE:
             case FG_PUSH_MESSAGE:
+            case OFFLINE_MESSAGE:
+            case READ_MESSAGE:
                 MessageManager.getInstance().onReceive(message);
                 break;
             case MUC_GROUP_MESSAGE:
@@ -230,8 +252,14 @@ public final class FingerIMService extends Service implements ClientListener, Co
                 }
                 EventBus.getDefault().post(mucMemberMessageEvent);
                 break;
-            case OFFLINE_MESSAGE:
-                MessageManager.getInstance().onReceive(message);
+            case EXCUTE_MESSAGE:
+                if (excuteEvent == null) {
+                    excuteEvent = (ExcuteEvent) EventFactory.INSTANCE
+                        .create(EventEnum.EXCUTE, message);
+                } else {
+                    excuteEvent.setPacket((ExcuteResultMessage) message);
+                }
+                EventBus.getDefault().post(excuteEvent);
                 break;
 
         }
@@ -248,6 +276,13 @@ public final class FingerIMService extends Service implements ClientListener, Co
 
     @Override
     public void onReceivedConflictListener(ConflictMessage message) {
-        updateNetStatus(ENetStatus.LOGIN_CONFLICTED);
+        System.out.println(FingerIMService.class.getSimpleName() + "--onReceivedConflictListener");
+        if (message.message.getCode() == Common.PASSWORD_ERROR) {
+            updateNetStatus(ENetStatus.LOGIN_CONFLICTED_PSW);
+        } else {
+            updateNetStatus(ENetStatus.LOGIN_CONFLICTED);
+        }
+        FingerIM.I.getClient().stop();
     }
+
 }

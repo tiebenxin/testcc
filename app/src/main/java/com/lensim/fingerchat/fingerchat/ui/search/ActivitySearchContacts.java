@@ -45,7 +45,7 @@ public class ActivitySearchContacts extends FGActivity {
     private String searchKey;
     private ControllerNoRecord viewNoRecord;
     private boolean isShowSoftKeyboard;
-    private int currentPager;
+    private int currentPager = 0;
 
 
     @Override
@@ -71,7 +71,10 @@ public class ActivitySearchContacts extends FGActivity {
                             results.clear();
                         }
                         showProgress("正在搜索", true);
-                        doSearch(value, 0);
+                        if (!TextUtils.isEmpty(searchKey) && !searchKey.equals(value)) {
+                            currentPager = 0;
+                        }
+                        doSearch(value, currentPager);
                     }
                 }
             }
@@ -83,6 +86,11 @@ public class ActivitySearchContacts extends FGActivity {
 
     public int getCurrentPager() {
         return currentPager;
+    }
+
+    public void loadNextPager() {
+        currentPager++;
+        doSearch(searchKey, currentPager);
     }
 
     public void doSearch(String value, int page) {
@@ -112,14 +120,18 @@ public class ActivitySearchContacts extends FGActivity {
                                     viewNoRecord.setVisible(false);
                                     checkList(temp, results);
                                 } else {
-                                    viewSearch.setSearchContainerVisible(false);
-                                    viewNoRecord.setVisible(true);
+                                    if (currentPager == 0) {
+                                        viewSearch.setSearchContainerVisible(false);
+                                        viewNoRecord.setVisible(true);
+                                    }
                                 }
                             }
                             notifyCurrentFragment();
                         } else {
-                            viewNoRecord.setVisible(true);
-                            viewSearch.setSearchContainerVisible(false);
+                            if (currentPager == 0) {
+                                viewNoRecord.setVisible(true);
+                                viewSearch.setSearchContainerVisible(false);
+                            }
                         }
                     }
 

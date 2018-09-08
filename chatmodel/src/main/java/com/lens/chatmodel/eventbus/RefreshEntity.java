@@ -12,6 +12,7 @@ public class RefreshEntity {
 
     private int activity;
     private int fragment;
+    private int type;//0为普通刷新，1为离线刷新
 
 
     public int getActivity() {
@@ -28,6 +29,14 @@ public class RefreshEntity {
 
     public void setFragment(int fragment) {
         this.fragment = fragment;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     public static RefreshEntity fromJson(String json) {

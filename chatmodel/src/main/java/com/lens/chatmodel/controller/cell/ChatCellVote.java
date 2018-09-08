@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.text.Spannable;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,17 +21,15 @@ import com.lensim.fingerchat.commons.helper.GsonHelper;
 
 public class ChatCellVote extends ChatCellBase {
 
-
     private TextView tvOption1;
     private TextView tvOption2;
     private TextView tvTitle;
     private VoteBody entity;
     private Spannable spannable;
 
-    protected ChatCellVote(Context context, EChatCellLayout cellLayout,
-        IChatEventListener listener, MessageAdapter adapter, int position) {
-        super(context, cellLayout, listener, adapter, position);
-
+    protected ChatCellVote(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 
@@ -51,10 +48,13 @@ public class ChatCellVote extends ChatCellBase {
         if (mChatRoomModel != null) {
             String content = mChatRoomModel.getContent();
             entity = GsonHelper.getObject(content, VoteBody.class);
+            if (entity == null) {
+                return;
+            }
             tvTitle.setText(entity.getTitle());
             tvOption1.setText(entity.getOption1());
             tvOption2.setText(entity.getOption2());
-            if (entity.getStatus() == 1) {
+            if (entity.getStatus() == 1) {//参与投票消息
                 tv_notify.setVisibility(View.VISIBLE);
                 rl_root.setVisibility(View.GONE);
                 if (mChatRoomModel.getNick() != null) {

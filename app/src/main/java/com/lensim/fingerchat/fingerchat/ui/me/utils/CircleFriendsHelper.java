@@ -46,7 +46,9 @@ public class CircleFriendsHelper<T> {
             if (StringUtils.isEmpty(themePath)) {
                 themePath = String.format(Route.obtainTheme, UserInfoRepository.getUserName());
             } else {
+                if (!themePath.startsWith("http")){
                 themePath = ImageDownloader.Scheme.FILE.wrap(themePath);
+                }
             }
         } else {
             themePath = String.format(Route.obtainTheme, user);

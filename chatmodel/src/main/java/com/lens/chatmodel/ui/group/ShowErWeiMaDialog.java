@@ -59,7 +59,7 @@ public class ShowErWeiMaDialog extends Dialog {
         show_erweima = view.findViewById(R.id.show_erweima);
         FGEnvironment environment = new FGEnvironment();
         show_name.setText(mucName);
-        show_img.setDrawText(MucInfo.selectMucUserNick(context, mucId));
+        show_img.setDrawText(MucInfo.selectMucUserNickList(context, mucId));
 
         Glide.with(context)
             .load(environment.getAcodePath(mucId))

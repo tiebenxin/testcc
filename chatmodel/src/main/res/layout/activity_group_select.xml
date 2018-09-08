@@ -11,11 +11,13 @@
         style="@style/FGToolbarStyleWithNoOverflow"/>
 
     <LinearLayout
+        android:id="@+id/llRosterSearch"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_margin="8dp"
         android:background="@drawable/edittext_bg"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        >
 
         <com.lensim.fingerchat.components.widget.HAvatarsRecyclerView
             android:id="@+id/mAvatarList"

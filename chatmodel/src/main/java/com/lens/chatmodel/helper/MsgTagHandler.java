@@ -13,16 +13,12 @@ import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import com.fingerchat.proto.message.Muc;
-import com.lens.chatmodel.ChatEnum.ERelationStatus;
 import com.lens.chatmodel.R;
-import com.lens.chatmodel.bean.UserBean;
 import com.lens.chatmodel.db.MucUser;
 import com.lens.chatmodel.db.ProviderChat;
-import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.interf.IActionTagClickListener;
 import com.lens.chatmodel.interf.IChatRoomModel;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
-import com.lensim.fingerchat.commons.interf.IChatUser;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import java.lang.annotation.Retention;
@@ -285,12 +281,17 @@ public class MsgTagHandler implements TagHandler {
         IChatRoomModel model = ProviderChat.selectMsgSingle(ContextHelper.getContext(), msgId);
         if (model != null) {
             if (ChatHelper.isTimeValid(model.getTime())) {
-                Muc.MucMemberItem item = MucUser
-                    .selectUserById(ContextHelper.getContext(), model.getTo(), userId);
-                if (item == null) {//非群成员
-                    return IS_VALID;
+                List<String> userIds = StringUtils.getUserIds(userId);
+                if (userIds != null && userIds.size() > 0) {//邀请多个，只需判断第一个
+                    Muc.MucMemberItem item = MucUser
+                        .selectUserById(ContextHelper.getContext(), model.getTo(), userIds.get(0));
+                    if (item == null) {//非群成员
+                        return IS_VALID;
+                    } else {
+                        return BE_FRIEND;
+                    }
                 } else {
-                    return BE_FRIEND;
+                    return TIME_OUT;
                 }
             } else {
                 return TIME_OUT;

@@ -1,6 +1,7 @@
 package com.lensim.fingerchat.data.login;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import com.lensim.fingerchat.data.repository.SPDataRepository;
 
 
@@ -51,17 +52,32 @@ public class SSOTokenRepository {
 
     public static String getUserName() {
         if (getInstance().getSSOToken() != null) {
-            return getInstance().getSSOToken().getUserid();
+            return getInstance().getSSOToken().getUserId();
         } else {
             return "";
         }
     }
 
-    public static long getTokenValidTime() {
-        if (getInstance().getSSOToken() != null) {
+    public static long getTokenValidTime(String userId) {
+        if (getInstance().getSSOToken() != null && !TextUtils.isEmpty(userId) && userId
+            .equalsIgnoreCase(getInstance().getUserId())) {
             return getInstance().getSSOToken().getTokenValidTime();
         } else {
-            return System.currentTimeMillis();
+            return 0;
+        }
+    }
+
+    public String getUserId() {
+        if (getInstance().getSSOToken() != null) {
+            return getInstance().getSSOToken().getUserId();
+        }
+        return "";
+    }
+
+
+    public void clearSSOToken() {
+        if (getInstance().getSSOToken() != null && spDataRepository != null) {
+            spDataRepository.removeData(SSOToken.class);
         }
     }
 }

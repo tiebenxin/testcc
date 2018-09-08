@@ -24,15 +24,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
+import com.lens.chatmodel.bean.body.ImageUploadEntity;
 import com.lens.chatmodel.im_service.FingerIM;
+import com.lens.chatmodel.net.HttpUtils;
 import com.lens.chatmodel.ui.image.MultiImageSelectorActivity;
 import com.lensim.fingerchat.commons.base.BaseFragment;
+import com.lensim.fingerchat.commons.global.CommonEnum.EUploadFileType;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.OnControllerClickListenter;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.data.bean.ImageBean;
+import com.lensim.fingerchat.data.help_class.IUploadListener;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.interf.IPopItemClickListener;
 import com.lensim.fingerchat.fingerchat.manager.PopManager;
@@ -63,6 +67,7 @@ public class FragmentRegister extends BaseFragment {
     private String phoneNum;
     private String nick;
     private String photoName;
+    private String avatarUrl;
 
     @Nullable
     @Override
@@ -108,7 +113,7 @@ public class FragmentRegister extends BaseFragment {
         });
 
         viewInputPsw.initIconHint(R.drawable.password, R.string.input_password);
-        viewInputPsw.initEditType(true);
+        viewInputPsw.initEditType(false);
         viewInputPsw.addRight(ControllerLoginItem.TYPE_PSW);
         viewInputPsw.setEidtAction(false);
         viewInputPsw.setShowText(false);
@@ -178,26 +183,34 @@ public class FragmentRegister extends BaseFragment {
             public void onClick() {
                 if (listener != null) {
                     if (!TextUtils.isEmpty(viewInputJobNum.getText()) && !TextUtils
-                        .isEmpty(viewInputPsw.getText())) {
+                        .isEmpty(viewInputPsw.getText()) && !TextUtils
+                        .isEmpty(viewInputNick.getText()) && !TextUtils
+                        .isEmpty(viewPhoneNum.getText()) && !TextUtils
+                        .isEmpty(viewIdentifyCode.getText())) {
                         if (StringUtils.isIdentifyCode(viewIdentifyCode.getText())) {
                             listener
                                 .clickRegister(viewInputJobNum.getText(), viewInputPsw.getText(),
-                                    viewPhoneNum.getText(), viewIdentifyCode.getText());
+                                    viewInputNick.getText(), viewPhoneNum.getText(),
+                                    viewIdentifyCode.getText(), avatarUrl);
                         } else {
                             T.showShort(R.string.input_right_identify_code);
                         }
-
                     } else {
                         if (TextUtils.isEmpty(viewInputJobNum.getText())) {
-                            T.showShort(R.string.login);
-
+                            T.show("工号不能为空");
+                        } else if (TextUtils.isEmpty(viewInputPsw.getText())) {
+                            T.show("密码不能为空");
+                        } else if (TextUtils.isEmpty(viewInputNick.getText())) {
+                            T.show("昵称不能为空");
+                        } else if (TextUtils.isEmpty(viewPhoneNum.getText())) {
+                            T.show("手机号不能为空");
+                        } else if (TextUtils.isEmpty(viewIdentifyCode.getText())) {
+                            T.show("验证码不能为空");
                         }
                     }
                 }
             }
         });
-
-
     }
 
     //倒计时
@@ -221,12 +234,12 @@ public class FragmentRegister extends BaseFragment {
     };
 
     private boolean isValidGetIdentifyCode() {
-        jobNum = viewInputJobNum.getText();
-        password = viewInputPsw.getText();
-        nick = viewInputNick.getText();
-        phoneNum = viewPhoneNum.getText();
-        if (!TextUtils.isEmpty(jobNum) && !TextUtils.isEmpty(password) && !TextUtils
-            .isEmpty(phoneNum)) {
+        jobNum = viewInputJobNum.getText().trim();
+        password = viewInputPsw.getText().trim();
+        nick = viewInputNick.getText().trim();
+        phoneNum = viewPhoneNum.getText().trim();
+        if (!TextUtils.isEmpty(jobNum) && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(nick)
+            && !TextUtils.isEmpty(phoneNum)) {
             if (!StringUtils.isJobNum(jobNum)) {
                 T.show("请输入正确工号");
                 return false;
@@ -234,7 +247,10 @@ public class FragmentRegister extends BaseFragment {
                 if (!StringUtils.isMobilePhone(phoneNum)) {
                     T.showShort(R.string.input_right_phone_num);
                     return false;
-                } else {
+                } /*else if (StringUtils.isContainSpecailChar(nick)) {
+                    T.show("昵称不能包含特殊字符");
+                    return false;
+                }*/ else {
                     return true;
                 }
             }
@@ -243,6 +259,9 @@ public class FragmentRegister extends BaseFragment {
             return false;
         } else if (TextUtils.isEmpty(password)) {
             T.showShort(R.string.password_empty);
+            return false;
+        } else if (TextUtils.isEmpty(nick)) {
+            T.showShort(R.string.nick_empty);
             return false;
         } else if (TextUtils.isEmpty(phoneNum)) {
             T.showShort(R.string.phone_empty);
@@ -283,8 +302,37 @@ public class FragmentRegister extends BaseFragment {
             if (resultCode == RESULT_OK) {
                 String imagePath = data.getStringExtra("bitmap");
                 viewInputJobNum.addRight(BitmapFactory.decodeFile(imagePath));
+                uploadAvatar(imagePath);
             }
         }
+    }
+
+    private void uploadAvatar(String image) {
+        if (TextUtils.isEmpty(image)) {
+            return;
+        }
+        HttpUtils.getInstance().uploadImageSave(image, EUploadFileType.JPG, new IUploadListener() {
+            @Override
+            public void onSuccess(Object result) {
+                if (result != null && result instanceof ImageUploadEntity) {
+                    ImageUploadEntity entity = (ImageUploadEntity) result;
+                    if (entity != null && !TextUtils.isEmpty(entity.getOriginalUrl())) {
+                        avatarUrl = entity.getOriginalUrl();
+                        T.show("头像上传成功");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailed() {
+                T.show("头像上传失败");
+            }
+
+            @Override
+            public void onProgress(int progress) {
+
+            }
+        });
     }
 
     @Override
@@ -293,10 +341,10 @@ public class FragmentRegister extends BaseFragment {
     }
 
     public void notifyDestroy() {
-       if (timer != null) {
-           timer.cancel();
-           timer = null;
-       }
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 
     private void showPopWindow() {
@@ -358,7 +406,8 @@ public class FragmentRegister extends BaseFragment {
 
     public interface IFragmentRegisterListener {
 
-        void clickRegister(String accout, String password, String phone, String identifyCode);
+        void clickRegister(String accout, String password, String nick, String phone,
+            String identifyCode, String avatar);
 
         void clickBack();
 

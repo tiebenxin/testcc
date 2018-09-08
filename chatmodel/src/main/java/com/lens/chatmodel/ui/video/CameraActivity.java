@@ -4,6 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,14 +23,23 @@ import com.fingerchat.cameralibrary.listener.JCameraListener;
 import com.fingerchat.cameralibrary.util.DeviceUtil;
 import com.fingerchat.cameralibrary.util.FileUtil;
 import com.lens.chatmodel.R;
+import com.lens.core.util.DateUtil;
+import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.utils.BitmapUtil;
+import com.lensim.fingerchat.commons.utils.DensityUtil;
 import com.lensim.fingerchat.commons.utils.L;
+import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 
+import com.lensim.fingerchat.commons.utils.TDevice;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Date;
 
 public class CameraActivity extends AppCompatActivity {
+
     private static final String EXTRAS_MODEL = "model";
 
     public static final int BUTTON_STATE_ONLY_CAPTURE = 0x101;      //只能拍照
@@ -35,6 +49,7 @@ public class CameraActivity extends AppCompatActivity {
     @IntDef({BUTTON_STATE_ONLY_CAPTURE, BUTTON_STATE_ONLY_RECORDER, BUTTON_STATE_BOTH})
     @Retention(RetentionPolicy.SOURCE)
     public @interface BtnModel {
+
     }
 
     private JCameraView jCameraView;
@@ -49,9 +64,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     /**
-     * @param activity
-     * @param requestCode
-     * @param mode        拍摄模式
+     * @param mode 拍摄模式
      */
     public static void start(Activity activity, int requestCode, @BtnModel int mode) {
         Intent intent = new Intent();
@@ -63,7 +76,8 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_camera);
 
@@ -84,7 +98,8 @@ public class CameraActivity extends AppCompatActivity {
     private void initCameraView() {
         jCameraView = findViewById(R.id.jcameraview);
         //设置视频保存路径
-        jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "FGCamera");
+        jCameraView.setSaveVideoPath(
+            Environment.getExternalStorageDirectory().getPath() + File.separator + "FGCamera");
         jCameraView.setFeatures(mode);
         jCameraView.setTextWithAnimation("轻触拍照，按住摄像");
         jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
@@ -108,7 +123,10 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void captureSuccess(Bitmap bitmap) {
                 //获取图片bitmap
-                String path = FileUtil.saveBitmap("FGCamera", bitmap);
+                Bitmap result = BitmapUtil
+                    .createWaterBitmap(bitmap, UserInfoRepository.getUserId());
+//                Bitmap result = createWaterBitmap(bitmap);
+                String path = FileUtil.saveBitmap("FGCamera", result);
                 Intent intent = new Intent();
                 intent.putExtra("imagePath", path);
                 setResult(101, intent);
@@ -168,5 +186,27 @@ public class CameraActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         jCameraView.onPause();
+    }
+
+    private Bitmap createWaterBitmap(Bitmap resource) {
+        int w = resource.getWidth();
+        int h = resource.getHeight();
+        Bitmap temp = Bitmap.createBitmap(w, h, Config.ARGB_8888);
+        Canvas canvas = new Canvas(temp);
+        Paint paint = new Paint();
+        String familyName = "宋体";
+        Typeface font = Typeface.create(familyName, Typeface.NORMAL);
+        paint.setColor(Color.WHITE);
+        paint.setTypeface(font);
+        paint.setTextSize(DensityUtil.sp2px(ContextHelper.getContext(), 6));
+        canvas.drawBitmap(resource, 0, 0, paint);
+        String waterText = ContextHelper.getContext()
+            .getString(R.string.pic_water_content, UserInfoRepository.getUserId(),
+                StringUtils.getWaterMarkTime());
+        paint.setAlpha(100);
+        canvas.drawText(waterText, 20, h - 20, paint);
+        canvas.save(Canvas.ALL_SAVE_FLAG);
+        canvas.restore();
+        return temp;
     }
 }

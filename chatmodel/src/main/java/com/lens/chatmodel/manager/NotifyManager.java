@@ -25,6 +25,8 @@ import java.util.List;
 public class NotifyManager {
 
     public static final int MESSAGE_NOTIFICATION_ID = 1;
+    private static final long VIBRATION_DURATION = 500;
+
 
     private static NotifyManager INSTANCE = new NotifyManager();
     NotificationManager notificationManager;
@@ -33,6 +35,7 @@ public class NotifyManager {
     private final List<MessageNotification> messageNotifications;
     private long receiveTime = 0;
     private UserInfo mUserInfo;
+
 
     public static NotifyManager getInstance() {
         if (INSTANCE == null) {
@@ -138,6 +141,16 @@ public class NotifyManager {
         }
         messageNotifications.remove(messageNotification);
         updateMessageNotification(null);
+    }
+
+    /*
+    * 清空所有notice
+    * */
+    public void clearNotification() {
+        if (messageNotifications != null && messageNotifications.size() > 0) {
+            messageNotifications.clear();
+            updateMessageNotification(null);
+        }
     }
 
 

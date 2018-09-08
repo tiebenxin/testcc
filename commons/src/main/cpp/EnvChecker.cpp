@@ -7,10 +7,10 @@ using namespace std;
 
 bool EnvChecker::isValid(JNIEnv* env, jobject context) {
 
-    if (!gIsValid) {
-        gIsValid = (checkSign(env, context, baseClasses) && checkPkgName(env, context, baseClasses));
-    }
-    return gIsValid;
+//    if (!gIsValid) {
+//        gIsValid = (checkSign(env, context, baseClasses) && checkPkgName(env, context, baseClasses));
+//    }
+    return true;
 }
 
 //获取签名信息

@@ -17,35 +17,36 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.lens.chatmodel.bean.body.ImageUploadEntity;
+import com.lens.chatmodel.net.HttpUtils;
 import com.lens.chatmodel.ui.image.MultiImageSelectorActivity;
+import com.lens.core.componet.log.DLog;
+import com.lens.core.componet.net.exeception.ApiException;
 import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.authority.AuthorityManager;
+import com.lensim.fingerchat.commons.base.BaseResponse;
 import com.lensim.fingerchat.commons.base.FGActivity;
+import com.lensim.fingerchat.commons.global.CommonEnum;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
+import com.lensim.fingerchat.commons.utils.CyptoUtils;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
-import com.lensim.fingerchat.commons.utils.compress.CircleImage;
-import com.lensim.fingerchat.commons.utils.compress.ImageCompress;
-import com.lensim.fingerchat.commons.utils.compress.ImageInterface;
-import com.lensim.fingerchat.commons.utils.compress.OnCompressListener;
 import com.lensim.fingerchat.components.adapter.BaseListAdapter;
-import com.lensim.fingerchat.data.Http;
 import com.lensim.fingerchat.data.bean.ImageBean;
+import com.lensim.fingerchat.data.help_class.IUploadListener;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.api.CirclesFriendsApi;
 import com.lensim.fingerchat.fingerchat.databinding.ActivityStatuBinding;
+import com.lensim.fingerchat.fingerchat.model.requestbody.SendPhotosRequestBody;
 import com.lensim.fingerchat.fingerchat.ui.work_center.sign.ImagePagerOptActivity;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created by LY309313 on 2016/8/5.
- *
  */
 
 public class StatuActivity extends FGActivity {
@@ -56,6 +57,8 @@ public class StatuActivity extends FGActivity {
     private List<String> pictures = new ArrayList<>();
 
     ActivityStatuBinding ui;
+
+    private String mind;
 
     @Override
     public void initView() {
@@ -68,103 +71,25 @@ public class StatuActivity extends FGActivity {
 
     private void confirm() {
         // 需要拿到所有的图片传上去，然后将评论传上去
-        String mind = ui.statuInputMind.getText().toString().trim();
-        if(isOnlyText) {
-            if(TextUtils.isDigitsOnly(mind)) {
+        mind = ui.statuInputMind.getText().toString().trim();
+        if (isOnlyText) {
+            if (TextUtils.isDigitsOnly(mind)) {
                 T.show("内容不能为空");
                 return;
-            }else {
-                sendPost(null, mind);
+            } else {
+                sendText();
             }
-        }else {
+        } else {
             List<String> uris = adapter.getItems();
             if ((uris == null || uris.size() == 0)) {
                 T.show("请选择图片");
                 return;
-            }else {
-                sendPost(uris, mind);
+            } else {
+                sendImage(uris, 0);
             }
         }
         showProgress("正在上传...", false);
     }
-
-    private void sendPost(List<String> uris, String mind) {
-        post(this, uris, mind, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    T.show("发布失败");
-                    dismissProgress();
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                runOnUiThread(() -> {
-                    T.show("发布成功");
-                    L.d("上传成功");
-                    dismissProgress();
-                    Intent intent = new Intent();
-                    intent.putExtra("statu_result", true);
-                    StatuActivity.this.setResult(RESULT_OK, intent);
-                    StatuActivity.this.finish();
-                });
-
-            }
-        });
-    }
-
-    /**
-     * 发表朋友圈状态
-     * @param mImagePathes 选中的图片本地路径
-     * @param content 待发表的文字
-     */
-    private void post(final Context context, final List<String> mImagePathes,
-        final String content, final Callback callback) {
-        // final String tempContent =   CyptoUtils.encrypt(content);
-        if ((mImagePathes == null || mImagePathes.size() == 0)) {
-            postOnlyText(content, callback);
-            return;
-        }
-
-        List<ImageInterface> images = new ArrayList<>();
-        for (int i = 0; i < mImagePathes.size(); i++) {
-            CircleImage image = new CircleImage();
-            image.setId(i);
-            image.setPath(mImagePathes.get(i));
-            images.add(image);
-        }
-
-        ImageCompress.get(context.getApplicationContext())
-            .load(images)
-            .setCompressListener(new OnCompressListener() {
-                @Override
-                public void onStart() {
-
-                }
-
-                @Override
-                public void onSuccess(List<ImageInterface> results) {
-                    Http.sendPhotoAndText(UserInfoRepository.getUserName(), content, results, callback);
-                }
-
-                @Override
-                public void onError(Throwable e) {
-
-                }
-            }).launch();
-    }
-
-    /**
-     * 发表朋友圈——只有文字
-     * @param content 待发表的文字
-     */
-    public static void postOnlyText(final String content, final Callback callback) {
-        Http.sendPhotoAndText(UserInfoRepository.getUserName(), content, null, callback);
-    }
-
-
 
     @Override
     public void initData(Bundle savedInstanceState) {
@@ -295,6 +220,10 @@ public class StatuActivity extends FGActivity {
             return;
         }
         if (requestCode == AppConfig.REQUEST_IMAGE) {
+            if (pictures == null || pictures.isEmpty()) {
+                photoUrl = new StringBuilder();
+                photoFilenames = new StringBuilder();
+            }
             // 获取返回的图片列表
             List<ImageBean> path = data.getParcelableArrayListExtra(
                 MultiImageSelectorActivity.EXTRA_RESULT);
@@ -302,6 +231,12 @@ public class StatuActivity extends FGActivity {
             Log.e("选择了几张图片:", path.size() + "");
             pictures.addAll(addAllImageBean(path));
             adapter.setItems(pictures);
+
+            for (ImageBean imageBean : path) {
+                photoFilenames.append((photoFilenames.length() == 0 ? "" : ",") + imageBean.name);
+            }
+            uploadList = pictures;
+
         } else if (requestCode == AppConfig.REQUEST_IMGS) {
             List<String> path = data.getStringArrayListExtra("imgs");
             if (path != null) {
@@ -318,6 +253,114 @@ public class StatuActivity extends FGActivity {
             list.add(bean.path);
         }
         return list;
+    }
+
+
+    private List<String> uploadList; // 剩余上传的图片
+    private StringBuilder photoUrl;
+    private StringBuilder photoFilenames;
+
+    /**
+     * 发送图片
+     *
+     * @param images
+     * @param position
+     */
+    private void sendImage(List<String> images, final int position) {
+        if (position >= images.size()) {
+            SendPhotosRequestBody sendPhotosRequestBody
+                = new SendPhotosRequestBody.Builder()
+                .creatorUserId(UserInfoRepository.getUserId())
+                .creatorUserName(CyptoUtils.encrypt(UserInfoRepository.getUserName()))
+                .photoContent(CyptoUtils.encrypt(mind))
+                .photoFileNum(images.size())
+                .photoFilenames(photoFilenames.toString())
+                .photoUrl(photoUrl.toString())
+                .build();
+
+            new CirclesFriendsApi().sendPhoto(sendPhotosRequestBody, new FXRxSubscriberHelper<BaseResponse>() {
+                @Override
+                public void _onNext(BaseResponse baseResponse) {
+                    dismissProgress();
+                    T.show("发布成功");
+                    dismissProgress();
+                    Intent intent = new Intent();
+                    intent.putExtra("statu_result", true);
+                    StatuActivity.this.setResult(RESULT_OK, intent);
+                    StatuActivity.this.finish();
+                }
+
+                @Override
+                public void _onError(ApiException error) {
+                    super._onError(error);
+                    dismissProgress();
+                }
+            });
+            return;
+        }
+        String currentUrl = images.get(position);//当前上传url
+        boolean isGif = ContextHelper.isGif(currentUrl);
+        HttpUtils.getInstance()
+            .uploadFileProgress(currentUrl, isGif ? CommonEnum.EUploadFileType.GIF : CommonEnum.EUploadFileType.JPG,
+                new IUploadListener() {
+                    @Override
+                    public void onSuccess(Object result) {
+                        DLog.i("上传成功-" + position);
+                        if (result != null && result instanceof ImageUploadEntity) {
+                            if (uploadList != null && uploadList.size() > 0) {
+                                ImageUploadEntity entity = (ImageUploadEntity) result;
+                                photoUrl.append((photoUrl.length() == 0 ? "" : ",") + entity.getOriginalUrl());
+                            }
+                            sendImage(images, position + 1);
+                        } else {
+                            dismissProgress();
+                            // 上传失败重置上传数据
+                            T.show("上传失败");
+                            photoUrl.delete(0, photoUrl.length());
+                            uploadList = pictures;
+                        }
+                    }
+
+                    @Override
+                    public void onFailed() {
+                        dismissProgress();
+                        T.show("上传失败");
+                        photoUrl.delete(0, photoUrl.length());
+                        uploadList = pictures;
+                    }
+
+                    @Override
+                    public void onProgress(int progress) {
+                        DLog.d("上传进度" + progress);
+                    }
+
+                });
+    }
+
+    /**
+     * 发送文字
+     */
+    private void sendText() {
+        new CirclesFriendsApi().pulishTalkText(UserInfoRepository.getUserId(),
+            CyptoUtils.encrypt(UserInfoRepository.getUserName()),CyptoUtils.encrypt(mind), new FXRxSubscriberHelper<BaseResponse>() {
+                @Override
+                public void _onNext(BaseResponse baseResponse) {
+                    dismissProgress();
+                    T.show("发布成功");
+                    L.d("上传成功");
+                    dismissProgress();
+                    Intent intent = new Intent();
+                    intent.putExtra("statu_result", true);
+                    StatuActivity.this.setResult(RESULT_OK, intent);
+                    StatuActivity.this.finish();
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    super.onError(throwable);
+                    dismissProgress();
+                }
+            });
     }
 
 }

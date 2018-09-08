@@ -10,4 +10,8 @@ import com.lensim.fingerchat.commons.mvp.view.ProcessMvpView;
 
 public interface LoginView extends ProcessMvpView {
 
+    void loginSuccess();
+
+    void loginFail();
+
 }

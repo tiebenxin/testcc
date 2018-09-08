@@ -14,11 +14,12 @@ public class BodyEntity extends BaseJsonEntity {
 
     String senderAvatar;//发送者头像
     String body;//发送内容
-    String mucNickName;//群聊备注名，非群聊则无
-    boolean secret;//是否密聊
+    String mucNickName;//群聊备注名，私聊为昵称
+    int secret;//是否密聊,1为密聊，0为非密聊
     int bubbleWidth;
     int bubbleHeight;
     int timeLength;
+    String groupName;//群聊专有字段，群名
 
 
     public BodyEntity() {
@@ -35,19 +36,21 @@ public class BodyEntity extends BaseJsonEntity {
                 setBody(optS("body", object));
                 setMucNickName(optS("mucNickName", object));
                 setSenderAvatar(optS("senderAvatar", object));
-                setSecret(optBoolean("secret", object));
+                setSecret(optInt("secret", object));
                 setBubbleWidth(optInt("bubbleWidth", object));
                 setBubbleHeight(optInt("bubbleHeight", object));
                 setTimeLength(optInt("timeLength", object));
+                setGroupName(optS("groupName", object));
             }
         } catch (JSONException e) {
             setBody(json);
-            setSecret(false);
+            setSecret(0);
             setBubbleWidth(0);
             setBubbleHeight(0);
             setTimeLength(0);
             setMucNickName("");
             setSenderAvatar("");
+            setGroupName("");
         }
     }
 
@@ -57,12 +60,13 @@ public class BodyEntity extends BaseJsonEntity {
             JSONObject object = new JSONObject(json);
             if (object != null) {
                 bodyEntity.setBody(optS("body", object));
-                bodyEntity.setSecret(optBoolean("secret", object));
+                bodyEntity.setSecret(optInt("secret", object));
                 bodyEntity.setBubbleWidth(optInt("bubbleWidth", object));
                 bodyEntity.setBubbleHeight(optInt("bubbleHeight", object));
                 bodyEntity.setTimeLength(optInt("timeLength", object));
                 bodyEntity.setMucNickName(optS("mucNickName", object));
                 bodyEntity.setSenderAvatar(optS("senderAvatar", object));
+                bodyEntity.setGroupName(optS("groupName", object));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -84,7 +88,7 @@ public class BodyEntity extends BaseJsonEntity {
                     object.put("body", "");
 
                 }
-                object.put("secret", entity.isSecret());
+                object.put("secret", entity.getSecret());
                 object.put("bubbleWidth", checkInt(entity.getBubbleWidth()));
                 object.put("bubbleHeight", checkInt(entity.getBubbleHeight()));
                 if (entity.getTimeLength() > 0) {
@@ -97,11 +101,15 @@ public class BodyEntity extends BaseJsonEntity {
                     object.put("senderAvatar", entity.getSenderAvatar());
                 }
 
+                if (!TextUtils.isEmpty(entity.getGroupName())) {
+                    object.put("groupName", entity.getGroupName());
+                }
+
                 return object.toString();
             } catch (JSONException e) {
                 try {
                     object.put("body", text);
-                    object.put("secret", entity.isSecret());
+                    object.put("secret", entity.getSecret());
                     object.put("bubbleWidth", checkInt(entity.getBubbleWidth()));
                     object.put("bubbleHeight", checkInt(entity.getBubbleHeight()));
                     if (entity.getTimeLength() > 0) {
@@ -112,6 +120,9 @@ public class BodyEntity extends BaseJsonEntity {
                     }
                     if (!TextUtils.isEmpty(entity.getSenderAvatar())) {
                         object.put("senderAvatar", entity.getSenderAvatar());
+                    }
+                    if (!TextUtils.isEmpty(entity.getGroupName())) {
+                        object.put("groupName", entity.getGroupName());
                     }
                     return object.toString();
                 } catch (JSONException e1) {
@@ -149,10 +160,14 @@ public class BodyEntity extends BaseJsonEntity {
     }
 
     public boolean isSecret() {
+        return secret == 1;
+    }
+
+    public int getSecret() {
         return secret;
     }
 
-    public void setSecret(boolean secret) {
+    public void setSecret(int secret) {
         this.secret = secret;
     }
 
@@ -178,5 +193,13 @@ public class BodyEntity extends BaseJsonEntity {
 
     public void setTimeLength(int timeLength) {
         this.timeLength = timeLength;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }

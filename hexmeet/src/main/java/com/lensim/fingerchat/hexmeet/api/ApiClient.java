@@ -3,6 +3,7 @@ package com.lensim.fingerchat.hexmeet.api;
 import android.content.SharedPreferences;
 
 
+import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.lensim.fingerchat.hexmeet.App;
@@ -72,11 +73,12 @@ public class ApiClient {
     OkHttpClient.Builder mBuilder = new OkHttpClient.Builder();
     mBuilder.sslSocketFactory(createSSLSocketFactory(), new TrustAllManager());
     mBuilder.hostnameVerifier(new TrustAllHostnameVerifier());
-    HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-      @Override
-      public void log(String message) {
-      }
-    });
+//    HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+//      @Override
+//      public void log(String message) {
+//      }
+//    });
+      HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
     httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
     mBuilder.addInterceptor(httpLoggingInterceptor);
     mBuilder.addInterceptor(new Interceptor() {
@@ -101,7 +103,6 @@ public class ApiClient {
       }
     });
     OkHttpClient okHttpClient = mBuilder.build();
-
     Retrofit retrofit = new Retrofit.Builder().client(okHttpClient)
         .baseUrl("https://" + server + "/api/rest/v2.0/")
         .addConverterFactory(GsonConverterFactory.create())

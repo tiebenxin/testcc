@@ -42,6 +42,14 @@ import java.util.Map;
  */
 public class FileUtil {
 
+    public static String FG_FOLDER_NAME = "feige";
+    public static String FG_ALBUM_NAME = "fingerAlbum";
+    public static final String FG_ROOT_FILE =
+        Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
+            + FG_FOLDER_NAME;
+
+    public static final String FG_ALBUM_FILE = FG_ROOT_FILE + File.separator
+        + FG_ALBUM_NAME;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -183,14 +191,13 @@ public class FileUtil {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
 
-        //File file = new File(path);
-        //String name = file.getName();
-        String newPath = Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_PICTURES).getAbsolutePath() + File.separator + "fingerAlbum"
-            + File.separator + System.currentTimeMillis() + ".jpg";
-        try {
-            createNewFileInSDCard(newPath);
+        //相册图片存储路径
+//        File parentFile = new File(Environment.getExternalStoragePublicDirectory(
+//            Environment.DIRECTORY_PICTURES).getAbsolutePath() + File.separator + FG_FOLDER_NAME);
 
+        String newPath = createImagePath();
+        try {
+//            createNewFileInSDCard(newPath);
             FileOutputStream fos = new FileOutputStream(newPath);
             fos.write(bos.toByteArray());
             fos.flush();
@@ -213,14 +220,11 @@ public class FileUtil {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
 
-        //File file = new File(path);
-        //String name = file.getName();
-//		String newPath = FGEnvironment.getExternalStoragePublicDirectory(
-//				FGEnvironment.DIRECTORY_PICTURES).getAbsolutePath() + File.separator + "fingerAlbum"
-//				+ File.separator + System.currentTimeMillis() + ".jpg";
         try {
-            createNewFileInSDCard(filepath);
-
+            File file = new File(filepath);
+            if (file.exists()) {
+                file.delete();
+            }
             FileOutputStream fos = new FileOutputStream(filepath);
             fos.write(bos.toByteArray());
             fos.flush();
@@ -238,11 +242,9 @@ public class FileUtil {
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(newPath, options);
         String type = options.outMimeType;
-
         MediaScannerConnection
             .scanFile(ContextHelper.getContext(), new String[]{newPath}, new String[]{type},
                 null);
-
     }
 
 
@@ -951,14 +953,14 @@ public class FileUtil {
         return perm == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static String uploadUserOption(String content,String user,String option){
+    public static String uploadUserOption(String content, String user, String option) {
         return FileUtil.dumpPhoneInfo(content, user, option);
     }
 
-    private static String dumpPhoneInfo(String content,String user,String op) {
+    private static String dumpPhoneInfo(String content, String user, String op) {
         String string = SPHelper.getString("userName" + "4567", "");
         String number = "";
-        if(!StringUtils.isEmpty(string)){
+        if (!StringUtils.isEmpty(string)) {
             Gson gson = new Gson();
             UserEntity userEntity = gson.fromJson(string, UserEntity.class);
             number = userEntity.getEmployeeNO();
@@ -967,11 +969,11 @@ public class FileUtil {
         ImLog log = new ImLog();
         log.setLogTime(StringUtils.formatDateTime(new Date()));
         log.setLogAppVer(BuildInfo.VERSION_NAME + "_" + BuildInfo.VERSION_CODE);
-        log.setLogSysVer(Build.VERSION.RELEASE+"_"+Build.VERSION.SDK_INT);
+        log.setLogSysVer(Build.VERSION.RELEASE + "_" + Build.VERSION.SDK_INT);
         log.setLogDevName(Build.MANUFACTURER);
         log.setLogMobileType(Build.MODEL);
         //if(op.equals("a_error")){
-        if(op.equals("login")){
+        if (op.equals("login")) {
             content = DeviceUtils.getIPAddress(true);
         }
         log.setLogContent(content);
@@ -983,6 +985,47 @@ public class FileUtil {
 
         Gson gson = new Gson();
 
-        return  gson.toJson(log);
+        return gson.toJson(log);
+    }
+
+    public static void clearCache() {
+
+    }
+
+    //检查图片缓存文件是否已经存在
+    public static void checkFGCacheFilesExist() {
+        if (!isExternalStorageMounted()) {
+            L.e("sdcard unavailiable");
+            return;
+        }
+        File parentFile = new File(FG_ROOT_FILE);
+        if (!parentFile.exists()) {
+            parentFile.mkdir();
+        }
+        File secendFile = new File(parentFile.getAbsolutePath() + File.separator + FG_ALBUM_NAME);
+        if (!secendFile.exists()) {
+            secendFile.mkdir();
+        }
+    }
+
+    //创建image路径
+    public static String createImagePath() {
+        checkFGCacheFilesExist();
+        return FG_ALBUM_FILE + File.separator + System.currentTimeMillis() + ".jpg";
+    }
+
+    public static String saveBitmap(Bitmap b) {
+        String jpegName = createImagePath();
+        try {
+            FileOutputStream fout = new FileOutputStream(jpegName);
+            BufferedOutputStream bos = new BufferedOutputStream(fout);
+            b.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            bos.flush();
+            bos.close();
+            return jpegName;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }

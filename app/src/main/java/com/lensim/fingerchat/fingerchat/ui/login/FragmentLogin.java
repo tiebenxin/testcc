@@ -76,7 +76,8 @@ public class FragmentLogin extends BaseFragment implements View.OnClickListener 
                     if (listener != null) {
                         if (!TextUtils.isEmpty(viewInputAccout.getText()) && !TextUtils
                             .isEmpty(viewInputPsw.getText())) {
-                            listener.clickLogin(viewInputAccout.getText(), viewInputPsw.getText());
+                            listener.clickLogin(viewInputAccout.getText().trim(),
+                                viewInputPsw.getText().trim());
                         } else {
                             if (TextUtils.isEmpty(viewInputAccout.getText())) {
                                 T.showShort(R.string.accout_empty);
@@ -97,13 +98,11 @@ public class FragmentLogin extends BaseFragment implements View.OnClickListener 
                 } else if (TextUtils.isEmpty(viewInputPsw.getText().trim())) {
                     T.showShort(R.string.password_empty);
                 } else if (listener != null) {
-                    listener.clickLogin(viewInputAccout.getText(), viewInputPsw.getText());
+                    listener.clickLogin(viewInputAccout.getText().trim(),
+                        viewInputPsw.getText().trim());
                 }
             }
         });
-
-//        String accout = AppConfig.INSTANCE.get(AppConfig.ACCOUT);
-//        String password = AppConfig.INSTANCE.get(AppConfig.PASSWORD);
         String accout = UserInfoRepository.getUserName();
         String password = PasswordRespository.getPassword();
         if (!TextUtils.isEmpty(accout) && !TextUtils.isEmpty(password)) {

@@ -104,6 +104,7 @@ public class VideoFragment extends Fragment implements TextureView.SurfaceTextur
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 // 设置需要播放的视频
                 mediaPlayer.setDataSource(path);
+                //Log.e("ttt--需播放的视频-",path);
                 // 把视频画面输出到Surface
                 mediaPlayer.setSurface(mSurface);
                 mediaPlayer.setLooping(true);

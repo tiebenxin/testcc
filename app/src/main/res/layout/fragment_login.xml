@@ -57,7 +57,7 @@
 
             <include
                 android:id="@+id/viewInputPsw"
-                layout="@layout/controller_login_item"/>
+                layout="@layout/controller_login_psw_item"/>
 
             <include layout="@layout/layout_divider"/>
 

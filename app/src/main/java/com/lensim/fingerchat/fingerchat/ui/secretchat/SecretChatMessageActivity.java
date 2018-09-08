@@ -7,8 +7,11 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import com.lens.chatmodel.ui.group.Constant;
+import com.lens.chatmodel.ui.group.GroupSelectListActivity;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.manager.SPManager;
 
 /**
  * @time 2017/11/29 8:59
@@ -22,6 +25,7 @@ public class SecretChatMessageActivity extends BaseActivity implements OnClickLi
     private TextView close;
     private RelativeLayout rlAdd;
     private ImageView setting;
+    private ImageView addSecretContast;
     @Override
     public void initView() {
         setContentView(
@@ -30,12 +34,14 @@ public class SecretChatMessageActivity extends BaseActivity implements OnClickLi
         rlAdd = findViewById(R.id.rlAdd);
         close = findViewById(R.id.close);
         setting = findViewById(R.id.setting);
+        addSecretContast = findViewById(R.id.addSecretContast);
 
         secretTitle.setText(getText(R.string.secret_chat));
         rlAdd.setVisibility(View.VISIBLE);
 
         close.setOnClickListener(this);
         setting.setOnClickListener(this);
+        addSecretContast.setOnClickListener(this);
     }
 
     @Override
@@ -45,10 +51,48 @@ public class SecretChatMessageActivity extends BaseActivity implements OnClickLi
                 finish();
                 break;
             case R.id.setting:
-                startActivity(new Intent(this,SecretChatSettingActivity.class));
+                if (SPManager.getmSpfPassword().firstSet().get(false) ||
+                    SPManager.getmSpfPassword().hasPwd().get(false)) {
+                    startActivity(new Intent(this, PwdLockActivity.class));
+                } else {
+                    startActivity(new Intent(this, SecretChatSettingActivity.class));
+                }
+                break;
+            case R.id.addSecretContast:
+                Intent intent = new Intent(this, GroupSelectListActivity.class);
+                intent.putExtra(Constant.KEY_OPERATION, Constant.SECRETCHAT_ADD);
+                startActivity(intent);
                 break;
                 default:
                     break;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SPManager.getmSpfPassword().edit().backgroundTime().put(System.currentTimeMillis()).commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SPManager.getmSpfPassword().edit().backgroundTime().put((long) 0).commit();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        long h = SPManager.getmSpfPassword().backgroundTime().get((long) 0);   //密码锁屏保护，届时要放到聊天页面
+        if (h > 0) {
+            long htime = System.currentTimeMillis() - h;
+            if (htime > 30 * 1000 && SPManager.getmSpfPassword().hasPwd().get(false)
+                && SPManager.getmSpfPassword().screenLock().get(false)) {
+                SPManager.getmSpfPassword().edit().backgroundTime().put((long) 0).commit();
+                Intent intent = new Intent(this, PwdToSecretChatActivity.class);
+                intent.putExtra("background",true);
+                startActivity(intent);
+            }
         }
     }
 }

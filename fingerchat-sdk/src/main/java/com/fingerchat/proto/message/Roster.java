@@ -51,6 +51,22 @@ public final class Roster {
      * <code>Update = 3;</code>
      */
     Update(3),
+    /**
+     * <pre>
+     * 更新好友分组
+     * </pre>
+     *
+     * <code>Group = 4;</code>
+     */
+    Group(4),
+    /**
+     * <pre>
+     * 删除好友分组
+     * </pre>
+     *
+     * <code>GroupDelete = 5;</code>
+     */
+    GroupDelete(5),
     UNRECOGNIZED(-1),
     ;
 
@@ -86,6 +102,22 @@ public final class Roster {
      * <code>Update = 3;</code>
      */
     public static final int Update_VALUE = 3;
+    /**
+     * <pre>
+     * 更新好友分组
+     * </pre>
+     *
+     * <code>Group = 4;</code>
+     */
+    public static final int Group_VALUE = 4;
+    /**
+     * <pre>
+     * 删除好友分组
+     * </pre>
+     *
+     * <code>GroupDelete = 5;</code>
+     */
+    public static final int GroupDelete_VALUE = 5;
 
 
     public final int getNumber() {
@@ -110,6 +142,8 @@ public final class Roster {
         case 1: return Delete;
         case 2: return RQuery;
         case 3: return Update;
+        case 4: return Group;
+        case 5: return GroupDelete;
         default: return null;
       }
     }
@@ -222,6 +256,59 @@ public final class Roster {
      * <code>.RosterItem item = 5;</code>
      */
     RosterItemOrBuilder getItemOrBuilder();
+
+    /**
+     * <pre>
+     * 分组组名
+     * </pre>
+     *
+     * <code>string groupName = 6;</code>
+     */
+    String getGroupName();
+    /**
+     * <pre>
+     * 分组组名
+     * </pre>
+     *
+     * <code>string groupName = 6;</code>
+     */
+    com.google.protobuf.ByteString
+        getGroupNameBytes();
+
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    java.util.List<String>
+        getGroupMemberList();
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    int getGroupMemberCount();
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    String getGroupMember(int index);
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    com.google.protobuf.ByteString
+        getGroupMemberBytes(int index);
   }
   /**
    * Protobuf type {@code RosterOption}
@@ -239,6 +326,8 @@ public final class Roster {
       option_ = 0;
       to_ = "";
       condition_ = 0;
+      groupName_ = "";
+      groupMember_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
     @Override
@@ -251,6 +340,9 @@ public final class Roster {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -299,6 +391,21 @@ public final class Roster {
 
               break;
             }
+            case 50: {
+              String s = input.readStringRequireUtf8();
+
+              groupName_ = s;
+              break;
+            }
+            case 58: {
+              String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                groupMember_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              groupMember_.add(s);
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -307,6 +414,9 @@ public final class Roster {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          groupMember_ = groupMember_.getUnmodifiableView();
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -323,6 +433,7 @@ public final class Roster {
               RosterOption.class, Builder.class);
     }
 
+    private int bitField0_;
     public static final int OPTION_FIELD_NUMBER = 1;
     private int option_;
     /**
@@ -361,7 +472,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         to_ = s;
@@ -379,7 +490,7 @@ public final class Roster {
         getToBytes() {
       Object ref = to_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         to_ = b;
@@ -423,6 +534,93 @@ public final class Roster {
       return getItem();
     }
 
+    public static final int GROUPNAME_FIELD_NUMBER = 6;
+    private volatile Object groupName_;
+    /**
+     * <pre>
+     * 分组组名
+     * </pre>
+     *
+     * <code>string groupName = 6;</code>
+     */
+    public String getGroupName() {
+      Object ref = groupName_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        groupName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * 分组组名
+     * </pre>
+     *
+     * <code>string groupName = 6;</code>
+     */
+    public com.google.protobuf.ByteString
+        getGroupNameBytes() {
+      Object ref = groupName_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        groupName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int GROUPMEMBER_FIELD_NUMBER = 7;
+    private com.google.protobuf.LazyStringList groupMember_;
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getGroupMemberList() {
+      return groupMember_;
+    }
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    public int getGroupMemberCount() {
+      return groupMember_.size();
+    }
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    public String getGroupMember(int index) {
+      return groupMember_.get(index);
+    }
+    /**
+     * <pre>
+     * 添加到组的组成员
+     * </pre>
+     *
+     * <code>repeated string groupMember = 7;</code>
+     */
+    public com.google.protobuf.ByteString
+        getGroupMemberBytes(int index) {
+      return groupMember_.getByteString(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -447,6 +645,12 @@ public final class Roster {
       if (item_ != null) {
         output.writeMessage(5, getItem());
       }
+      if (!getGroupNameBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, groupName_);
+      }
+      for (int i = 0; i < groupMember_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, groupMember_.getRaw(i));
+      }
       unknownFields.writeTo(output);
     }
 
@@ -469,6 +673,17 @@ public final class Roster {
       if (item_ != null) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, getItem());
+      }
+      if (!getGroupNameBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, groupName_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < groupMember_.size(); i++) {
+          dataSize += computeStringSizeNoTag(groupMember_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getGroupMemberList().size();
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -496,6 +711,10 @@ public final class Roster {
         result = result && getItem()
             .equals(other.getItem());
       }
+      result = result && getGroupName()
+          .equals(other.getGroupName());
+      result = result && getGroupMemberList()
+          .equals(other.getGroupMemberList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -516,6 +735,12 @@ public final class Roster {
       if (hasItem()) {
         hash = (37 * hash) + ITEM_FIELD_NUMBER;
         hash = (53 * hash) + getItem().hashCode();
+      }
+      hash = (37 * hash) + GROUPNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getGroupName().hashCode();
+      if (getGroupMemberCount() > 0) {
+        hash = (37 * hash) + GROUPMEMBER_FIELD_NUMBER;
+        hash = (53 * hash) + getGroupMemberList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -658,6 +883,10 @@ public final class Roster {
           item_ = null;
           itemBuilder_ = null;
         }
+        groupName_ = "";
+
+        groupMember_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -680,6 +909,8 @@ public final class Roster {
 
       public RosterOption buildPartial() {
         RosterOption result = new RosterOption(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         result.option_ = option_;
         result.to_ = to_;
         result.condition_ = condition_;
@@ -688,6 +919,13 @@ public final class Roster {
         } else {
           result.item_ = itemBuilder_.build();
         }
+        result.groupName_ = groupName_;
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          groupMember_ = groupMember_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000020);
+        }
+        result.groupMember_ = groupMember_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -742,6 +980,20 @@ public final class Roster {
         if (other.hasItem()) {
           mergeItem(other.getItem());
         }
+        if (!other.getGroupName().isEmpty()) {
+          groupName_ = other.groupName_;
+          onChanged();
+        }
+        if (!other.groupMember_.isEmpty()) {
+          if (groupMember_.isEmpty()) {
+            groupMember_ = other.groupMember_;
+            bitField0_ = (bitField0_ & ~0x00000020);
+          } else {
+            ensureGroupMemberIsMutable();
+            groupMember_.addAll(other.groupMember_);
+          }
+          onChanged();
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -768,6 +1020,7 @@ public final class Roster {
         }
         return this;
       }
+      private int bitField0_;
 
       private int option_ = 0;
       /**
@@ -814,7 +1067,7 @@ public final class Roster {
         if (value == null) {
           throw new NullPointerException();
         }
-
+        
         option_ = value.getNumber();
         onChanged();
         return this;
@@ -827,7 +1080,7 @@ public final class Roster {
        * <code>.ROption option = 1;</code>
        */
       public Builder clearOption() {
-
+        
         option_ = 0;
         onChanged();
         return this;
@@ -864,7 +1117,7 @@ public final class Roster {
           getToBytes() {
         Object ref = to_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           to_ = b;
@@ -885,7 +1138,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         to_ = value;
         onChanged();
         return this;
@@ -898,7 +1151,7 @@ public final class Roster {
        * <code>string to = 2;</code>
        */
       public Builder clearTo() {
-
+        
         to_ = getDefaultInstance().getTo();
         onChanged();
         return this;
@@ -916,7 +1169,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         to_ = value;
         onChanged();
         return this;
@@ -941,7 +1194,7 @@ public final class Roster {
        * <code>int32 condition = 4;</code>
        */
       public Builder setCondition(int value) {
-
+        
         condition_ = value;
         onChanged();
         return this;
@@ -954,7 +1207,7 @@ public final class Roster {
        * <code>int32 condition = 4;</code>
        */
       public Builder clearCondition() {
-
+        
         condition_ = 0;
         onChanged();
         return this;
@@ -1045,7 +1298,7 @@ public final class Roster {
        * <code>.RosterItem item = 5;</code>
        */
       public RosterItem.Builder getItemBuilder() {
-
+        
         onChanged();
         return getItemFieldBuilder().getBuilder();
       }
@@ -1075,6 +1328,225 @@ public final class Roster {
           item_ = null;
         }
         return itemBuilder_;
+      }
+
+      private Object groupName_ = "";
+      /**
+       * <pre>
+       * 分组组名
+       * </pre>
+       *
+       * <code>string groupName = 6;</code>
+       */
+      public String getGroupName() {
+        Object ref = groupName_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          groupName_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 分组组名
+       * </pre>
+       *
+       * <code>string groupName = 6;</code>
+       */
+      public com.google.protobuf.ByteString
+          getGroupNameBytes() {
+        Object ref = groupName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          groupName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * 分组组名
+       * </pre>
+       *
+       * <code>string groupName = 6;</code>
+       */
+      public Builder setGroupName(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        groupName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 分组组名
+       * </pre>
+       *
+       * <code>string groupName = 6;</code>
+       */
+      public Builder clearGroupName() {
+        
+        groupName_ = getDefaultInstance().getGroupName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 分组组名
+       * </pre>
+       *
+       * <code>string groupName = 6;</code>
+       */
+      public Builder setGroupNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        groupName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringList groupMember_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureGroupMemberIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          groupMember_ = new com.google.protobuf.LazyStringArrayList(groupMember_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getGroupMemberList() {
+        return groupMember_.getUnmodifiableView();
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public int getGroupMemberCount() {
+        return groupMember_.size();
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public String getGroupMember(int index) {
+        return groupMember_.get(index);
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public com.google.protobuf.ByteString
+          getGroupMemberBytes(int index) {
+        return groupMember_.getByteString(index);
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public Builder setGroupMember(
+          int index, String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGroupMemberIsMutable();
+        groupMember_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public Builder addGroupMember(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGroupMemberIsMutable();
+        groupMember_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public Builder addAllGroupMember(
+          Iterable<String> values) {
+        ensureGroupMemberIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, groupMember_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public Builder clearGroupMember() {
+        groupMember_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 添加到组的组成员
+       * </pre>
+       *
+       * <code>repeated string groupMember = 7;</code>
+       */
+      public Builder addGroupMemberBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        ensureGroupMemberIsMutable();
+        groupMember_.add(value);
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -1106,7 +1578,7 @@ public final class Roster {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RosterOption(input, extensionRegistry);
+        return new RosterOption(input, extensionRegistry);
       }
     };
 
@@ -1196,6 +1668,9 @@ public final class Roster {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1281,7 +1756,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         id_ = s;
@@ -1295,7 +1770,7 @@ public final class Roster {
         getIdBytes() {
       Object ref = id_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         id_ = b;
@@ -1663,7 +2138,7 @@ public final class Roster {
               itemBuilder_ = null;
               item_ = other.item_;
               bitField0_ = (bitField0_ & ~0x00000004);
-              itemBuilder_ =
+              itemBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getItemFieldBuilder() : null;
             } else {
@@ -1710,7 +2185,7 @@ public final class Roster {
        * <code>int32 code = 1;</code>
        */
       public Builder setCode(int value) {
-
+        
         code_ = value;
         onChanged();
         return this;
@@ -1719,7 +2194,7 @@ public final class Roster {
        * <code>int32 code = 1;</code>
        */
       public Builder clearCode() {
-
+        
         code_ = 0;
         onChanged();
         return this;
@@ -1748,7 +2223,7 @@ public final class Roster {
           getIdBytes() {
         Object ref = id_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           id_ = b;
@@ -1765,7 +2240,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         id_ = value;
         onChanged();
         return this;
@@ -1774,7 +2249,7 @@ public final class Roster {
        * <code>string id = 2;</code>
        */
       public Builder clearId() {
-
+        
         id_ = getDefaultInstance().getId();
         onChanged();
         return this;
@@ -1788,7 +2263,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         id_ = value;
         onChanged();
         return this;
@@ -2063,7 +2538,7 @@ public final class Roster {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RosterMessage(input, extensionRegistry);
+        return new RosterMessage(input, extensionRegistry);
       }
     };
 
@@ -2427,6 +2902,9 @@ public final class Roster {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -2592,7 +3070,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         username_ = s;
@@ -2610,7 +3088,7 @@ public final class Roster {
         getUsernameBytes() {
       Object ref = username_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         username_ = b;
@@ -2634,7 +3112,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         usernick_ = s;
@@ -2652,7 +3130,7 @@ public final class Roster {
         getUsernickBytes() {
       Object ref = usernick_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         usernick_ = b;
@@ -2676,7 +3154,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         workAddress_ = s;
@@ -2694,7 +3172,7 @@ public final class Roster {
         getWorkAddressBytes() {
       Object ref = workAddress_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         workAddress_ = b;
@@ -2718,7 +3196,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         group_ = s;
@@ -2736,7 +3214,7 @@ public final class Roster {
         getGroupBytes() {
       Object ref = group_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         group_ = b;
@@ -2760,7 +3238,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         empName_ = s;
@@ -2778,7 +3256,7 @@ public final class Roster {
         getEmpNameBytes() {
       Object ref = empName_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         empName_ = b;
@@ -2802,7 +3280,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         remarkName_ = s;
@@ -2820,7 +3298,7 @@ public final class Roster {
         getRemarkNameBytes() {
       Object ref = remarkName_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         remarkName_ = b;
@@ -2844,7 +3322,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         sex_ = s;
@@ -2862,7 +3340,7 @@ public final class Roster {
         getSexBytes() {
       Object ref = sex_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         sex_ = b;
@@ -2886,7 +3364,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         avatar_ = s;
@@ -2904,7 +3382,7 @@ public final class Roster {
         getAvatarBytes() {
       Object ref = avatar_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         avatar_ = b;
@@ -2941,7 +3419,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         jobname_ = s;
@@ -2959,7 +3437,7 @@ public final class Roster {
         getJobnameBytes() {
       Object ref = jobname_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         jobname_ = b;
@@ -2983,7 +3461,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         dptNo_ = s;
@@ -3001,7 +3479,7 @@ public final class Roster {
         getDptNoBytes() {
       Object ref = dptNo_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         dptNo_ = b;
@@ -3025,7 +3503,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         dptName_ = s;
@@ -3043,7 +3521,7 @@ public final class Roster {
         getDptNameBytes() {
       Object ref = dptName_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         dptName_ = b;
@@ -3067,7 +3545,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         empNo_ = s;
@@ -3085,7 +3563,7 @@ public final class Roster {
         getEmpNoBytes() {
       Object ref = empNo_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         empNo_ = b;
@@ -3161,7 +3639,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         chatBg_ = s;
@@ -3179,7 +3657,7 @@ public final class Roster {
         getChatBgBytes() {
       Object ref = chatBg_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         chatBg_ = b;
@@ -3203,7 +3681,7 @@ public final class Roster {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         displayName_ = s;
@@ -3221,7 +3699,7 @@ public final class Roster {
         getDisplayNameBytes() {
       Object ref = displayName_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
         displayName_ = b;
@@ -3851,7 +4329,7 @@ public final class Roster {
           getUsernameBytes() {
         Object ref = username_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           username_ = b;
@@ -3872,7 +4350,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         username_ = value;
         onChanged();
         return this;
@@ -3885,7 +4363,7 @@ public final class Roster {
        * <code>string username = 1;</code>
        */
       public Builder clearUsername() {
-
+        
         username_ = getDefaultInstance().getUsername();
         onChanged();
         return this;
@@ -3903,7 +4381,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         username_ = value;
         onChanged();
         return this;
@@ -3940,7 +4418,7 @@ public final class Roster {
           getUsernickBytes() {
         Object ref = usernick_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           usernick_ = b;
@@ -3961,7 +4439,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         usernick_ = value;
         onChanged();
         return this;
@@ -3974,7 +4452,7 @@ public final class Roster {
        * <code>string usernick = 2;</code>
        */
       public Builder clearUsernick() {
-
+        
         usernick_ = getDefaultInstance().getUsernick();
         onChanged();
         return this;
@@ -3992,7 +4470,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         usernick_ = value;
         onChanged();
         return this;
@@ -4029,7 +4507,7 @@ public final class Roster {
           getWorkAddressBytes() {
         Object ref = workAddress_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           workAddress_ = b;
@@ -4050,7 +4528,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         workAddress_ = value;
         onChanged();
         return this;
@@ -4063,7 +4541,7 @@ public final class Roster {
        * <code>string workAddress = 3;</code>
        */
       public Builder clearWorkAddress() {
-
+        
         workAddress_ = getDefaultInstance().getWorkAddress();
         onChanged();
         return this;
@@ -4081,7 +4559,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         workAddress_ = value;
         onChanged();
         return this;
@@ -4118,7 +4596,7 @@ public final class Roster {
           getGroupBytes() {
         Object ref = group_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           group_ = b;
@@ -4139,7 +4617,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         group_ = value;
         onChanged();
         return this;
@@ -4152,7 +4630,7 @@ public final class Roster {
        * <code>string group = 4;</code>
        */
       public Builder clearGroup() {
-
+        
         group_ = getDefaultInstance().getGroup();
         onChanged();
         return this;
@@ -4170,7 +4648,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         group_ = value;
         onChanged();
         return this;
@@ -4207,7 +4685,7 @@ public final class Roster {
           getEmpNameBytes() {
         Object ref = empName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           empName_ = b;
@@ -4228,7 +4706,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         empName_ = value;
         onChanged();
         return this;
@@ -4241,7 +4719,7 @@ public final class Roster {
        * <code>string empName = 5;</code>
        */
       public Builder clearEmpName() {
-
+        
         empName_ = getDefaultInstance().getEmpName();
         onChanged();
         return this;
@@ -4259,7 +4737,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         empName_ = value;
         onChanged();
         return this;
@@ -4296,7 +4774,7 @@ public final class Roster {
           getRemarkNameBytes() {
         Object ref = remarkName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           remarkName_ = b;
@@ -4317,7 +4795,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         remarkName_ = value;
         onChanged();
         return this;
@@ -4330,7 +4808,7 @@ public final class Roster {
        * <code>string remarkName = 6;</code>
        */
       public Builder clearRemarkName() {
-
+        
         remarkName_ = getDefaultInstance().getRemarkName();
         onChanged();
         return this;
@@ -4348,7 +4826,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         remarkName_ = value;
         onChanged();
         return this;
@@ -4385,7 +4863,7 @@ public final class Roster {
           getSexBytes() {
         Object ref = sex_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           sex_ = b;
@@ -4406,7 +4884,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         sex_ = value;
         onChanged();
         return this;
@@ -4419,7 +4897,7 @@ public final class Roster {
        * <code>string sex = 7;</code>
        */
       public Builder clearSex() {
-
+        
         sex_ = getDefaultInstance().getSex();
         onChanged();
         return this;
@@ -4437,7 +4915,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         sex_ = value;
         onChanged();
         return this;
@@ -4474,7 +4952,7 @@ public final class Roster {
           getAvatarBytes() {
         Object ref = avatar_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           avatar_ = b;
@@ -4495,7 +4973,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         avatar_ = value;
         onChanged();
         return this;
@@ -4508,7 +4986,7 @@ public final class Roster {
        * <code>string avatar = 8;</code>
        */
       public Builder clearAvatar() {
-
+        
         avatar_ = getDefaultInstance().getAvatar();
         onChanged();
         return this;
@@ -4526,7 +5004,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         avatar_ = value;
         onChanged();
         return this;
@@ -4551,7 +5029,7 @@ public final class Roster {
        * <code>int32 isvalid = 9;</code>
        */
       public Builder setIsvalid(int value) {
-
+        
         isvalid_ = value;
         onChanged();
         return this;
@@ -4564,7 +5042,7 @@ public final class Roster {
        * <code>int32 isvalid = 9;</code>
        */
       public Builder clearIsvalid() {
-
+        
         isvalid_ = 0;
         onChanged();
         return this;
@@ -4601,7 +5079,7 @@ public final class Roster {
           getJobnameBytes() {
         Object ref = jobname_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           jobname_ = b;
@@ -4622,7 +5100,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         jobname_ = value;
         onChanged();
         return this;
@@ -4635,7 +5113,7 @@ public final class Roster {
        * <code>string jobname = 10;</code>
        */
       public Builder clearJobname() {
-
+        
         jobname_ = getDefaultInstance().getJobname();
         onChanged();
         return this;
@@ -4653,7 +5131,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         jobname_ = value;
         onChanged();
         return this;
@@ -4690,7 +5168,7 @@ public final class Roster {
           getDptNoBytes() {
         Object ref = dptNo_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           dptNo_ = b;
@@ -4711,7 +5189,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         dptNo_ = value;
         onChanged();
         return this;
@@ -4724,7 +5202,7 @@ public final class Roster {
        * <code>string dptNo = 11;</code>
        */
       public Builder clearDptNo() {
-
+        
         dptNo_ = getDefaultInstance().getDptNo();
         onChanged();
         return this;
@@ -4742,7 +5220,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         dptNo_ = value;
         onChanged();
         return this;
@@ -4779,7 +5257,7 @@ public final class Roster {
           getDptNameBytes() {
         Object ref = dptName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           dptName_ = b;
@@ -4800,7 +5278,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         dptName_ = value;
         onChanged();
         return this;
@@ -4813,7 +5291,7 @@ public final class Roster {
        * <code>string dptName = 12;</code>
        */
       public Builder clearDptName() {
-
+        
         dptName_ = getDefaultInstance().getDptName();
         onChanged();
         return this;
@@ -4831,7 +5309,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         dptName_ = value;
         onChanged();
         return this;
@@ -4868,7 +5346,7 @@ public final class Roster {
           getEmpNoBytes() {
         Object ref = empNo_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           empNo_ = b;
@@ -4889,7 +5367,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         empNo_ = value;
         onChanged();
         return this;
@@ -4902,7 +5380,7 @@ public final class Roster {
        * <code>string empNo = 13;</code>
        */
       public Builder clearEmpNo() {
-
+        
         empNo_ = getDefaultInstance().getEmpNo();
         onChanged();
         return this;
@@ -4920,7 +5398,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         empNo_ = value;
         onChanged();
         return this;
@@ -4945,7 +5423,7 @@ public final class Roster {
        * <code>int32 isStar = 14;</code>
        */
       public Builder setIsStar(int value) {
-
+        
         isStar_ = value;
         onChanged();
         return this;
@@ -4958,7 +5436,7 @@ public final class Roster {
        * <code>int32 isStar = 14;</code>
        */
       public Builder clearIsStar() {
-
+        
         isStar_ = 0;
         onChanged();
         return this;
@@ -4983,7 +5461,7 @@ public final class Roster {
        * <code>int32 state = 15;</code>
        */
       public Builder setState(int value) {
-
+        
         state_ = value;
         onChanged();
         return this;
@@ -4996,7 +5474,7 @@ public final class Roster {
        * <code>int32 state = 15;</code>
        */
       public Builder clearState() {
-
+        
         state_ = 0;
         onChanged();
         return this;
@@ -5021,7 +5499,7 @@ public final class Roster {
        * <code>int32 isBlock = 16;</code>
        */
       public Builder setIsBlock(int value) {
-
+        
         isBlock_ = value;
         onChanged();
         return this;
@@ -5034,7 +5512,7 @@ public final class Roster {
        * <code>int32 isBlock = 16;</code>
        */
       public Builder clearIsBlock() {
-
+        
         isBlock_ = 0;
         onChanged();
         return this;
@@ -5059,7 +5537,7 @@ public final class Roster {
        * <code>int32 isQuit = 17;</code>
        */
       public Builder setIsQuit(int value) {
-
+        
         isQuit_ = value;
         onChanged();
         return this;
@@ -5072,7 +5550,7 @@ public final class Roster {
        * <code>int32 isQuit = 17;</code>
        */
       public Builder clearIsQuit() {
-
+        
         isQuit_ = 0;
         onChanged();
         return this;
@@ -5109,7 +5587,7 @@ public final class Roster {
           getChatBgBytes() {
         Object ref = chatBg_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           chatBg_ = b;
@@ -5130,7 +5608,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         chatBg_ = value;
         onChanged();
         return this;
@@ -5143,7 +5621,7 @@ public final class Roster {
        * <code>string chatBg = 18;</code>
        */
       public Builder clearChatBg() {
-
+        
         chatBg_ = getDefaultInstance().getChatBg();
         onChanged();
         return this;
@@ -5161,7 +5639,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         chatBg_ = value;
         onChanged();
         return this;
@@ -5198,7 +5676,7 @@ public final class Roster {
           getDisplayNameBytes() {
         Object ref = displayName_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (String) ref);
           displayName_ = b;
@@ -5219,7 +5697,7 @@ public final class Roster {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         displayName_ = value;
         onChanged();
         return this;
@@ -5232,7 +5710,7 @@ public final class Roster {
        * <code>string displayName = 19;</code>
        */
       public Builder clearDisplayName() {
-
+        
         displayName_ = getDefaultInstance().getDisplayName();
         onChanged();
         return this;
@@ -5250,7 +5728,7 @@ public final class Roster {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         displayName_ = value;
         onChanged();
         return this;
@@ -5285,7 +5763,7 @@ public final class Roster {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RosterItem(input, extensionRegistry);
+        return new RosterItem(input, extensionRegistry);
       }
     };
 
@@ -5306,17 +5784,17 @@ public final class Roster {
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_RosterOption_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_RosterOption_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_RosterMessage_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_RosterMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_RosterItem_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_RosterItem_fieldAccessorTable;
 
@@ -5328,22 +5806,24 @@ public final class Roster {
       descriptor;
   static {
     String[] descriptorData = {
-      "\n\014roster.proto\"b\n\014RosterOption\022\030\n\006option" +
-      "\030\001 \001(\0162\010.ROption\022\n\n\002to\030\002 \001(\t\022\021\n\tconditio" +
-      "n\030\004 \001(\005\022\031\n\004item\030\005 \001(\0132\013.RosterItem\"D\n\rRo" +
-      "sterMessage\022\014\n\004code\030\001 \001(\005\022\n\n\002id\030\002 \001(\t\022\031\n" +
-      "\004item\030\003 \003(\0132\013.RosterItem\"\314\002\n\nRosterItem\022" +
-      "\020\n\010username\030\001 \001(\t\022\020\n\010usernick\030\002 \001(\t\022\023\n\013w" +
-      "orkAddress\030\003 \001(\t\022\r\n\005group\030\004 \001(\t\022\017\n\007empNa" +
-      "me\030\005 \001(\t\022\022\n\nremarkName\030\006 \001(\t\022\013\n\003sex\030\007 \001(" +
-      "\t\022\016\n\006avatar\030\010 \001(\t\022\017\n\007isvalid\030\t \001(\005\022\017\n\007jo" +
-      "bname\030\n \001(\t\022\r\n\005dptNo\030\013 \001(\t\022\017\n\007dptName\030\014 ",
-      "\001(\t\022\r\n\005empNo\030\r \001(\t\022\016\n\006isStar\030\016 \001(\005\022\r\n\005st" +
-      "ate\030\017 \001(\005\022\017\n\007isBlock\030\020 \001(\005\022\016\n\006isQuit\030\021 \001" +
-      "(\005\022\016\n\006chatBg\030\022 \001(\t\022\023\n\013displayName\030\023 \001(\t*" +
-      "8\n\007ROption\022\t\n\005Apply\020\000\022\n\n\006Delete\020\001\022\n\n\006RQu" +
-      "ery\020\002\022\n\n\006Update\020\003B&\n\034com.fingerchat.prot" +
-      "o.messageB\006Rosterb\006proto3"
+      "\n\014roster.proto\"\212\001\n\014RosterOption\022\030\n\006optio" +
+      "n\030\001 \001(\0162\010.ROption\022\n\n\002to\030\002 \001(\t\022\021\n\tconditi" +
+      "on\030\004 \001(\005\022\031\n\004item\030\005 \001(\0132\013.RosterItem\022\021\n\tg" +
+      "roupName\030\006 \001(\t\022\023\n\013groupMember\030\007 \003(\t\"D\n\rR" +
+      "osterMessage\022\014\n\004code\030\001 \001(\005\022\n\n\002id\030\002 \001(\t\022\031" +
+      "\n\004item\030\003 \003(\0132\013.RosterItem\"\314\002\n\nRosterItem" +
+      "\022\020\n\010username\030\001 \001(\t\022\020\n\010usernick\030\002 \001(\t\022\023\n\013" +
+      "workAddress\030\003 \001(\t\022\r\n\005group\030\004 \001(\t\022\017\n\007empN" +
+      "ame\030\005 \001(\t\022\022\n\nremarkName\030\006 \001(\t\022\013\n\003sex\030\007 \001" +
+      "(\t\022\016\n\006avatar\030\010 \001(\t\022\017\n\007isvalid\030\t \001(\005\022\017\n\007j" +
+      "obname\030\n \001(\t\022\r\n\005dptNo\030\013 \001(\t\022\017\n\007dptName\030\014" +
+      " \001(\t\022\r\n\005empNo\030\r \001(\t\022\016\n\006isStar\030\016 \001(\005\022\r\n\005s" +
+      "tate\030\017 \001(\005\022\017\n\007isBlock\030\020 \001(\005\022\016\n\006isQuit\030\021 " +
+      "\001(\005\022\016\n\006chatBg\030\022 \001(\t\022\023\n\013displayName\030\023 \001(\t" +
+      "*T\n\007ROption\022\t\n\005Apply\020\000\022\n\n\006Delete\020\001\022\n\n\006RQ" +
+      "uery\020\002\022\n\n\006Update\020\003\022\t\n\005Group\020\004\022\017\n\013GroupDe" +
+      "lete\020\005B&\n\034com.fingerchat.proto.messageB\006" +
+      "Rosterb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5362,7 +5842,7 @@ public final class Roster {
     internal_static_RosterOption_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RosterOption_descriptor,
-        new String[] { "Option", "To", "Condition", "Item", });
+        new String[] { "Option", "To", "Condition", "Item", "GroupName", "GroupMember", });
     internal_static_RosterMessage_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_RosterMessage_fieldAccessorTable = new

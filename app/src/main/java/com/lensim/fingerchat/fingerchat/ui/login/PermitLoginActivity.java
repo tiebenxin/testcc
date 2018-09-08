@@ -13,7 +13,6 @@ import com.lensim.fingerchat.commons.helper.GsonHelper;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.data.bean.QRLoginBean;
-import com.lensim.fingerchat.data.help_class.IDataRequestListener;
 import com.lensim.fingerchat.data.login.SSOTokenRepository;
 import com.lensim.fingerchat.data.observer.FGObserver;
 import com.lensim.fingerchat.fingerchat.R;
@@ -38,59 +37,74 @@ public class PermitLoginActivity extends BaseUserInfoActivity {
         return intent;
     }
 
+    public static Intent newIntent(Context context, String appId, String qrtCodeId) {
+        Intent intent = new Intent(context, PermitLoginActivity.class);
+        intent.putExtra("appId", appId);
+        intent.putExtra("qrtCodeId", qrtCodeId);
+        return intent;
+    }
+
     @Override
     public void initView() {
         ui = DataBindingUtil.setContentView(this, R.layout.activity_permit_login);
         Intent intent = getIntent();
-        String url = intent.getStringExtra("url");
+//        String url = intent.getStringExtra("url");
+        String appId = intent.getStringExtra("appId");
+        String qrtCodeId = intent.getStringExtra("qrtCodeId");
         ui.toolbar.setTitleText("授权登录");
         initBackButton(ui.toolbar, true);
-        if (!TextUtils.isEmpty(url)) {
-            loginQRCode(url);
+        if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(qrtCodeId)) {
+            loginQRCode(appId, qrtCodeId);
             ui.tvButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     acceptLogin();
                 }
             });
+        } else {
+            T.show("二维码信息不足");
         }
     }
 
-    private void loginQRCode(String url) {
-        url = url + "&token=" + SSOTokenRepository.getToken();
-        HttpUtils.getInstance().getLoginInfo(url, new IDataRequestListener() {
+    public void loginQRCode(String appId, String qrCodeId) {
+        String token = SSOTokenRepository.getToken();
+        if (TextUtils.isEmpty(token)) {
+            T.show("token为空");
+            return;
+        }
+        HttpUtils.getInstance().qrCodeLogin(token, appId, qrCodeId)
+            .compose(RxSchedulers.compose()).subscribe(new FGObserver<ResponseBody>() {
             @Override
-            public void loadFailure(String reason) {
-                T.show("扫码登录失败");
-                ui.tvButton.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void loadSuccess(Object object) {
-                String result = (String) object;
-                if (!TextUtils.isEmpty(result)) {
-                    try {
+            public void onHandleSuccess(ResponseBody responseBody) {
+                try {
+                    String result = responseBody.string();
+                    if (!TextUtils.isEmpty(result)) {
                         JSONObject obj = new JSONObject(result);
                         if (obj.optInt("code") == 10) {
                             String content = obj.optString("content");
                             qrLoginBean = GsonHelper.getObject(content, QRLoginBean.class);
-
                             if (qrLoginBean != null) {
                                 initControl();
                             } else {
                                 ui.tvButton.setVisibility(View.GONE);
                             }
                         }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
                     }
-
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
-        });
 
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                T.show("获取第三方信息失败");
+            }
+        });
     }
+
 
     private void initControl() {
 
@@ -118,6 +132,8 @@ public class PermitLoginActivity extends BaseUserInfoActivity {
                         if (obj.optInt("code") == 10) {
                             T.show("登陆成功");
                             PermitLoginActivity.this.finish();
+                        } else {
+                            T.show("登陆失败");
                         }
                     }
                 } catch (IOException e) {
@@ -125,6 +141,12 @@ public class PermitLoginActivity extends BaseUserInfoActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                T.show("登录失败");
             }
         });
     }

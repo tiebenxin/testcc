@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.widget.TextView;
 import com.lens.chatmodel.ChatEnum.ECellEventType;
 import com.lens.chatmodel.ChatEnum.EChatCellLayout;
@@ -25,10 +24,9 @@ public class ChatCellMulti extends ChatCellBase {
     private TextView tv_msg;
     private TextView tv_title;
 
-    protected ChatCellMulti(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
+    protected ChatCellMulti(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 

@@ -44,10 +44,12 @@ import com.lensim.fingerchat.components.widget.circle_friends.CommentDialog;
 import com.lensim.fingerchat.components.widget.circle_friends.MultiImageView;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.CircleItem;
-import com.lensim.fingerchat.data.me.circle_friend.ContentEntity;
 import com.lensim.fingerchat.data.me.content.StoreManager;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.databinding.ItemCircleViewBinding;
+import com.lensim.fingerchat.fingerchat.model.bean.CommentBean;
+import com.lensim.fingerchat.fingerchat.model.bean.PhotoBean;
+import com.lensim.fingerchat.fingerchat.model.bean.ThumbsBean;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.CircleFirendsContract;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.CircleFriendsPresenter.DownloadListener;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.Content;
@@ -58,6 +60,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import me.jessyan.progressmanager.ProgressListener;
@@ -70,7 +73,7 @@ import me.jessyan.progressmanager.body.ProgressInfo;
  * describe
  */
 
-public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolder.ViewHolder> {
+public class CircleViewHolder extends ItemViewBinder<PhotoBean, CircleViewHolder.ViewHolder> {
 
     public static final int HEADVIEW_SIZE = 1;
     private Context context;
@@ -85,41 +88,41 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     @NonNull
     @Override
     protected ViewHolder onCreateViewHolder(@NonNull LayoutInflater inflater,
-        @NonNull ViewGroup parent) {
-        View rootView = inflater.inflate( R.layout.item_circle_view, parent, false);
+                                            @NonNull ViewGroup parent) {
+        View rootView = inflater.inflate(R.layout.item_circle_view, parent, false);
         return new ViewHolder(rootView);
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull CircleItem item) {
+    protected void onBindViewHolder(@NonNull ViewHolder holder, @NonNull PhotoBean item) {
         setViewHolder(holder, item);
     }
 
 
-    private void setViewHolder(@NonNull ViewHolder viewHolder, @NonNull CircleItem circleItem) {
+    private void setViewHolder(@NonNull ViewHolder viewHolder, @NonNull PhotoBean circleItem) {
         ItemCircleViewBinding holder = viewHolder.binding;
         UIHelper.setTextSize(14, holder.nameTv, holder.contentTv, holder.txtHide,
             holder.urlTipTv, holder.timeTv, holder.deleteBtn);
 
 
-        final String content = CyptoConvertUtils.decryptString(circleItem.content);
-        String createTime = TimeUtils.progressDate(circleItem.createTime);
-        final List<String> favortItems = DatasUtil.getFavortItems(circleItem.favorters);
-        final List<ContentEntity> commentsDatas = circleItem.comments;
-        boolean hasFavort = circleItem.favorters != null && circleItem.favorters.size() > 0;
-        boolean hasComment = circleItem.comments != null && circleItem.comments.size() > 0;
+        final String content = CyptoConvertUtils.decryptString(circleItem.getPhotoContent());
+        String createTime = TimeUtils.progressDate(circleItem.getCreateDatetime());
+        final List<String> favortItems = DatasUtil.getFavortItems(circleItem.getThumbsUps());
+        final List<CommentBean> commentsDatas = circleItem.getComments();
+        boolean hasFavort = circleItem.getThumbsUps() != null && circleItem.getThumbsUps().size() > 0;
+        boolean hasComment = circleItem.getComments() != null && circleItem.getComments().size() > 0;
 
         ImageLoader.getInstance().displayImage(
-            circleItem.headUrl, holder.headIv, BitmapUtil.getAvatarOptions());
+            circleItem.getUserImage(), holder.headIv, BitmapUtil.getAvatarOptions());
 
         holder.headIv.setOnClickListener(v -> {
             Intent intent = new Intent(context, FriendDetailActivity.class);
-            intent.putExtra(AppConfig.FRIEND_NAME, circleItem.userid);
+            intent.putExtra(AppConfig.FRIEND_NAME, circleItem.getPhotoCreator());
             context.startActivity(intent);
         });
 
         holder.nameTv.setText
-            (StringUtils.isEmpty(circleItem.username) ? circleItem.userid : circleItem.username);
+            (StringUtils.isEmpty(circleItem.getUserName()) ? circleItem.getPhotoCreator() : circleItem.getUserName());
         holder.timeTv.setText(createTime);
 
         if (StringUtils.isEmpty(content)) {
@@ -150,7 +153,7 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
         });
 
         if (UserInfoRepository.getUserName().toLowerCase()
-            .equals(circleItem.userid.toLowerCase())) {
+            .equals(circleItem.getPhotoCreator().toLowerCase())) {
             holder.deleteBtn.setVisibility(View.VISIBLE);
         } else {
             holder.deleteBtn.setVisibility(View.GONE);
@@ -161,7 +164,7 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
 
         holder.favortListTv.setAdapter(viewHolder.favortListAdapter);
         holder.commentList.setAdapter(viewHolder.commentAdapter);
-        viewHolder.commentAdapter.setListener((view, id) ->{
+        viewHolder.commentAdapter.setListener((view, id) -> {
             Intent intent = new Intent(context, FriendDetailActivity.class);
             intent.putExtra(AppConfig.FRIEND_NAME, id);
             context.startActivity(intent);
@@ -177,8 +180,8 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
         //处理评论列表
         if (hasComment) {
             holder.commentList.setOnItemClick(commentPosition -> {
-                ContentEntity commentItem = commentsDatas.get(commentPosition);
-                if (UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid())) {
+                CommentBean commentItem = commentsDatas.get(commentPosition);
+                if (UserInfoRepository.getUserName().equals(commentItem.getCreatorUserid())) {
                     //复制或者删除自己的评论
                     handleMyComment(viewHolder, commentItem);
                 } else {
@@ -188,7 +191,7 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
             });
             //长按进行复制或者删除
             holder.commentList.setOnItemLongClick(commentPosition -> {
-                ContentEntity commentItem = commentsDatas.get(commentPosition);
+                CommentBean commentItem = commentsDatas.get(commentPosition);
                 longClickCopy(commentItem);
             });
 
@@ -212,11 +215,11 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
 
         holder.urlTipTv.setVisibility(View.GONE);
 
-        if (CircleItem.TYPE_IMG.equals(circleItem.type) && holder.viewStub.getViewStub() != null) {
+        if (CircleItem.TYPE_IMG.equals(circleItem.getType()) && holder.viewStub.getViewStub() != null) {
             addImgView(holder.viewStub.getViewStub(), viewHolder);
             // 处理图片
             handleImage(viewHolder, circleItem);
-        } else if (CircleItem.TYPE_VIDEO.equals(circleItem.type) && holder.viewStub.getViewStub() != null) {
+        } else if (CircleItem.TYPE_VIDEO.equals(circleItem.getType()) && holder.viewStub.getViewStub() != null) {
             L.d("这是一个视频");
             addVideoView(holder.viewStub.getViewStub(), viewHolder);
             handleVideo(viewHolder, circleItem);
@@ -228,11 +231,17 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     /**
      * 处理点赞，评论弹窗
      */
-    private void showSnsPopupWindow(View view, @NonNull ViewHolder viewHolder, @NonNull CircleItem circleItem) {
+    private void showSnsPopupWindow(View view, @NonNull ViewHolder viewHolder, @NonNull PhotoBean circleItem) {
         final SnsPopupWindow snsPopupWindow = viewHolder.snsPopupWindow;
         //判断是否已点赞
-        String curUserFavortId = circleItem.getCurUserFavortId(UserInfoRepository.getUserName());
-        if (!TextUtils.isEmpty(curUserFavortId)) {
+        boolean isThumbsUps = false;
+        for (ThumbsBean thumbsBean : circleItem.getThumbsUps()) {
+            if (thumbsBean.getThumbsUserId().equals(circleItem.getPhotoCreator())) {
+                isThumbsUps = true;
+                return;
+            }
+        }
+        if (!isThumbsUps) {
             snsPopupWindow.getmActionItems().get(0).mTitle = "取消";
         } else {
             snsPopupWindow.getmActionItems().get(0).mTitle = "点赞";
@@ -248,9 +257,9 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     /**
      * 处理视频
      */
-    private void handleVideo(@NonNull ViewHolder viewHolder, @NonNull CircleItem circleItem) {
+    private void handleVideo(@NonNull ViewHolder viewHolder, @NonNull PhotoBean circleItem) {
         //如果是自己发出的视频，则先看本地是否还存在这个视频
-        final String videoPath = FileCache.getInstance().getVideoPath(circleItem.videoUrl);
+        final String videoPath = FileCache.getInstance().getVideoPath(circleItem.getPhotoUrl());
         if (!StringUtils.isEmpty(videoPath) && FileUtil.checkFilePathExists(videoPath)) {
             L.i("视频文件用的缓存");
             handleCacheVideo(viewHolder, circleItem, videoPath);
@@ -263,7 +272,7 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
 
         viewHolder.layoutPlayer.setOnLongClickListener(v -> {
             showCollectWindow(circleItem, viewHolder, true,
-                circleItem.videoUrl, Content.MSG_TYPE_VIDEO);
+                circleItem.getPhotoUrl(), Content.MSG_TYPE_VIDEO);
             return true;
         });
     }
@@ -272,13 +281,13 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     /**
      * 处理本地视频
      */
-    private void handleCacheVideo(@NonNull ViewHolder viewHolder, @NonNull CircleItem circleItem,
-        String videoPath) {
+    private void handleCacheVideo(@NonNull ViewHolder viewHolder, @NonNull PhotoBean circleItem,
+                                  String videoPath) {
         viewHolder.videothumbnial.setVisibility(View.VISIBLE);
         viewHolder.videothumbnial.setAlpha(1f);
         Glide.with(context)
-            .load(circleItem.videoUrl
-            .replace(".mp4", ".jpg"))
+            .load(circleItem.getPhotoUrl()
+                .replace(".mp4", ".jpg"))
             .asBitmap()
             .centerCrop()
             .into(viewHolder.videothumbnial);
@@ -289,8 +298,8 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     /**
      * 处理网络视频
      */
-    private void handleNetworkVideo(@NonNull ViewHolder viewHolder, @NonNull CircleItem circleItem) {
-        ProgressManager.getInstance().addResponseListener(circleItem.videoUrl, new ProgressListener() {
+    private void handleNetworkVideo(@NonNull ViewHolder viewHolder, @NonNull PhotoBean circleItem) {
+        ProgressManager.getInstance().addResponseListener(circleItem.getPhotoUrl(), new ProgressListener() {
             @Override
             public void onError(long id, Exception e) {
             }
@@ -301,22 +310,22 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
             }
         });
 
-        presenter.downloadVideoFile(circleItem.videoUrl, new DownloadListener() {
+        presenter.downloadVideoFile(circleItem.getPhotoUrl(), new DownloadListener() {
             @Override
             public void loadSuccess(byte[] bytes) {
                 boolean bool = false;
                 try {
-                    bool = FileCache.getInstance().saveVideo(circleItem.videoUrl, bytes);
+                    bool = FileCache.getInstance().saveVideo(circleItem.getPhotoUrl(), bytes);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 viewHolder.ll_loading.setVisibility(View.GONE);
                 viewHolder.img_loading.setVisibility(View.VISIBLE);
                 if (bool) {
-                    final String videoPath = FileCache.getInstance().getVideoPath(circleItem.videoUrl);
+                    final String videoPath = FileCache.getInstance().getVideoPath(circleItem.getPhotoUrl());
                     viewHolder.videothumbnial.setAlpha(1f);
                     Glide.with(context)
-                        .load(circleItem.videoUrl.replace(".mp4", ".jpg"))
+                        .load(circleItem.getPhotoUrl().replace(".mp4", ".jpg"))
                         .asBitmap()
                         .centerCrop()
                         .into(viewHolder.videothumbnial);
@@ -335,39 +344,39 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     /**
      * 处理图片
      */
-    private void handleImage(@NonNull ViewHolder viewHolder, @NonNull CircleItem circleItem) {
-        final List<String> photos = circleItem.photos;
+    private void handleImage(@NonNull ViewHolder viewHolder, @NonNull PhotoBean circleItem) {
+        final List<String> photos = Arrays.asList(circleItem.getPhotoUrl().split(","));
         if (photos != null && photos.size() > 0) {
             viewHolder.multiImageView.setVisibility(View.VISIBLE);
             viewHolder.multiImageView.setList(photos);
             viewHolder.multiImageView.setOnItemClickListener((view, position) -> {
-                    ArrayList<AnimationRect> animationRectArrayList = new ArrayList<>();
-                    SparseArray<ImageView> imageviews = viewHolder.multiImageView
-                        .getImageviews();
-                    for (int i = 0; i < imageviews.size(); i++) {
-                        ImageView imageView = imageviews.get(i);
-                        if (imageView.getVisibility() == View.VISIBLE) {
-                            AnimationRect rect = AnimationRect
-                                .buildFromImageView(imageView);
-                            if (rect == null) {
-                                L.d("根本没有取到iamgeview的信息");
-                            } else {
-                                if (i < photos.size()) {
-                                    rect.setUri(photos.get(i));
-                                }
+                ArrayList<AnimationRect> animationRectArrayList = new ArrayList<>();
+                SparseArray<ImageView> imageviews = viewHolder.multiImageView
+                    .getImageviews();
+                for (int i = 0; i < imageviews.size(); i++) {
+                    ImageView imageView = imageviews.get(i);
+                    if (imageView.getVisibility() == View.VISIBLE) {
+                        AnimationRect rect = AnimationRect
+                            .buildFromImageView(imageView);
+                        if (rect == null) {
+                            L.d("根本没有取到iamgeview的信息");
+                        } else {
+                            if (i < photos.size()) {
+                                rect.setUri(photos.get(i));
                             }
-                            animationRectArrayList.add(rect);
                         }
+                        animationRectArrayList.add(rect);
                     }
+                }
                 ArrayList<String> urls = new ArrayList<>(photos);
 
-                StoreManager.getInstance().storeInit(circleItem.id, circleItem.userid,
-                    circleItem.username, circleItem.headUrl, Content.MSG_TYPE_PIC);
+                StoreManager.getInstance().storeInit(circleItem.getPhotoId() + "", circleItem.getPhotoCreator(),
+                    circleItem.getUserName(), circleItem.getUserImage(), Content.MSG_TYPE_PIC);
 
-                    Intent intent = GalleryAnimationActivity
-                        .newIntent(SpliceUrl.getUrls(urls), null, animationRectArrayList, null, position);
-                    context.startActivity(intent);
-                });
+                Intent intent = GalleryAnimationActivity
+                    .newIntent(SpliceUrl.getUrls(urls), null, animationRectArrayList, null, position,"");
+                context.startActivity(intent);
+            });
 
             viewHolder.multiImageView.setOnItemLongClickListener((view, position) ->
                 showCollectWindow(circleItem, viewHolder, false,
@@ -406,38 +415,38 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     }
 
 
-    private void showDleteDialog(CircleItem circleItem) {
+    private void showDleteDialog(PhotoBean circleItem) {
         final NiftyDialogBuilder builder = NiftyDialogBuilder.getInstance(context);
         builder.withTitle("提示").withMessage("确定删除吗").withButton1Text("取消")
             .withButton2Text("删除")
             .setButton1Click(v1 -> builder.dismiss())
             .setButton2Click(v1 -> {
                 builder.dismiss();
-                presenter.deleteCircle(circleItem.id);
+                presenter.deleteCircle(circleItem.getPhotoId() + "");
             }).show();
     }
 
     /**
      * 长按复制
      */
-    private void longClickCopy(@NonNull ContentEntity commentItem) {
+    private void longClickCopy(@NonNull CommentBean commentItem) {
         CommentDialog dialog = new CommentDialog(
-            context, UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid()));
+            context, UserInfoRepository.getUserName().equals(commentItem.getCommentUserid()));
         dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(true);
         dialog.show();
         dialog.setCopyClickListener(() -> {
             ClipboardManager clipboard =
                 (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(ClipData.newPlainText(null, commentItem.getPHC_Content()));
+            clipboard.setPrimaryClip(ClipData.newPlainText(null, commentItem.getCommentContent()));
         });
     }
 
     /**
      * 回复评论
      */
-    private void replyComment(@NonNull ViewHolder viewHolder, @NonNull CircleItem circleItem,
-        ContentEntity commentItem, int commentPosition) {
+    private void replyComment(@NonNull ViewHolder viewHolder, @NonNull PhotoBean circleItem,
+                              CommentBean commentItem, int commentPosition) {
         int circlePosition = viewHolder.getAdapterPosition() - HEADVIEW_SIZE;
         presenter.replyComment(circlePosition, circleItem, commentItem, commentPosition);
     }
@@ -445,9 +454,9 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     /**
      * 复制或者删除自己的评论
      */
-    private void handleMyComment(@NonNull ViewHolder viewHolder, @NonNull ContentEntity commentItem) {
+    private void handleMyComment(@NonNull ViewHolder viewHolder, @NonNull CommentBean commentItem) {
         CommentDialog dialog = new CommentDialog(
-            context, UserInfoRepository.getUserName().equals(commentItem.getPHC_CommentUserid()));
+            context, UserInfoRepository.getUserName().equals(commentItem.getCreatorUserid()));
 
         dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(true);
@@ -455,7 +464,7 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
         dialog.setDeleteClickListener(() ->
             presenter.deleteComment(
                 viewHolder.getAdapterPosition() - HEADVIEW_SIZE,
-                commentItem.getPHC_CommentUserid(), commentItem.getPHC_Serno())
+                commentItem.getCommentUserid(), commentItem.getPhotoSerno())
         );
 
     }
@@ -475,8 +484,8 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     }
 
 
-    private void showCollectWindow(CircleItem circleItem, ViewHolder viewHolder, boolean isVideo, String resPath,
-        int extraType) {
+    private void showCollectWindow(PhotoBean circleItem, ViewHolder viewHolder, boolean isVideo, String resPath,
+                                   int extraType) {
         CollectDialog dialog = new CollectDialog(context, isVideo);
         dialog.setCanceledOnTouchOutside(true);
         dialog.show();
@@ -485,14 +494,15 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     }
 
 
-    private void collect(CircleItem circleItem, String path, int mType) {
+    private void collect(PhotoBean circleItem, String path, int mType) {
         if (mType == Content.MSG_TYPE_TEXT) {
             StoreManager.getInstance()
-                .storeCircleText(circleItem.id, circleItem.userid, circleItem.username, path, circleItem.headUrl);
+                .storeCircleText(circleItem.getPhotoId() + "", circleItem.getPhotoCreator(),
+                    circleItem.getUserName(), path, circleItem.getUserImage());
         } else {
             StoreManager.getInstance()
-                .storeCircleImageVideo(circleItem.id, circleItem.userid, circleItem.username, path,
-                    circleItem.headUrl, mType);
+                .storeCircleImageVideo(circleItem.getPhotoId() + "", circleItem.getPhotoCreator(),
+                    circleItem.getUserName(), path, circleItem.getUserImage(), mType);
         }
     }
 
@@ -510,9 +520,9 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
     }
 
 
-    private void toPlayer(@NonNull CircleItem item, @NonNull ViewHolder viewHolder, boolean isSilentPlay) {
+    private void toPlayer(@NonNull PhotoBean item, @NonNull ViewHolder viewHolder, boolean isSilentPlay) {
         AnimationRect rect = AnimationRect.buildFromImageView(viewHolder.videothumbnial);
-        final String videoPath = FileCache.getInstance().getVideoPath(item.videoUrl);
+        final String videoPath = FileCache.getInstance().getVideoPath(item.getPhotoUrl());
         if (!StringUtils.isEmpty(videoPath) && FileUtil.checkFilePathExists(videoPath)) {
             Intent intent = LookUpVideoActivity
                 .newIntent(context, rect, videoPath, "circle");
@@ -552,9 +562,9 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
         private String path;
         private ViewHolder viewHolder;
         private int mType;
-        private CircleItem item;
+        private PhotoBean item;
 
-        private PopupCollectClickListener(CircleItem item, String resPath, ViewHolder viewHolder, int extraType) {
+        private PopupCollectClickListener(PhotoBean item, String resPath, ViewHolder viewHolder, int extraType) {
             this.path = resPath;
             this.mType = extraType;
             this.viewHolder = viewHolder;
@@ -580,9 +590,9 @@ public class CircleViewHolder extends ItemViewBinder<CircleItem, CircleViewHolde
         //动态在列表中的位置
         private int mCirclePosition;
         private long mLasttime = 0;
-        private CircleItem mCircleItem;
+        private PhotoBean mCircleItem;
 
-        private PopupItemClickListener(int circlePosition, CircleItem circleItem) {
+        private PopupItemClickListener(int circlePosition, PhotoBean circleItem) {
             this.mCirclePosition = circlePosition;
             this.mCircleItem = circleItem;
         }

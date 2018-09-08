@@ -3,16 +3,21 @@ package com.lens.chatmodel.manager;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import com.fingerchat.api.message.BaseMessage;
+import com.fingerchat.proto.message.Roster.ROption;
 import com.fingerchat.proto.message.Roster.RosterItem;
+import com.fingerchat.proto.message.Roster.RosterOption;
 import com.fingerchat.proto.message.User.BindMessage;
 import com.lens.chatmodel.ChatEnum.ERelationStatus;
 import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.bean.UserBean;
+import com.lens.chatmodel.bean.UserInfoBean;
 import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.im_service.FingerIM;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.IChatUser;
+import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.data.login.UserInfo;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -158,19 +163,39 @@ public class RosterManager {
         }
         UserBean bean = new UserBean();
         RosterItem.Builder builder = RosterItem.newBuilder();
-        builder.setUsername(info.getUserid());
-        builder.setUsernick(info.getUsernick());
-        builder.setAvatar(info.getImage());
+        builder.setUsername(StringUtils.checkEmptyString(info.getUserid()));
+        builder.setUsernick(StringUtils.checkEmptyString(info.getUsernick()));
+        builder.setAvatar(StringUtils.checkEmptyString(info.getImage()));
         builder.setIsvalid(info.getIsvalid());
-        builder.setSex(info.getSex());
-        builder.setEmpName(info.getEmpName());
-        builder.setEmpNo(info.getEmpNo());
-        builder.setWorkAddress(info.getWorkAddress());
-        builder.setDptName(info.getDptName());
-        builder.setDptNo(info.getDptNo());
+        builder.setSex(StringUtils.checkEmptyString(info.getSex()));
+        builder.setEmpName(StringUtils.checkEmptyString(info.getEmpName()));
+        builder.setEmpNo(StringUtils.checkEmptyString(info.getEmpNo()));
+        builder.setWorkAddress(StringUtils.checkEmptyString(info.getWorkAddress()));
+        builder.setDptName(StringUtils.checkEmptyString(info.getDptName()));
+        builder.setDptNo(StringUtils.checkEmptyString(info.getDptNo()));
         bean.setRoster(builder.build());
         bean.setRelationStatus(ERelationStatus.SELF.ordinal());
         bean.setHasReaded(ESureType.YES.ordinal());
+        return bean;
+    }
+
+    public UserInfo createUserInfo(UserInfoBean info) {
+        if (info == null) {
+            return null;
+        }
+        UserInfo bean = new UserInfo();
+        bean.setUserid(StringUtils.checkEmptyString(info.getUserId()));
+        //TODO:手机号没有，不改
+        bean.setPhoneNumber(StringUtils.checkEmptyString(UserInfoRepository.getPhoneNumber()));
+        bean.setUsernick(StringUtils.checkEmptyString(info.getUserNick()));
+        bean.setImage(StringUtils.checkEmptyString(info.getAvatarUrl()));
+        bean.setIsvalid(info.getValid());
+        bean.setSex(StringUtils.checkEmptyString(info.getSex()));
+        bean.setEmpName(StringUtils.checkEmptyString(info.getEmpName()));
+        bean.setEmpNo(StringUtils.checkEmptyString(info.getEmpNo()));
+        bean.setWorkAddress(StringUtils.checkEmptyString(info.getWorkAddress()));
+        bean.setDptName(StringUtils.checkEmptyString(info.getDptName()));
+        bean.setDptNo(StringUtils.checkEmptyString(info.getDptNo()));
         return bean;
     }
 
@@ -242,9 +267,94 @@ public class RosterManager {
                 break;
         }
         FingerIM.I.updateUserInfo(builder.build());
-
-
     }
 
+    /*
+    * 批量创建，修改分组
+    * */
+    public void createAndUpdateGroup(List<String> uerIds, String groupName) {
+        RosterOption.Builder builder = RosterOption.newBuilder();
+        builder.setOption(ROption.Group).addAllGroupMember(uerIds).setGroupName(groupName);
+        FingerIM.I.updateGroup(builder.build());
+    }
 
+    /*
+    * 修改个人分组
+    * */
+    public void createAndUpdateGroup(String userId, String groupName) {
+        List<String> ids = new ArrayList<>();
+        ids.add(userId);
+        RosterOption.Builder builder = RosterOption.newBuilder();
+        builder.setOption(ROption.Group).addAllGroupMember(ids).setGroupName(groupName);
+        FingerIM.I.updateGroup(builder.build());
+    }
+
+    /*
+    * 批量移出分组
+    * */
+    public void romoveGroup(List<String> uerIds) {
+        RosterOption.Builder builder = RosterOption.newBuilder();
+        builder.setOption(ROption.Group).addAllGroupMember(uerIds);
+        FingerIM.I.updateGroup(builder.build());
+    }
+
+    /*
+    *销毁分组
+    * */
+    public void deleGroup(String groupName) {
+        RosterOption.Builder builder = RosterOption.newBuilder();
+        builder.setOption(ROption.GroupDelete).setGroupName(groupName);
+        FingerIM.I.updateGroup(builder.build());
+    }
+
+    //删除分组
+    public void deleGroup(ArrayList<UserBean> users, String groupName) {
+        if (users != null && !TextUtils.isEmpty(groupName)) {
+            int len = users.size();
+            for (int i = 0; i < len; i++) {
+                UserBean bean = users.get(i);
+                List<String> groups = bean.getGroups();
+                if (groups != null && groups.contains(groupName)) {
+                    groups.remove(groupName);
+                    ProviderUser.updateRosterGroup(ContextHelper.getContext(), bean.getUserId(),
+                        StringUtils.getStringByList(groups));
+                }
+            }
+        }
+    }
+
+    public void destroyGroup(List<UserBean> users, String groupName) {
+        if (users != null && !TextUtils.isEmpty(groupName)) {
+            int len = users.size();
+            for (int i = 0; i < len; i++) {
+                UserBean bean = users.get(i);
+                List<String> groups = bean.getGroups();
+                if (groups != null && groups.contains(groupName)) {
+                    groups.remove(groupName);
+                    ProviderUser.updateRosterGroup(ContextHelper.getContext(), bean.getUserId(),
+                        StringUtils.getStringByList(groups));
+                }
+            }
+        }
+    }
+
+    public void addGroup(ArrayList<UserBean> users, String groupName) {
+        if (users != null && !TextUtils.isEmpty(groupName)) {
+            int len = users.size();
+            for (int i = 0; i < len; i++) {
+                UserBean bean = users.get(i);
+                List<String> groups = bean.getGroups();
+                if (groups != null) {
+                    if (!groups.contains(groupName)) {
+                        groups.add(groupName);
+                        ProviderUser.updateRosterGroup(ContextHelper.getContext(), bean.getUserId(),
+                            StringUtils.getStringByList(groups));
+                    }
+                } else {
+                    ProviderUser
+                        .updateRosterGroup(ContextHelper.getContext(), bean.getUserId(), groupName);
+                }
+            }
+        }
+    }
 }

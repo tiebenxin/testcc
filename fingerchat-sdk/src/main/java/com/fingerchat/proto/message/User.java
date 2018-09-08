@@ -134,6 +134,33 @@ public final class User {
      */
     com.google.protobuf.ByteString
         getAvatarBytes();
+
+    /**
+     * <pre>
+     *旧密码
+     * </pre>
+     *
+     * <code>string oldPassword = 8;</code>
+     */
+    String getOldPassword();
+    /**
+     * <pre>
+     *旧密码
+     * </pre>
+     *
+     * <code>string oldPassword = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getOldPasswordBytes();
+
+    /**
+     * <pre>
+     *1 不返回离线  //0 默认返回离线
+     * </pre>
+     *
+     * <code>int32 noNeedOffline = 9;</code>
+     */
+    int getNoNeedOffline();
   }
   /**
    * Protobuf type {@code BindMessage}
@@ -155,6 +182,8 @@ public final class User {
       verCode_ = "";
       needInfo_ = 0;
       avatar_ = "";
+      oldPassword_ = "";
+      noNeedOffline_ = 0;
     }
 
     @Override
@@ -167,6 +196,9 @@ public final class User {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -224,6 +256,17 @@ public final class User {
               String s = input.readStringRequireUtf8();
 
               avatar_ = s;
+              break;
+            }
+            case 66: {
+              String s = input.readStringRequireUtf8();
+
+              oldPassword_ = s;
+              break;
+            }
+            case 72: {
+
+              noNeedOffline_ = input.readInt32();
               break;
             }
           }
@@ -515,6 +558,61 @@ public final class User {
       }
     }
 
+    public static final int OLDPASSWORD_FIELD_NUMBER = 8;
+    private volatile Object oldPassword_;
+    /**
+     * <pre>
+     *旧密码
+     * </pre>
+     *
+     * <code>string oldPassword = 8;</code>
+     */
+    public String getOldPassword() {
+      Object ref = oldPassword_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        oldPassword_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *旧密码
+     * </pre>
+     *
+     * <code>string oldPassword = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getOldPasswordBytes() {
+      Object ref = oldPassword_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        oldPassword_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int NONEEDOFFLINE_FIELD_NUMBER = 9;
+    private int noNeedOffline_;
+    /**
+     * <pre>
+     *1 不返回离线  //0 默认返回离线
+     * </pre>
+     *
+     * <code>int32 noNeedOffline = 9;</code>
+     */
+    public int getNoNeedOffline() {
+      return noNeedOffline_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -548,6 +646,12 @@ public final class User {
       if (!getAvatarBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 7, avatar_);
       }
+      if (!getOldPasswordBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, oldPassword_);
+      }
+      if (noNeedOffline_ != 0) {
+        output.writeInt32(9, noNeedOffline_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -577,6 +681,13 @@ public final class User {
       }
       if (!getAvatarBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, avatar_);
+      }
+      if (!getOldPasswordBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, oldPassword_);
+      }
+      if (noNeedOffline_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(9, noNeedOffline_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -608,6 +719,10 @@ public final class User {
           == other.getNeedInfo());
       result = result && getAvatar()
           .equals(other.getAvatar());
+      result = result && getOldPassword()
+          .equals(other.getOldPassword());
+      result = result && (getNoNeedOffline()
+          == other.getNoNeedOffline());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -633,6 +748,10 @@ public final class User {
       hash = (53 * hash) + getNeedInfo();
       hash = (37 * hash) + AVATAR_FIELD_NUMBER;
       hash = (53 * hash) + getAvatar().hashCode();
+      hash = (37 * hash) + OLDPASSWORD_FIELD_NUMBER;
+      hash = (53 * hash) + getOldPassword().hashCode();
+      hash = (37 * hash) + NONEEDOFFLINE_FIELD_NUMBER;
+      hash = (53 * hash) + getNoNeedOffline();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -776,6 +895,10 @@ public final class User {
 
         avatar_ = "";
 
+        oldPassword_ = "";
+
+        noNeedOffline_ = 0;
+
         return this;
       }
 
@@ -805,6 +928,8 @@ public final class User {
         result.verCode_ = verCode_;
         result.needInfo_ = needInfo_;
         result.avatar_ = avatar_;
+        result.oldPassword_ = oldPassword_;
+        result.noNeedOffline_ = noNeedOffline_;
         onBuilt();
         return result;
       }
@@ -872,6 +997,13 @@ public final class User {
         if (!other.getAvatar().isEmpty()) {
           avatar_ = other.avatar_;
           onChanged();
+        }
+        if (!other.getOldPassword().isEmpty()) {
+          oldPassword_ = other.oldPassword_;
+          onChanged();
+        }
+        if (other.getNoNeedOffline() != 0) {
+          setNoNeedOffline(other.getNoNeedOffline());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -1471,6 +1603,133 @@ public final class User {
         onChanged();
         return this;
       }
+
+      private Object oldPassword_ = "";
+      /**
+       * <pre>
+       *旧密码
+       * </pre>
+       *
+       * <code>string oldPassword = 8;</code>
+       */
+      public String getOldPassword() {
+        Object ref = oldPassword_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          oldPassword_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *旧密码
+       * </pre>
+       *
+       * <code>string oldPassword = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getOldPasswordBytes() {
+        Object ref = oldPassword_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          oldPassword_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *旧密码
+       * </pre>
+       *
+       * <code>string oldPassword = 8;</code>
+       */
+      public Builder setOldPassword(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        oldPassword_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *旧密码
+       * </pre>
+       *
+       * <code>string oldPassword = 8;</code>
+       */
+      public Builder clearOldPassword() {
+        
+        oldPassword_ = getDefaultInstance().getOldPassword();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *旧密码
+       * </pre>
+       *
+       * <code>string oldPassword = 8;</code>
+       */
+      public Builder setOldPasswordBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        oldPassword_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int noNeedOffline_ ;
+      /**
+       * <pre>
+       *1 不返回离线  //0 默认返回离线
+       * </pre>
+       *
+       * <code>int32 noNeedOffline = 9;</code>
+       */
+      public int getNoNeedOffline() {
+        return noNeedOffline_;
+      }
+      /**
+       * <pre>
+       *1 不返回离线  //0 默认返回离线
+       * </pre>
+       *
+       * <code>int32 noNeedOffline = 9;</code>
+       */
+      public Builder setNoNeedOffline(int value) {
+        
+        noNeedOffline_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *1 不返回离线  //0 默认返回离线
+       * </pre>
+       *
+       * <code>int32 noNeedOffline = 9;</code>
+       */
+      public Builder clearNoNeedOffline() {
+        
+        noNeedOffline_ = 0;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFieldsProto3(unknownFields);
@@ -1501,7 +1760,7 @@ public final class User {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new BindMessage(input, extensionRegistry);
+        return new BindMessage(input, extensionRegistry);
       }
     };
 
@@ -1816,6 +2075,9 @@ public final class User {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -4425,7 +4687,7 @@ public final class User {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UserInfo(input, extensionRegistry);
+        return new UserInfo(input, extensionRegistry);
       }
     };
 
@@ -4510,6 +4772,15 @@ public final class User {
      */
     com.google.protobuf.ByteString
         getTerminalNameBytes();
+
+    /**
+     * <pre>
+     *冲突消息code
+     * </pre>
+     *
+     * <code>int32 code = 5;</code>
+     */
+    int getCode();
   }
   /**
    * Protobuf type {@code loginConflict}
@@ -4528,6 +4799,7 @@ public final class User {
       deviceModel_ = "";
       deviceId_ = "";
       terminalName_ = "";
+      code_ = 0;
     }
 
     @Override
@@ -4540,6 +4812,9 @@ public final class User {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -4579,6 +4854,11 @@ public final class User {
               String s = input.readStringRequireUtf8();
 
               terminalName_ = s;
+              break;
+            }
+            case 40: {
+
+              code_ = input.readInt32();
               break;
             }
           }
@@ -4744,6 +5024,19 @@ public final class User {
       }
     }
 
+    public static final int CODE_FIELD_NUMBER = 5;
+    private int code_;
+    /**
+     * <pre>
+     *冲突消息code
+     * </pre>
+     *
+     * <code>int32 code = 5;</code>
+     */
+    public int getCode() {
+      return code_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4768,6 +5061,9 @@ public final class User {
       if (!getTerminalNameBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, terminalName_);
       }
+      if (code_ != 0) {
+        output.writeInt32(5, code_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -4788,6 +5084,10 @@ public final class User {
       }
       if (!getTerminalNameBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, terminalName_);
+      }
+      if (code_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, code_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -4813,6 +5113,8 @@ public final class User {
           .equals(other.getDeviceId());
       result = result && getTerminalName()
           .equals(other.getTerminalName());
+      result = result && (getCode()
+          == other.getCode());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -4833,6 +5135,8 @@ public final class User {
       hash = (53 * hash) + getDeviceId().hashCode();
       hash = (37 * hash) + TERMINALNAME_FIELD_NUMBER;
       hash = (53 * hash) + getTerminalName().hashCode();
+      hash = (37 * hash) + CODE_FIELD_NUMBER;
+      hash = (53 * hash) + getCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4970,6 +5274,8 @@ public final class User {
 
         terminalName_ = "";
 
+        code_ = 0;
+
         return this;
       }
 
@@ -4996,6 +5302,7 @@ public final class User {
         result.deviceModel_ = deviceModel_;
         result.deviceId_ = deviceId_;
         result.terminalName_ = terminalName_;
+        result.code_ = code_;
         onBuilt();
         return result;
       }
@@ -5051,6 +5358,9 @@ public final class User {
         if (!other.getTerminalName().isEmpty()) {
           terminalName_ = other.terminalName_;
           onChanged();
+        }
+        if (other.getCode() != 0) {
+          setCode(other.getCode());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -5383,6 +5693,44 @@ public final class User {
         onChanged();
         return this;
       }
+
+      private int code_ ;
+      /**
+       * <pre>
+       *冲突消息code
+       * </pre>
+       *
+       * <code>int32 code = 5;</code>
+       */
+      public int getCode() {
+        return code_;
+      }
+      /**
+       * <pre>
+       *冲突消息code
+       * </pre>
+       *
+       * <code>int32 code = 5;</code>
+       */
+      public Builder setCode(int value) {
+        
+        code_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *冲突消息code
+       * </pre>
+       *
+       * <code>int32 code = 5;</code>
+       */
+      public Builder clearCode() {
+        
+        code_ = 0;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFieldsProto3(unknownFields);
@@ -5413,7 +5761,7 @@ public final class User {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new loginConflict(input, extensionRegistry);
+        return new loginConflict(input, extensionRegistry);
       }
     };
 
@@ -5517,20 +5865,6 @@ public final class User {
     int getIsBase();
   }
   /**
-   * <pre>
-   **
-   * funcAddress :
-   * funcId : 1
-   * funcIdx : 1
-   * funcLogo : data_center.png
-   * funcName : 数据中心
-   * funcType : 1
-   * funcTypeIdx : 1
-   * funcValid : 1
-   * typeName : 数据中心
-   * typeValid : 1
-   * </pre>
-   *
    * Protobuf type {@code Func}
    */
   public  static final class Func extends
@@ -5567,6 +5901,9 @@ public final class User {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -6150,20 +6487,6 @@ public final class User {
       return builder;
     }
     /**
-     * <pre>
-     **
-     * funcAddress :
-     * funcId : 1
-     * funcIdx : 1
-     * funcLogo : data_center.png
-     * funcName : 数据中心
-     * funcType : 1
-     * funcTypeIdx : 1
-     * funcValid : 1
-     * typeName : 数据中心
-     * typeValid : 1
-     * </pre>
-     *
      * Protobuf type {@code Func}
      */
     public static final class Builder extends
@@ -6878,7 +7201,7 @@ public final class User {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Func(input, extensionRegistry);
+        return new Func(input, extensionRegistry);
       }
     };
 
@@ -6926,26 +7249,27 @@ public final class User {
       descriptor;
   static {
     String[] descriptorData = {
-      "\n\nuser.proto\"\213\001\n\013BindMessage\022\020\n\010username" +
+      "\n\nuser.proto\"\267\001\n\013BindMessage\022\020\n\010username" +
       "\030\001 \001(\t\022\020\n\010password\030\002 \001(\t\022\020\n\010usernick\030\003 \001" +
       "(\t\022\023\n\013phoneNumber\030\004 \001(\t\022\017\n\007verCode\030\005 \001(\t" +
-      "\022\020\n\010needInfo\030\006 \001(\005\022\016\n\006avatar\030\007 \001(\t\"\375\001\n\010U" +
-      "serInfo\022\016\n\006userid\030\001 \001(\t\022\020\n\010usernick\030\002 \001(" +
-      "\t\022\023\n\013phoneNumber\030\003 \001(\t\022\023\n\013workAddress\030\004 " +
-      "\001(\t\022\017\n\007empName\030\005 \001(\t\022\013\n\003sex\030\006 \001(\t\022\016\n\006ava" +
-      "tar\030\007 \001(\t\022\017\n\007isvalid\030\010 \001(\005\022\017\n\007jobname\030\t " +
-      "\001(\t\022\r\n\005dptNo\030\n \001(\t\022\017\n\007dptName\030\013 \001(\t\022\r\n\005e" +
-      "mpNo\030\014 \001(\t\022\r\n\005right\030\r \001(\t\022\027\n\010function\030\016 ",
-      "\003(\0132\005.Func\"Z\n\rloginConflict\022\014\n\004time\030\001 \001(" +
-      "\003\022\023\n\013deviceModel\030\002 \001(\t\022\020\n\010deviceId\030\003 \001(\t" +
-      "\022\024\n\014terminalName\030\004 \001(\t\"\341\001\n\004Func\022\023\n\013funcA" +
-      "ddress\030\001 \001(\t\022\016\n\006funcId\030\002 \001(\005\022\017\n\007funcIdx\030" +
-      "\003 \001(\005\022\020\n\010funcLogo\030\004 \001(\t\022\020\n\010funcName\030\005 \001(" +
-      "\t\022\020\n\010funcType\030\006 \001(\005\022\023\n\013funcTypeIdx\030\007 \001(\005" +
-      "\022\021\n\tfuncValid\030\010 \001(\005\022\020\n\010typeName\030\t \001(\t\022\021\n" +
-      "\ttypeValid\030\n \001(\005\022\020\n\010funcFlag\030\013 \001(\005\022\016\n\006is" +
-      "Base\030\014 \001(\005B$\n\034com.fingerchat.proto.messa" +
-      "geB\004Userb\006proto3"
+      "\022\020\n\010needInfo\030\006 \001(\005\022\016\n\006avatar\030\007 \001(\t\022\023\n\013ol" +
+      "dPassword\030\010 \001(\t\022\025\n\rnoNeedOffline\030\t \001(\005\"\375" +
+      "\001\n\010UserInfo\022\016\n\006userid\030\001 \001(\t\022\020\n\010usernick\030" +
+      "\002 \001(\t\022\023\n\013phoneNumber\030\003 \001(\t\022\023\n\013workAddres" +
+      "s\030\004 \001(\t\022\017\n\007empName\030\005 \001(\t\022\013\n\003sex\030\006 \001(\t\022\016\n" +
+      "\006avatar\030\007 \001(\t\022\017\n\007isvalid\030\010 \001(\005\022\017\n\007jobnam" +
+      "e\030\t \001(\t\022\r\n\005dptNo\030\n \001(\t\022\017\n\007dptName\030\013 \001(\t\022" +
+      "\r\n\005empNo\030\014 \001(\t\022\r\n\005right\030\r \001(\t\022\027\n\010functio" +
+      "n\030\016 \003(\0132\005.Func\"h\n\rloginConflict\022\014\n\004time\030" +
+      "\001 \001(\003\022\023\n\013deviceModel\030\002 \001(\t\022\020\n\010deviceId\030\003" +
+      " \001(\t\022\024\n\014terminalName\030\004 \001(\t\022\014\n\004code\030\005 \001(\005" +
+      "\"\341\001\n\004Func\022\023\n\013funcAddress\030\001 \001(\t\022\016\n\006funcId" +
+      "\030\002 \001(\005\022\017\n\007funcIdx\030\003 \001(\005\022\020\n\010funcLogo\030\004 \001(" +
+      "\t\022\020\n\010funcName\030\005 \001(\t\022\020\n\010funcType\030\006 \001(\005\022\023\n" +
+      "\013funcTypeIdx\030\007 \001(\005\022\021\n\tfuncValid\030\010 \001(\005\022\020\n" +
+      "\010typeName\030\t \001(\t\022\021\n\ttypeValid\030\n \001(\005\022\020\n\010fu" +
+      "ncFlag\030\013 \001(\005\022\016\n\006isBase\030\014 \001(\005B$\n\034com.fing" +
+      "erchat.proto.messageB\004Userb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -6964,7 +7288,7 @@ public final class User {
     internal_static_BindMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_BindMessage_descriptor,
-        new String[] { "Username", "Password", "Usernick", "PhoneNumber", "VerCode", "NeedInfo", "Avatar", });
+        new String[] { "Username", "Password", "Usernick", "PhoneNumber", "VerCode", "NeedInfo", "Avatar", "OldPassword", "NoNeedOffline", });
     internal_static_UserInfo_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_UserInfo_fieldAccessorTable = new
@@ -6976,7 +7300,7 @@ public final class User {
     internal_static_loginConflict_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_loginConflict_descriptor,
-        new String[] { "Time", "DeviceModel", "DeviceId", "TerminalName", });
+        new String[] { "Time", "DeviceModel", "DeviceId", "TerminalName", "Code", });
     internal_static_Func_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_Func_fieldAccessorTable = new

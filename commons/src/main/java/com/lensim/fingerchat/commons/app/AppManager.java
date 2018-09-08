@@ -9,6 +9,7 @@ import android.app.job.JobScheduler;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -17,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.lensim.fingerchat.commons.R;
 import com.lensim.fingerchat.commons.helper.CodeHelper;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.ICreateListener;
@@ -27,6 +29,8 @@ import com.lensim.fingerchat.commons.utils.SPHelper;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.TDevice;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 /**
  * activity堆栈式管理
@@ -131,37 +135,26 @@ public class AppManager {
             Glide.with(ContextHelper.getContext())
                 .load(avatarUrl)
                 .asBitmap()
+                .error(R.drawable.default_avatar)
+                .placeholder(R.drawable.default_avatar)
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource,
                         GlideAnimation<? super Bitmap> glideAnimation) {
-                        if (!FileUtil.checkFilePathExists(QRcodePath)) {
-                            FileUtil.createNewFileInSDCard(
-                                AppConfig.QR_CODE_PATH + File.separator + userId + ".qr");
-                            boolean flag = QRCodeUtil
-                                .createQRImage(CodeHelper
-                                        .createContentText(userId, CodeHelper.TYPE_PRIVATE),
-                                    (int) TDevice.getScreenWidth() * 3 / 4,
-                                    (int) TDevice.getScreenWidth() * 3 / 4, resource,
-                                    QRcodePath);
-                            if (flag) {
-                                listener.createCode();
-                            }
-                        } else {
-                            listener.createCode();
-                        }
+                        createCode(resource, userId, listener);
                     }
                 });
         } else {
-            if (!FileUtil.checkFilePathExists(QRcodePath)) {
-                FileUtil.createNewFileInSDCard(
-                    AppConfig.QR_CODE_PATH + File.separator + userId + ".qr");
-                QRCodeUtil
-                    .createQRImage(CodeHelper.createContentText(userId, CodeHelper.TYPE_PRIVATE),
-                        (int) TDevice.getScreenWidth() * 3 / 4,
-                        (int) TDevice.getScreenWidth() * 3 / 4, null, QRcodePath);
-            }
+            createCode(null, userId, listener);
         }
+    }
+
+    private void createCode(Bitmap avatarBitmap, String userId, ICreateListener listener) {
+        Bitmap bitmap = QRCodeUtil
+            .createQRImageBitmap(CodeHelper.createContentText(userId, CodeHelper.TYPE_PRIVATE),
+                (int) TDevice.getScreenWidth() * 3 / 4,
+                (int) TDevice.getScreenWidth() * 3 / 4, avatarBitmap);
+        listener.createCode(bitmap);
     }
 
     /*

@@ -115,7 +115,7 @@ public class ChatBgLocalSelActivity extends FGActivity implements
                 intent.putExtra("chat_bg", selectChatBgBean.getBackId());
                 setResult(RESULT_OK, intent);
                 finish();
-            } else if (msg.getCode() == Common.UPDATE_INFO_SUCCESS) {
+            } else if (msg.getCode() == Common.UPDATE_ROSTER_SUCCESS) {
                 ProviderUser.updateUserChatBg(mucId, selectChatBgBean.getBackId());
                 Intent intent = new Intent();
                 intent.putExtra("chat_bg", selectChatBgBean.getBackId());

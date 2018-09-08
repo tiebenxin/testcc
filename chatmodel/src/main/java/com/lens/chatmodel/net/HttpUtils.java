@@ -9,21 +9,25 @@ import com.lens.chatmodel.bean.body.VoiceUploadEntity;
 import com.lens.chatmodel.helper.FileCache;
 import com.lens.chatmodel.interf.IGetFileSizeListener;
 import com.lensim.fingerchat.commons.global.BaseURL;
+import com.lensim.fingerchat.commons.global.CommonEnum.ELogLevel;
+import com.lensim.fingerchat.commons.global.CommonEnum.ELogType;
 import com.lensim.fingerchat.commons.global.CommonEnum.ESearchTabs;
 import com.lensim.fingerchat.commons.global.CommonEnum.EUploadFileType;
 import com.lensim.fingerchat.commons.global.Route;
+import com.lensim.fingerchat.commons.utils.AppHostUtil;
 import com.lensim.fingerchat.commons.utils.ThreadUtils;
 import com.lensim.fingerchat.data.ApiEnum.ERequestType;
 import com.lensim.fingerchat.data.HttpChannel;
 import com.lensim.fingerchat.data.help_class.IDataRequestListener;
+import com.lensim.fingerchat.data.help_class.IRequestListener;
 import com.lensim.fingerchat.data.help_class.IUploadListener;
 import com.lensim.fingerchat.data.login.SSOToken;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.observer.FileUploadObserver;
 import com.lensim.fingerchat.data.request.RequestUploadFileBody;
 import com.lensim.fingerchat.data.response.ResponseObject;
-import com.lensim.fingerchat.data.response.ret.RetResponse;
 
-import io.reactivex.Flowable;
+import com.lensim.fingerchat.data.work_center.OAToken;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -44,6 +48,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.json.JSONException;
 import org.json.JSONObject;
+import retrofit2.http.Query;
 
 /**
  * Created by LL130386 on 2017/12/25.
@@ -203,6 +208,50 @@ public class HttpUtils {
         }
     }
 
+    /*
+     * 上传图片
+     * */
+    public void uploadImageSave(String path, final EUploadFileType type,
+        final IUploadListener listener) {
+        File file = new File(path);
+        if (file == null || !file.exists()) {
+            listener.onFailed();
+        }
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        addFormatData(builder, file, type);
+
+        FileUploadObserver<ResponseBody> fileUploadObserver = new FileUploadObserver<ResponseBody>() {
+            @Override
+            public void onUpLoadSuccess(ResponseBody responseBody) {
+                if (responseBody != null) {
+                    listener.onSuccess(parseUploadResponseBody(responseBody, type));
+                } else {
+                    listener.onFailed();
+                }
+            }
+
+            @Override
+            public void onUpLoadFail(Throwable e) {
+                listener.onFailed();
+
+            }
+
+            @Override
+            public void onProgress(int progress) {
+//                listener.onProgress(progress);
+
+            }
+        };
+
+        Observable<ResponseBody> observable = HttpChannel.getInstance(ERequestType.UPLOAD)
+            .getRetrofitService()
+            .uploadImageSave(new RequestUploadFileBody(builder.build(), fileUploadObserver));
+
+        observable.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(fileUploadObserver);
+    }
+
     private MediaType getMediaType(EUploadFileType type) {
         switch (type) {
             case JPG:
@@ -321,7 +370,7 @@ public class HttpUtils {
             object.put("keyword", info);
             JSONObject o = new JSONObject();
             o.put("pageIndex", page);
-            o.put("pageSize", 10);
+            o.put("pageSize", 20);
             object.put("page", o);
             object.put("queryType", String.valueOf(getSearchType(type)));
             RequestBody builder = RequestBody
@@ -385,10 +434,19 @@ public class HttpUtils {
         return HttpChannel.getInstance().getRetrofitService().SSOLogin(userId, psw, "android");
     }
 
+    /*
+    * sso登录
+    * */
+    public Observable<ResponseObject<SSOToken>> ssoLoginByPhone(String phone, String psw) {
+        return HttpChannel.getInstance().getRetrofitService()
+            .SSOLoginByPhone(phone, psw, "android");
+    }
+
     /**
      * 修改密码
      */
-    public static Observable<ResponseObject> changePwd(String userId, String curPassword, String newPassword) {
+    public static Observable<ResponseObject> changePwd(String userId, String curPassword,
+        String newPassword) {
         Map<String, String> map = new HashMap<>();
         map.put("userid", userId);
         map.put("curPassword", curPassword);
@@ -404,11 +462,19 @@ public class HttpUtils {
     }
 
     /*
-     * 扫码授权登录
+     * 扫码授权登录-确认
      * */
     public Observable<ResponseBody> acceptQRCodeLogin(String token, String appId, String codeId) {
         return HttpChannel.getInstance().getRetrofitService()
             .acceptQRCodeLogin(token, appId, codeId);
+    }
+
+    /*
+     * 扫码授权登录-许可
+     * */
+    public Observable<ResponseBody> qrCodeLogin(String token, String appId, String codeId) {
+        return HttpChannel.getInstance().getRetrofitService()
+            .qrCodeLogin(token, appId, codeId);
     }
 
     /*
@@ -489,6 +555,94 @@ public class HttpUtils {
     private static String mapToJSON(Map<String, String> map) {
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         return gson.toJson(map);
+    }
+
+    /*
+    * 获取OAToken
+    * */
+    public Observable<ResponseObject<OAToken>> getOAToken(String token) {
+        return HttpChannel.getInstance().getRetrofitService().getOAToken(token);
+    }
+
+
+    /*
+       * 实名认证
+       * */
+    public Observable<ResponseBody> userAuth(String userId, String empNo, String idcard) {
+        return HttpChannel.getInstance().getRetrofitService().userAuth(userId, empNo, idcard);
+    }
+
+    public void ssoLogin(String userId, String psw, IRequestListener listener) {
+        String url = AppHostUtil.getHttpConnectHostApi() + Route.URL_SSO_LOGIN + "?userId=" + userId
+            + "&password=" + psw + "&clientType=" + "android";
+        Request.Builder builder = new Request.Builder();
+        Request request = builder.get().url(url).
+            header("Content-Type", "application/json;charset=utf-8").build();
+        Call call = HttpChannel.getInstance().getOkHttpClient().newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                listener.onFailed();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                listener.onSuccess(response);
+            }
+        });
+    }
+
+    /*
+   *
+   *  source //所属系统(1:fxServer/2:fxConsole/3:fxAssist/4:fxMonitor/5:fxPower/6:fxAndroid/7:fxIOS/8:fxMac/9:fxWindows)
+   * */
+    public void uploadLogger(String content, ELogType type, IDataRequestListener listener) {
+        try {
+            JSONObject bodyObj = new JSONObject();
+            bodyObj.put("logContent", content);
+            bodyObj.put("logLevel", getLogLevel(type));
+            bodyObj.put("logTopic", getLogTopic(type));
+            bodyObj.put("userId", UserInfoRepository.getUserName());
+            JSONObject obj = new JSONObject();
+            obj.put("body", bodyObj);
+            obj.put("source", 6);
+            RequestBody builder = RequestBody
+                .create(MediaType.parse("application/json"), obj.toString());
+            Observable<ResponseBody> observable = HttpChannel.getInstance(ERequestType.DEFAULT)
+                .getRetrofitService()
+                .uploadLogger(builder);
+            HttpChannel.getObserverString(observable, listener);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public int getLogLevel(ELogType type) {
+        switch (type) {
+            case LOGIN:
+                return ELogLevel.INFO.value;
+            case COPY:
+                return ELogLevel.INFO.value;
+            case ERROR:
+                return ELogLevel.ERROR.value;
+            default:
+                return ELogLevel.INFO.value;
+        }
+    }
+
+    public String getLogTopic(ELogType type) {
+        switch (type) {
+            case LOGIN:
+                return "login";
+            case COPY:
+                return "copy";
+            case ERROR:
+                return "error";
+            default:
+                return "default";
+        }
     }
 
 

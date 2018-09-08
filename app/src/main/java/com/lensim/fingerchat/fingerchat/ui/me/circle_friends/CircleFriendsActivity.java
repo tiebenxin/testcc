@@ -1,6 +1,8 @@
 package com.lensim.fingerchat.fingerchat.ui.me.circle_friends;
 
 
+import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -8,6 +10,7 @@ import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,7 +23,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
-
 import com.bumptech.glide.Glide;
 import com.lens.chatmodel.ui.image.MultiImageSelectorActivity;
 import com.lens.chatmodel.ui.video.CameraActivity;
@@ -28,8 +30,11 @@ import com.lens.chatmodel.view.emoji.EmotionKeyboard;
 import com.lens.chatmodel.view.friendcircle.CommentListView;
 import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.base.BaseMvpActivity;
+import com.lensim.fingerchat.commons.base.BaseResponse;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.http.FXRxSubscriberHelper;
 import com.lensim.fingerchat.commons.mvp.factory.CreatePresenter;
+import com.lensim.fingerchat.commons.utils.CyptoConvertUtils;
 import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.NetWorkUtil;
 import com.lensim.fingerchat.commons.utils.TDevice;
@@ -38,18 +43,17 @@ import com.lensim.fingerchat.components.helper.OnDoubleClickListener;
 import com.lensim.fingerchat.components.pulltorefresh.CustomProgressDrawable;
 import com.lensim.fingerchat.components.widget.CustomDocaration;
 import com.lensim.fingerchat.data.bean.ImageBean;
-import com.lensim.fingerchat.data.me.CircleItem;
+import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.circle_friend.CommentConfig;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.api.CirclesFriendsApi;
 import com.lensim.fingerchat.fingerchat.databinding.ActivityCircleFriendsBinding;
+import com.lensim.fingerchat.fingerchat.model.bean.PhotoBean;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.adapter.CircleFriendsAdapter;
 import com.lensim.fingerchat.fingerchat.ui.me.circle_friends.circle_friends_multitype.CircleViewHolder;
 import com.lensim.fingerchat.fingerchat.ui.me.photo.VideoStatuActivity;
 import com.tbruyelle.rxpermissions2.RxPermissions;
-
 import java.util.List;
-
-import static com.lensim.fingerchat.commons.utils.cppencryp.SecureUtil.showToast;
 
 /**
  * Created by ll147996 on 2017/12/15.
@@ -81,17 +85,26 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
     public void initView() {
         ui = DataBindingUtil.setContentView(this, R.layout.activity_circle_friends);
         ui.circleToolbar.setTitleText(ContextHelper.getString(R.string.circle_friend));
-        initBackButton(ui.circleToolbar,true);
+        initBackButton(ui.circleToolbar, true);
         initAdapter();
         initCircleInput();
         initListener();
         setViewTreeObserver();
         getMvpPresenter().setHeaderItem();
         firstRefresh();
-//        AccountManager.getInstance().setHasNewCircle(false);
     }
 
-    private void initAdapter(){
+    @Override
+    public void initData(Bundle savedInstanceState) {
+        // 更新查看朋友圈时间
+        new CirclesFriendsApi().updateLookPhotoTime(UserInfoRepository.getUserName(), new FXRxSubscriberHelper<BaseResponse>() {
+            @Override
+            public void _onNext(BaseResponse baseResponse) {
+            }
+        });
+    }
+
+    private void initAdapter() {
         mAdapter = new CircleFriendsAdapter(this, getMvpPresenter());
         mLayouManager = new LinearLayoutManager(this);
         mLayouManager.setOrientation(OrientationHelper.VERTICAL);
@@ -194,7 +207,7 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
     }
 
     @Override
-    public void  updateEditTextBodyVisible(int visibility) {
+    public void updateEditTextBodyVisible(int visibility) {
         updateEditTextBodyVisible(visibility, null);
     }
 
@@ -209,7 +222,7 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
         }
 
         if (View.VISIBLE == visibility && commentConfig != null) {
-            ui.circleInput.setCirclePrimaryMenuHint("回复" + commentConfig.replyUsername + "...");
+            ui.circleInput.setCirclePrimaryMenuHint("回复" + CyptoConvertUtils.decryptString(commentConfig.replyUsername) + "...");
         } else if (View.GONE == visibility) {
             //隐藏键盘
             ui.circleInput.hideKeyboard();
@@ -270,7 +283,7 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
             mScreenHeight = screenH;//应用屏幕的高度
             mEditTextBodyHeight = ui.circleInput.getHeight();
 
-            if(keyboardH<150){//说明是隐藏键盘的情况
+            if (keyboardH < 150) {//说明是隐藏键盘的情况
                 updateEditTextBodyVisible(View.GONE, null);
                 return;
             }
@@ -321,16 +334,18 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
      * 朋友圈更新
      */
     @Override
-    public void updateFriendCircle(int type, List<CircleItem> items) {
+    public void updateFriendCircle(int type, List<PhotoBean> items) {
         if (type == TYPE_PULLREFRESH) {
             refresh();
         } else if (type == TYPE_UPLOADREFRESH) {
-            L.d("updateFriendCircle","updateFriendCircle");
+            L.d("updateFriendCircle", "updateFriendCircle");
         } else if (type == TYPE_LOADMORE) {
             if (ui.mCricleRefresh.isLoading()) {
                 ui.mCricleRefresh.setLoading(false, items == null ? false : true);
             }
             load();
+        }else {
+
         }
         if (items != null) {
             mAdapter.setDatas(items);
@@ -358,7 +373,6 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
     }
 
 
-
     @Override
     protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -372,12 +386,14 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
                 }
             }
         } else if (requestCode == AppConfig.REQUEST_VIDEO) {
-           if (resultCode == 102) {
-               String path = data.getStringExtra("videoPath");
-               Intent intent = new Intent(this, VideoStatuActivity.class);
-               intent.putExtra(VideoStatuActivity.PATH, path);
-               startActivityForResult(intent, REQUEST_NEW_STATUS);
-           }
+            if (resultCode == 102) {
+                String path = data.getStringExtra("videoPath");
+                String imagePath = data.getStringExtra("framePicPath");
+                Intent intent = new Intent(this, VideoStatuActivity.class);
+                intent.putExtra(VideoStatuActivity.PATH, path);
+                intent.putExtra(VideoStatuActivity.PATH_IMAGE, imagePath);
+                startActivityForResult(intent, REQUEST_NEW_STATUS);
+            }
         } else if (requestCode == 12 || requestCode == REQUEST_NEW_STATUS) {
             if (resultCode == RESULT_OK) {
                 ui.mCricleRefresh.post(() -> ui.mCricleRefresh.setRefreshing(true));
@@ -444,6 +460,11 @@ public class CircleFriendsActivity extends BaseMvpActivity<CircleFirendsContract
     @Override
     public void sendVideo() {
         CameraActivity.start(this, AppConfig.REQUEST_VIDEO, CameraActivity.BUTTON_STATE_ONLY_RECORDER);
+    }
+
+    @Override
+    public void updateBackgroundImg() {
+        mAdapter.notifyItemChanged(0);
     }
 
 }

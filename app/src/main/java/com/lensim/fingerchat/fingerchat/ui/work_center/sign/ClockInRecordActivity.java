@@ -72,7 +72,7 @@ public class ClockInRecordActivity extends FGActivity {
 
     public void getDataByPage() {
         String start = TimeUtils.getDateFirstDayThisMonth();
-        String userName = SSOTokenRepository.getInstance().getSSOToken().getUserid();
+        String userName = SSOTokenRepository.getInstance().getSSOToken().getUserId();
         Http.getSignIn(userName, start, TimeUtils.getDate(), "token")
             .compose(RxSchedulers.compose())
             .subscribe(

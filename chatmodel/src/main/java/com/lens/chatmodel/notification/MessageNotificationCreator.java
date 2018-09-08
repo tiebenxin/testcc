@@ -259,12 +259,14 @@ public class MessageNotificationCreator {
                 } else {
                     backIntent = ActivitysRouter.getInstance().invoke(application,
                         ActivityPath.ACTIVITY_MAIN_PATH);
+                    backIntent.putExtra("page",0);
                     backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
             }
         } else {
             backIntent = ActivitysRouter.getInstance().invoke(application,
                 ActivityPath.ACTIVITY_MAIN_PATH);
+            backIntent.putExtra("page",0);
             backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
 

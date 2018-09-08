@@ -48,15 +48,38 @@ public class SPDataRepository<T extends Serializable> {
         saveData(data, fileNema, key);
     }
 
+    public void removeData(@NonNull T data) {
+        String fileNema = data.getClass().getName();
+        String key = data.getClass().getSimpleName();
+        SharedPreferences sharedPreferences = ContextHelper.getContext()
+            .getSharedPreferences(fileNema, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(key);
+        editor.commit();
+
+    }
+
+    public void removeData(Class<T> clazz) {
+        String fileNema = clazz.getName();
+        String key = clazz.getSimpleName();
+        SharedPreferences sharedPreferences = ContextHelper.getContext()
+            .getSharedPreferences(fileNema, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(key);
+        editor.commit();
+
+    }
+
 
     public void saveDatas(@NonNull List<T> datas, Class<T> clazz) {
         String fileNema = clazz.getName() + LIST;
         String key = clazz.getSimpleName();
-        saveDatas(datas,fileNema,key);
+        saveDatas(datas, fileNema, key);
     }
 
     /**
      * 获取List型数据
+     *
      * @param fileNema 文件名
      * @param key 键
      * @return List
@@ -76,6 +99,7 @@ public class SPDataRepository<T extends Serializable> {
 
     /**
      * 获取List型数据
+     *
      * @param fileNema 文件名
      * @param key 键
      * @return List
@@ -95,6 +119,7 @@ public class SPDataRepository<T extends Serializable> {
 
     /**
      * 保存数据
+     *
      * @param fileNema 文件名
      * @param key 键
      */
@@ -108,9 +133,9 @@ public class SPDataRepository<T extends Serializable> {
     }
 
 
-
     /**
      * 保存List型数据
+     *
      * @param fileNema 文件名
      * @param key 键
      */
@@ -128,6 +153,7 @@ public class SPDataRepository<T extends Serializable> {
     /**
      * writeObject 方法负责写入特定类的对象的状态，以便相应的 readObject 方法可以还原它
      * 最后，用Base64.encode将字节文件转换成Base64编码保存在String中
+     *
      * @param object 待加密的转换为String的对象
      * @return String   加密后的String
      */
@@ -151,6 +177,7 @@ public class SPDataRepository<T extends Serializable> {
     /**
      * writeObject 方法负责写入特定类的对象的状态，以便相应的 readObject 方法可以还原它
      * 最后，用Base64.encode将字节文件转换成Base64编码保存在String中
+     *
      * @param object 待加密的转换为String的对象
      * @return String   加密后的String
      */
@@ -173,6 +200,7 @@ public class SPDataRepository<T extends Serializable> {
 
     /**
      * 使用Base64解密String，返回Object对象
+     *
      * @param objectString 待解密的String
      * @return object      解密后的object
      */
@@ -195,6 +223,7 @@ public class SPDataRepository<T extends Serializable> {
 
     /**
      * 使用Base64解密String，返回Object对象
+     *
      * @param objectString 待解密的String
      * @return object      解密后的object
      */

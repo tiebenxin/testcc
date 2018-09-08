@@ -10,6 +10,7 @@ import com.lensim.fingerchat.data.login.SSOToken;
 import com.lensim.fingerchat.data.me.NewComment;
 import com.lensim.fingerchat.data.me.circle_friend.FriendCircleEntity;
 import com.lensim.fingerchat.data.response.ResponseObject;
+import com.lensim.fingerchat.data.response.response.FGObjectResponse;
 import com.lensim.fingerchat.data.response.ret.RetArrayResponse;
 import com.lensim.fingerchat.data.response.ret.RetObjectResponse;
 import com.lensim.fingerchat.data.response.ret.RetResponse;
@@ -77,8 +78,14 @@ public interface RetrofitService {
     /**
      * 录制视频
      */
-    @POST(Route.Host + Route.SendVideoUrl)
+    @POST(Route.SendVideoUrl)
     Flowable<ResponseBody> sendVideoAndText(@Body MultipartBody imgs);
+
+    /**
+     * 上传头像
+     */
+    @POST(Route.UPLOAD_IMAGE_SAVE)
+    Observable<ResponseBody> uploadImageSave(@Body RequestBody body);
 
     /**
      * 搜索好友
@@ -97,34 +104,58 @@ public interface RetrofitService {
     /**
      * 登陆_SSO
      */
-    @GET(Route.SSO_HOST + Route.URL_SSO_LOGIN)
+    @GET("http://" +  "10.3.9.233:8081" + Route.URL_SSO_LOGIN)
     Observable<ResponseObject<SSOToken>> SSOLogin(@Query("userId") String userId,
         @Query("password") String psw, @Query("clientType") String type);
 
     /**
      * 登出_SSO
      */
-    @GET(Route.SSO_HOST + Route.URL_SSO_LOGIN_OUT)
+    @GET(Route.URL_SSO_LOGIN_OUT)
     Observable<ResponseObject<SSOToken>> SSOLoginOut(@Query("fxtoken") String token);
 
     /**
-     * 第三方授权登录
+     * 登陆_SSO
      */
-    @GET(Route.SSO_HOST + Route.URL_ACCEPT_SSO_LOGIN)
+    @GET(Route.URL_SSO_LOGIN_BY_PHONE)
+    Observable<ResponseObject<SSOToken>> SSOLoginByPhone(@Query("tel") String phone,
+        @Query("password") String psw, @Query("clientType") String type);
+
+
+    /**
+     * 第三方授权登录-确认
+     */
+    @GET(Route.URL_ACCEPT_SSO_LOGIN)
     Observable<ResponseBody> acceptQRCodeLogin(@Query("token") String token,
         @Query("appId") String appId, @Query("qrcodeId") String codeId);
+
+
+    /**
+     * 第三方授权登录-允许
+     */
+    @GET(Route.URL_QRCODE_LOGIN)
+    Observable<ResponseBody> qrCodeLogin(@Query("token") String token,
+        @Query("appId") String appId, @Query("qrtcodeId") String codeId);
 
     /**
      * 获取OAToKen
      */
-    //  @POST("http://syscpc.fingersystem.cn:8686/v1/user/getOAToken")
-    @POST(Route.Host + Route.URL_GET_OA_TOKEN)
-    Observable<ResponseObject<OAToken>> getOAToken(@Body RequestBody body);
+//    @GET(Route.SSO_HOST + Route.URL_OA_TOKEN)
+    @GET(Route.URL_OA_TOKEN)
+    Observable<ResponseObject<OAToken>> getOAToken(@Query("fxToken") String token);
+
+    /**
+     * 实名认证
+     */
+//    @POST(Route.Host + Route.URL_USER_AUTH)
+    @POST(Route.URL_USER_AUTH)
+    Observable<ResponseBody> userAuth(@Query("userId") String userId,
+        @Query("employeeNo") String employeeNo, @Query("idcard") String idCard);
 
     /**
      * 工作中心获取子项目
      */
-    @GET(Route.Host + Route.URL_GET_FUNCTIONS + "/{empno}/{token}")
+    @GET(Route.URL_GET_FUNCTIONS + "/{empno}/{token}")
     Observable<ResponseBody> getFunctions(@Path("empno") String empno, @Path("token") String token);
 
 
@@ -142,24 +173,23 @@ public interface RetrofitService {
      */
 //  @GET("http://10.3.7.140:8685/HexSer/HexUser/GetT/feige")
 //  @GET("http://synccenter.fingersystem.cn:8686/HexSer/HexUser/GetT/feige")
-    @GET(Route.Host + Route.ADMIN_TOKEN)
+    @GET(Route.ADMIN_TOKEN)
     Observable<String> getTempToken();
 
 
     /**
      * 获取会议列表
      */
-    @GET(
-        Route.Host + Route.URL_HEX_GET_MEETING_LIST + "/{token}/{type}/{user}/{pageSize}/{pageNum}")
+    @GET(Route.URL_HEX_GET_MEETING_LIST + "/{token}/{type}/{user}/{pageSize}/{pageNum}")
 //  @GET("http://10.3.7.149:8181/LensWcfSrv.svc/getMeetingList/" + "/{token}/{type}/{user}/{pageSize}/{pageNum}")
-    Observable<RetArrayResponse<VideoMeeting>> getHexMeetingList(@Path("token") String token,
+    Observable<RetObjectResponse<String>> getHexMeetingList(@Path("token") String token,
         @Path("type") String type, @Path("user") String user, @Path("pageSize") String pageSize,
         @Path("pageNum") String pageNum);
 
     /**
      * 会议信息录入
      */
-    @POST(Route.Host + Route.URL_HEX_MEETING_CREAT)
+    @POST(Route.URL_HEX_MEETING_CREAT)
 //  @POST("http://10.3.7.149:8181/LensWcfSrv.svc/meetingcreat")
     Observable<RetObjectResponse<String>> postHexMeeting(@Body RequestBody body);
 
@@ -167,7 +197,7 @@ public interface RetrofitService {
     /**
      * 删除会议
      */
-    @GET(Route.Host + Route.URL_HEX_MEETING_DELETE + "/{id}/{userid}/{token}")
+    @GET(Route.URL_HEX_MEETING_DELETE + "/{id}/{userid}/{token}")
 //  @GET("http://10.3.7.149:8181/LensWcfSrv.svc/getMeetingList/" + "/{token}/{type}/{user}/{pageSize}/{pageNum}")
     Observable<RetObjectResponse<String>> deleteHexMeeting(@Path("id") String id,
         @Path("userid") String userid, @Path("token") String token);
@@ -176,28 +206,27 @@ public interface RetrofitService {
     /**
      * 给已存在的会议添加联系人
      */
-//  @POST("http://10.3.7.149:8181/LensWcfSrv.svc/JoinToExistMeeting")
-    @POST(Route.Host + Route.HEX_MEET_JOINTO_EXISTMEETING)
+    @POST(Route.HEX_MEET_JOINTO_EXISTMEETING)
     Observable<RetObjectResponse<String>> JoinToExistMeeting(@Body RequestBody body);
 
 
     /**
      * 获取聊天室所有群成员
      */
-    @GET(Route.Host + Route.URL_GetMucMembers)
+    @GET(Route.URL_GetMucMembers)
     Observable<List<RoomInfo>> getMucMember(@Query("fun") String fun,
         @Query("userid") String userid, @Query("teamserno") String teamserno);
 
     /**
      * 签到
      */
-    @POST(Route.Host + Route.URL_SIGN_IN)
-    Observable<RetObjectResponse<String>> signIn(@Body RequestBody body);
+    @POST(Route.URL_SIGN_IN)
+    Observable<FGObjectResponse<String>> signIn(@Body RequestBody body);
 
     /**
      * 签到查询
      */
-    @GET(Route.Host + Route.URL_GET_SIGN_IN + "/{userId}/{fromDate}/{toDate}/{token}")
+    @GET(Route.URL_GET_SIGN_IN + "/{userId}/{fromDate}/{toDate}/{token}")
     Observable<RetObjectResponse<String>> getSignIn(@Path("userId") String userId,
         @Path("fromDate") String fromDate, @Path("toDate") String toDate,
         @Path("token") String token);
@@ -213,14 +242,14 @@ public interface RetrofitService {
     /**
      * 获取用户个人信息
      */
-    @GET(Route.Host + Route.URL_GetOrUpdateUserInfo)
+    @GET(Route.URL_GetOrUpdateUserInfo)
     Observable<List<UserIdentify>> getUserInfoByAsync(@Query("fun") String fun,
         @Query("userid") String userid);
 
     /**
      * 认证，上传图片
      */
-    @POST(Route.Host + Route.URL_UPLOAD_IDCARD)
+    @POST(Route.URL_UPLOAD_IDCARD)
     Observable<RetObjectResponse<String>> sendIdcard(@Body MultipartBody imgs);
 
 
@@ -228,7 +257,7 @@ public interface RetrofitService {
      * 签到——上传图片
      */
     @Multipart
-    @POST(Route.Host + Route.URL_SIGN_IN_POST_IMAGE)
+    @POST(Route.URL_SIGN_IN_POST_IMAGE)
     Observable<SPListResponse<SignInPicture>> signInPostPicture(@Part MultipartBody.Part part);
 
 
@@ -238,7 +267,7 @@ public interface RetrofitService {
      * 2、朋友圏背景图
      * 3、注册上传头像
      */
-    @POST(Route.Host + Route.URL_UpLoadAvater)
+    @POST(Route.URL_UpLoadAvater)
     Flowable<String> setAvatar(@Body MultipartBody imgs);
 
 
@@ -252,7 +281,7 @@ public interface RetrofitService {
     /**
      * 更新朋友圈信息
      */
-    @GET(Route.Host + Route.FriendCircleUrl)
+    @GET(Route.FriendCircleUrl)
     Flowable<List<FriendCircleEntity>> UpdateFriendCircle(@Query("fun") String fun,
         @Query("userid") String userid);
 
@@ -260,7 +289,7 @@ public interface RetrofitService {
     /**
      * 朋友圈——上拉刷新
      */
-    @GET(Route.Host + Route.FriendCircleUrl)
+    @GET(Route.FriendCircleUrl)
 //  Observable<List<FriendCircleEntity>> loadMoreCircleData(@Query("fun") String fun, @Query("userid") String userid, @Query("pagesize") String pagesize, @Query("pagenum") String pagenum);
     Flowable<List<FriendCircleEntity>> loadMoreCircleData(@QueryMap Map<String, String> options);
 
@@ -269,7 +298,7 @@ public interface RetrofitService {
      * 获取最新评论的数量
      */
     //http://mobile.fingerchat.cn:8686/LensWcfSrv.svc/getnewCommentNum/ll117394
-    @GET(Route.Host + Route.NewUpdateCircleUrl + "/{fun}/{username}")
+    @GET(Route.NewUpdateCircleUrl + "/{fun}/{username}")
     Flowable<RetObjectResponse<String>> getNewCommentCount(@Path("fun") String pho_serno,
         @Path("username") String username);
 
@@ -277,7 +306,7 @@ public interface RetrofitService {
     /**
      * 删除——朋友圈
      */
-    @GET(Route.Host + Route.URL_DEL_COMMENT + "/1/{cricleId}/{userName}")
+    @GET(Route.URL_DEL_COMMENT + "/1/{cricleId}/{userName}")
     Flowable<RetObjectResponse<String>> deleteCircle(@Path("cricleId") String cricleId,
         @Path("userName") String userName);
 
@@ -285,7 +314,7 @@ public interface RetrofitService {
     /**
      * 获取单条分享的所有评论
      */
-    @GET(Route.Host + Route.URL_ITEM + "/{pho_serno}/{username}")
+    @GET(Route.URL_ITEM + "/{pho_serno}/{username}")
     Flowable<RetObjectResponse<String>> getPhotoItemById(@Path("pho_serno") String pho_serno,
         @Path("username") String username);
 
@@ -293,14 +322,14 @@ public interface RetrofitService {
     /**
      * 点赞
      */
-    @GET(Route.Host + Route.FriendCircleUrl)
+    @GET(Route.FriendCircleUrl)
     Flowable<ResponseBody> like(@QueryMap Map<String, String> options);
 
 
     /**
      * 删除——赞
      */
-    @GET(Route.Host + Route.FriendCircleUrl)
+    @GET(Route.FriendCircleUrl)
     Flowable<ResponseBody> cancelLike(@Query("fun") String fun,
         @Query("CommentUserid") String commentUserid,
         @Query("photoserno") String photoserno, @Query("CreateUserid") String createUserid);
@@ -309,7 +338,7 @@ public interface RetrofitService {
     /**
      * 朋友圈——评论
      */
-    @POST(Route.Host + Route.URL_COMMENT)
+    @POST(Route.URL_COMMENT)
     Flowable<RetObjectResponse<String>> addComment(@Body RequestBody body);
 
 
@@ -318,7 +347,7 @@ public interface RetrofitService {
      * 要么是/1/cba5d713e1/ll032197  , 1代表了 createuser, 即朋友圈的创建者
      * 要么是/2/cba5d713e1/ll117394 , 2代表的是 commentuser, 即 发表评论的人
      */
-    @GET(Route.Host + Route.URL_DEL_COMMENT + "/2/{phc_serno}/{commentUser}")
+    @GET(Route.URL_DEL_COMMENT + "/2/{phc_serno}/{commentUser}")
     Flowable<RetObjectResponse<String>> deleteComment(@Path("phc_serno") String phc_serno,
         @Path("commentUser") String commentUser);
 
@@ -326,7 +355,7 @@ public interface RetrofitService {
     /**
      * 分页加载评论列表
      */
-    @GET(Route.Host + Route.URL_ALL_COMMENTS_BY_TIME
+    @GET(Route.URL_ALL_COMMENTS_BY_TIME
         + "/{userName}/{pageNum}/{pagesize}/{timeStamp}")
     Flowable<RetObjectResponse<String>> getCommentsByPage(@Path("userName") String userName,
         @Path("pageNum") String pageNum, @Path("pagesize") String pagesize,
@@ -336,7 +365,7 @@ public interface RetrofitService {
     /**
      * 新的评论列表
      */
-    @GET(Route.Host + Route.UpdateCircleUrl)
+    @GET(Route.UpdateCircleUrl)
     Flowable<List<NewComment>> getNewComment(@Query("fun") String fun,
         @Query("userid") String userid);
 
@@ -344,14 +373,14 @@ public interface RetrofitService {
     /**
      * 更新查看评论列表时间
      */
-    @GET(Route.Host + Route.UpdateCircleUrl)
+    @GET(Route.UpdateCircleUrl)
     Flowable<RetObjectResponse<String>> addSeeCommentTime(@Query("fun") String fun,
         @Query("userid") String userid);
 
     /**
      * 相册——更新
      */
-    @GET(Route.Host + Route.FriendCircleUrl)
+    @GET(Route.FriendCircleUrl)
     Flowable<List<FriendCircleEntity>> getPhotos(@Query("fun") String fun,
         @Query("userid") String userid);
 
@@ -359,21 +388,21 @@ public interface RetrofitService {
     /**
      * 收藏列表——获取
      */
-    @GET(Route.Host + Route.GetFavListUrl + "/{username}/{pagenum}/{pagesize}")
+    @GET(Route.GetFavListUrl + "/{username}/{pagenum}/{pagesize}")
     Flowable<RetObjectResponse<String>> getFavList(@Path("username") String username,
         @Path("pagenum") String pagenum, @Path("pagesize") String pagesize);
 
     /**
      * 收藏——删除
      */
-    @GET(Route.Host + Route.DelFavUrl + "/{msgId}/{username}")
+    @GET(Route.DelFavUrl + "/{msgId}/{username}")
     Flowable<RetResponse> removeFavItem(@Path("msgId") String msgId,
         @Path("username") String username);
 
     /**
      * 上传日志
      */
-    @POST(Route.Host + Route.URL_OPTION_LOG)
+    @POST(Route.UPLOAD_LOG)
     Flowable<ResponseBody> uploadLog(@Body RequestBody body);
 
     /**
@@ -382,28 +411,29 @@ public interface RetrofitService {
     @POST(Route.UPDATE_PASSWORD)
     Observable<ResponseObject> updatePassword(@Body RequestBody requestbody);
 
-    @POST(Route.Host + Route.URL_OPTION_LOGGER)
+    @POST(Route.UPLOAD_LOG)
     Observable<ResponseBody> uploadlogger(@Body RequestBody body);
 
     /**
      * 收藏列表——新建
      */
-    @POST(Route.Host + Route.CreateFavUrl)
+    @POST(Route.CreateFavUrl)
     Flowable<ResponseBody> createFavList(@Body RequestBody body);
 
     @Streaming
     @GET
     Flowable<ResponseBody> downloadVideoFile(@Url String fileUrl);
 
-    /**
-     * 认证
-     */
-    @GET
-    Observable<ResponseBody> acceptQRCodeLogin(@NonNull @Url String url);
 
     /**
      * 上传附件
      */
     @POST(Route.URL_ATTACH_MESSAGES)
     Observable<ResponseBody> uploadAttackMessage(@Body RequestBody body);
+
+    /**
+     * 搜索好友
+     */
+    @POST(Route.UPLOAD_LOG)
+    Observable<ResponseBody> uploadLogger(@Body RequestBody body);
 }

@@ -3,6 +3,7 @@ package com.lensim.fingerchat.commons.utils;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import java.io.BufferedReader;
@@ -38,6 +39,9 @@ import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombi
  */
 public class StringUtils {
 
+    public static final String SPLIT_COMER = ",";
+
+
     public final static Pattern emailer = Pattern
         .compile("\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*");
 
@@ -51,7 +55,8 @@ public class StringUtils {
 //            .compile("(https|http)://.*?$(net|com|.com.cn|org|me|)");
 
     public final static Pattern URL1 =
-        Pattern.compile("(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
+        Pattern.compile(
+            "(https?|http|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
 
     public final static Pattern JOB_NUM = Pattern
         .compile("^[a-zA-Z]{2}[0-9]{6}$");
@@ -67,6 +72,12 @@ public class StringUtils {
     private final static Pattern NUM_OR_LETTER = Pattern.compile("^[a-z0-9A-Z]+$");
 
     private final static Pattern EN_LETTER = Pattern.compile("^[a-zA-Z]+$");
+
+    //身份证:15位和18位
+    private final static Pattern ID_CARD1 = Pattern
+        .compile("^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}$");
+    private final static Pattern ID_CARD2 = Pattern
+        .compile("^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}([0-9]|X)$");
 
 
     private final static Pattern ZH_CN_NUM_OR_LETTER = Pattern
@@ -95,6 +106,10 @@ public class StringUtils {
 
 
     private static Random randGen = new Random();
+
+    //特殊字符
+    private static final Pattern SPECIAL_CHAR = Pattern
+        .compile("[ _`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t");
 
     /**
      * 将字符串转位日期类型
@@ -556,6 +571,16 @@ public class StringUtils {
             return false;
         }
         return IDENTIFY_CODE.matcher(str).matches();
+    }
+
+    /**
+     * 判断是否为身份证号码
+     */
+    public static boolean isIDCard(String str) {
+        if (str == null || str.trim().length() == 0) {
+            return false;
+        }
+        return ID_CARD1.matcher(str).matches() || ID_CARD2.matcher(str).matches();
     }
 
     /**
@@ -1326,5 +1351,83 @@ public class StringUtils {
             }
         }
         return list;
+    }
+
+    public static String checkEmptyString(String value) {
+        if (TextUtils.isEmpty(value)) {
+            value = "";
+        }
+        return value;
+    }
+
+    /*
+    * 是否包含特殊字符
+    * */
+    public static boolean isContainSpecailChar(String s) {
+        if (!TextUtils.isEmpty(s) && SPECIAL_CHAR.matcher(s).find()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static String getWaterMarkTime() {
+        String format = "yyyy-MM-dd HH:mm";
+        SimpleDateFormat df = new SimpleDateFormat(format);
+        Calendar calendar = Calendar.getInstance();
+        return df.format(calendar.getTime());
+    }
+
+    public static ArrayList<String> getGroups(String s) {
+        ArrayList<String> list = new ArrayList<>();
+        if (!TextUtils.isEmpty(s)) {
+            list = new ArrayList<>();
+            if (s.contains(",")) {
+                String[] arr = s.split(",");
+                if (arr != null && arr.length > 0) {
+                    int len = arr.length;
+                    for (int i = 0; i < len; i++) {
+                        list.add(arr[i]);
+                    }
+                }
+            } else {
+                list.add(s);
+            }
+        }
+        return list;
+    }
+
+    public static String getStringByList(List<String> list) {
+        if (list != null && list.size() > 0) {
+            int len = list.size();
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < len; i++) {
+                if (i == len - 1) {
+                    builder.append(list.get(i));
+                } else {
+                    builder.append(list.get(i)).append(",");
+                }
+            }
+            return builder.toString();
+        } else {
+            return "";
+        }
+    }
+
+    public static String getTranforChar(@NonNull String value) {
+        if (value.equals("_")) {
+            value = "/_";
+        } else if (value.equals("%")) {
+            value = "/%";
+        } else if (value.equals("/")) {
+            value = "//";
+        }
+        return value;
+    }
+
+    public static boolean isContainTransforChar(@NonNull String value) {
+        if (value.equals("_") || value.equals("%") || value.equals("/")) {
+            return true;
+        }
+        return false;
     }
 }

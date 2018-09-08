@@ -66,8 +66,9 @@
     <string name="attach_messages_hint">上传消息附件成功之后，可以前往事项跟踪发起事件，并将这些消息作为附件添加，上传之前必须输入主题</string>
     <string name="attach_messages_title">输入主题</string>
 
+    <string name="secret_no_support">密聊不支持此功能</string>
 
-
+    <string name="pic_water_content">fingerchat-{%1$s}-{%2$s}</string>
 
 
 </resources>

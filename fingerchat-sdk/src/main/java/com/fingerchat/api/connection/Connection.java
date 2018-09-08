@@ -25,6 +25,8 @@ public interface Connection {
 
     void reconnect();
 
+    void manualReconnect();
+
     boolean isReadTimeout();
 
     boolean isWriteTimeout();

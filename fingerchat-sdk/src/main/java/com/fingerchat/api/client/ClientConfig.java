@@ -47,7 +47,7 @@ public final class ClientConfig {
     private Logger logger;
     private boolean logEnabled;
     private boolean enableHttpProxy = true;
-    private boolean isLoginConflicted = false;
+    private boolean isBannedAotoLogin = false;//是否禁止自动登录，在因退出登录和登录冲突而断开连接，为true
 
     private final Map<Class<? extends FGListener>, Collection<? extends FGListener>> listeners = new HashMap<>();
 
@@ -318,11 +318,11 @@ public final class ClientConfig {
         return serverAddress;
     }
 
-    public void setLoginConflicted(boolean flag) {
-        isLoginConflicted = flag;
+    public void setBannedAotoLogin(boolean flag) {
+        isBannedAotoLogin = flag;
     }
 
-    public boolean isLoginConflicted() {
-        return isLoginConflicted;
+    public boolean isBannedAotoLogin() {
+        return isBannedAotoLogin;
     }
 }

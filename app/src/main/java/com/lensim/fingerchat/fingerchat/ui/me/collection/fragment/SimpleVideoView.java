@@ -11,23 +11,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.bumptech.glide.Glide;
-import com.lens.chatmodel.helper.FileCache;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.JsonUtils;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.components.widget.CircleProgress;
-import com.lensim.fingerchat.data.Http;
-import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.data.me.content.VideoFavContent;
 import com.lensim.fingerchat.fingerchat.R;
-import com.lensim.fingerchat.fingerchat.component.download.DownloadApi;
-import com.lensim.fingerchat.fingerchat.component.download.progress.DownloadProgressListener;
+import com.lensim.fingerchat.fingerchat.api.DownloadApi;
+import com.lensim.fingerchat.fingerchat.component.download.DownloadProgressListener;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.Content;
 
-import java.io.IOException;
-
-import io.reactivex.functions.Consumer;
 import me.jessyan.progressmanager.ProgressListener;
 import me.jessyan.progressmanager.ProgressManager;
 import me.jessyan.progressmanager.body.ProgressInfo;
@@ -56,12 +50,12 @@ public class SimpleVideoView implements AbsContentView {
 
     @SuppressLint("CheckResult")
     private void setSimpleVideo() {
-        if (TextUtils.isEmpty(favContent.getVideoUrl())) {
+        if (favContent == null || TextUtils.isEmpty(favContent.getVideoUrl())) {
             return;
         }
-
         /*AppConfig.CIRCLE_PATH + videoName*/
-        if (!StringUtils.isEmpty(favContent.getVideoUrl()) && FileUtil.checkFilePathExists(favContent.getVideoUrl())) {
+        if (!StringUtils.isEmpty(favContent.getVideoUrl()) && FileUtil
+            .checkFilePathExists(favContent.getVideoUrl())) {
             Glide.with(ContextHelper.getContext())
                 .load(favContent.getImageUrl()).asBitmap().centerCrop()
                 .into(videothumbnial);
@@ -69,17 +63,18 @@ public class SimpleVideoView implements AbsContentView {
             ll_loading.setVisibility(View.VISIBLE);
             img_loading.setVisibility(View.GONE);
 
-            ProgressManager.getInstance().addResponseListener(favContent.getVideoUrl(), new ProgressListener() {
-                @Override
-                public void onError(long id, Exception e) {
+            ProgressManager.getInstance()
+                .addResponseListener(favContent.getVideoUrl(), new ProgressListener() {
+                    @Override
+                    public void onError(long id, Exception e) {
 
-                }
+                    }
 
-                @Override
-                public void onProgress(ProgressInfo progressInfo) {
-                    progressBar.setPercent(progressInfo.getPercent());
-                }
-            });
+                    @Override
+                    public void onProgress(ProgressInfo progressInfo) {
+                        progressBar.setPercent(progressInfo.getPercent());
+                    }
+                });
             DownloadProgressListener downloadProgressListener = (bytesRead, contentLength, done) -> {
                 //
             };

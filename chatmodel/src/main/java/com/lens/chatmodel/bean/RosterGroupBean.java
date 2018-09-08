@@ -1,7 +1,6 @@
 package com.lens.chatmodel.bean;
 
 import com.lensim.fingerchat.commons.base.BaseJsonEntity;
-import com.lensim.fingerchat.commons.interf.IChatUser;
 import java.util.List;
 
 /**
@@ -12,7 +11,7 @@ import java.util.List;
 public class RosterGroupBean extends BaseJsonEntity {
 
     private String name;
-    private List<IChatUser> users;
+    private List<UserBean> users;
 
     public String getName() {
         return name;
@@ -22,16 +21,16 @@ public class RosterGroupBean extends BaseJsonEntity {
         this.name = name;
     }
 
-    public List<IChatUser> getUsers() {
+    public List<UserBean> getUsers() {
         return users;
     }
 
-    public void setUsers(List<IChatUser> users) {
+    public void setUsers(List<UserBean> users) {
         this.users = users;
     }
 
-    public int getMemberCount(){
-        if (users != null){
+    public int getMemberCount() {
+        if (users != null) {
             return users.size();
         }
         return 0;

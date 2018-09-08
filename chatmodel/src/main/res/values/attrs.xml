@@ -18,7 +18,7 @@
     </declare-styleable>
 
     <!--<declare-styleable name="MultiAvatarView">-->
-        <!--<attr format="dimension" name="muliti_space"/>-->
+    <!--<attr format="dimension" name="muliti_space"/>-->
     <!--</declare-styleable>-->
 
     <declare-styleable name="MoveLinearlayout">
@@ -47,6 +47,25 @@
         <attr format="reference" name="gifViewStyle"/>
     </declare-styleable>
 
+    <declare-styleable name="TagCloudView">
+        <attr format="reference" name="tcvBackground"/>
+        <attr format="color" name="tcvTextColor"/>
+        <attr format="dimension" name="tcvBorder"/>
+        <attr format="integer" name="tcvTextSize"/>
+        <attr format="dimension" name="tcvBorderItem"/>
+        <attr format="dimension" name="tcvItemBorderVertical"/>
+        <attr format="dimension" name="tcvItemBorderHorizontal"/>
+
+        <attr format="boolean" name="tcvSingleLine"/>
+        <attr format="boolean" name="tcvShowEndText"/>
+        <attr format="boolean" name="tcvShowRightImg"/>
+        <attr format="string" name="tcvEndText"/>
+        <attr format="reference" name="tcvRightResId"/>
+        <attr format="boolean" name="tcvCanTagClick"/>
+
+        <attr format="reference" name="tcvTagResId"/>
+        <attr format="boolean" name="tcvShowEdit"/>
+    </declare-styleable>
 
 
 </resources>

@@ -7,7 +7,7 @@
 
     <com.lensim.fingerchat.commons.toolbar.FGToolbar
         android:id="@+id/viewTitleBar"
-        style="@style/FGToolbarStyle"/>
+        style="@style/FGToolbarStyleWithNoOverflow"/>
 
     <com.edmodo.cropper.CropImageView
         android:id="@+id/mCropImageView"

@@ -14,6 +14,7 @@
     <string name="input_right_phone_num">请输入正确手机号</string>
     <string name="input_right_identify_code">请输入正确验证码</string>
     <string name="password_empty">密码不能为空</string>
+    <string name="nick_empty">昵称不能为空</string>
     <string name="phone_empty">手机号不能为空</string>
     <string name="code_empty">验证码不能为空</string>
     <string name="input_job_num">请输入您的工号</string>
@@ -29,6 +30,10 @@
 
     <string name="login_ing">正在登录...</string>
     <string name="deal_with_ing">正在处理...</string>
+
+    <string name="no_network_connection">当前无网络，请检查网络连接</string>
+    <string name="connection_out_time">连接超时，请检查网络连接</string>
+
 
     <string name="clear_odd_files">清除旧文件</string>
     <string name="cache_hint">飞鸽占不到10%的存储空间，建议不要清理</string>
@@ -93,6 +98,7 @@
 
     <string name="accout_inexist">账号不存在</string>
     <string name="accout_or_psd_error">账号或者密码错误，无法登录</string>
+    <string name="psd_error">密码错误，无法登录</string>
     <string name="accout_was_banned">账号被禁止登录，请联系管理员</string>
 
     <!-- 个人中心-->
@@ -141,8 +147,7 @@
     <string name="scan">扫描</string>
     <string name="my_location">我的位置</string>
 
-    <string name="input_remark">输入名称</string>
-    <string name="add_groups_to_divide">添加分组对联系人进行分类</string>
+
     <string name="avatar">头像</string>
     <string name="already_identify">已认证信息</string>
     <string name="user_qrcode">二维码</string>
@@ -168,4 +173,29 @@
     <string name="secret_chat">密聊</string>
     <string name="open_pwd_set">密码设置</string>
     <string name="pwd_set">请设置密码</string>
-</resources>
+    <string name="new_pwd_set">新密码设置</string>
+    <string name="close_pwd_lock">关闭密码锁</string>
+    <string name="old_pwd_to_close">输入旧密码以关闭密码锁</string>
+    <string name="old_pwd">输入旧密码</string>
+    <string name="change_safe_pwd">更改安全密码</string>
+    <string name="pwd_set_success">密码设置成功</string>
+    <string name="confirem_pwd">两次输入密码不一致，请重新确认</string>
+    <string name="freeze_account">账号已被冻结</string>
+    <string name="safe_pwd_lock">安全密码锁定</string>
+    <string name="pwd_closed">密码锁已关闭</string>
+    <string name="safe_pwd_change_success">安全密码更改成功</string>
+    <string name="input_new_pwd_again">请再次输入新密码</string>
+    <string name="please_input_new_pwd">请输入新密码</string>
+    <string name="old_pwd_wrong">旧密码不正确，请重新输入</string>
+    <string name="printlock_unopen">指纹解锁未开启</string>
+    <string name="printlock_open_success">指纹解锁成功!</string>
+    <string name="printlock_open_fail">指纹识别识别，请重试!</string>
+    <string name="printlock_open_fail_wait">指纹识别错误,等待几秒之后再重试!</string>
+    <string name="version_toolow">系统版本过低</string>
+    <string name="device_no_support">此设备不支持指纹解锁</string>
+    <string name="input_print">您还没有录制指纹，请录入！</string>
+    <string name="long_press_to_open">请进行指纹识别，长按指纹解锁键</string>
+    <string name="long_press_open">指纹识别已经开启，长按指纹解锁键</string>
+
+    <string name="collect_voice_not_support">收藏的语音不支持转发</string>
+    </resources>

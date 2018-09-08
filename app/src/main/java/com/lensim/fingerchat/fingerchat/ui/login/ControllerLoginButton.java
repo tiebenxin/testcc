@@ -15,8 +15,10 @@ public class ControllerLoginButton {
 
   private Button button;
   private OnControllerClickListenter listenter;
+    private final View viewRoot;
 
-  public ControllerLoginButton(View v) {
+    public ControllerLoginButton(View v) {
+        viewRoot = v;
     init(v);
   }
 
@@ -47,6 +49,11 @@ public class ControllerLoginButton {
   public void setOnControllerClickListener(OnControllerClickListenter l) {
     listenter = l;
   }
+
+    public void setVisible(boolean b) {
+        viewRoot.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
 
 
 }

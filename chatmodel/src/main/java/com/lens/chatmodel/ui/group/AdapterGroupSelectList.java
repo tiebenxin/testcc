@@ -16,6 +16,7 @@ import com.lens.chatmodel.db.MucInfo;
 import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.helper.ImageHelper;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
+import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.widgt.AvatarImageView;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
 
     private final static int HERDER = 0;
     private final static int NORMAL = 1;
+    private ArrayList<UserBean> alreadyInUsers;
 
     public AdapterGroupSelectList(Context ctx) {
         super(ctx);
@@ -63,6 +65,13 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
 
     public void setSelectUsers(ArrayList<UserBean> selectUsers) {
         this.selectUsers = selectUsers;
+        notifyDataSetChanged();
+
+    }
+
+    public void setAlreadyInUsers(ArrayList<UserBean> inUsers) {
+        alreadyInUsers = inUsers;
+        notifyDataSetChanged();
     }
 
     //选中集合
@@ -103,10 +112,24 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
             holder.iv_authentication.setVisibility(View.GONE);
             holder.cb.setVisibility(View.GONE);
             holder.ll_work_info.setVisibility(View.GONE);
-            holder.tvName.setText("选择一个群");
+
+            switch (selectMode) {
+                case Constant.SECRETCHAT_ADD:
+                    holder.tvName.setText("创建群密聊");
+                    break;
+                default:
+                    holder.tvName.setText("选择一个群");
+                    break;
+            }
             holder.friendRoot.setOnClickListener((v) -> {
-                //选择群列表
-                selectListener.selectMucInfo();
+                switch (selectMode) {
+                    case Constant.SECRETCHAT_ADD:
+                        selectListener.createSecretMuc();
+                        break;
+                    default://选择群列表
+                        selectListener.selectMucInfo();
+                        break;
+                }
             });
             return;
         }
@@ -115,8 +138,9 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
         }
         UserBean userBean = mBeanList.get(position);
         holder.bindData(userBean);
-        holder.tvName.setText(TextUtils.isEmpty(userBean.getUserNick()) ? userBean.getUserId()
-            : userBean.getUserNick());
+        holder.tvName.setText(ChatHelper
+            .getUserRemarkName(userBean.getRemarkName(), userBean.getUserNick(),
+                userBean.getUserId()));
         holder.tvWork
             .setText(
                 TextUtils.isEmpty(userBean.getWorkAddress()) ? "" : userBean.getWorkAddress());
@@ -124,7 +148,7 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
             .setText(TextUtils.isEmpty(userBean.getDptName()) ? "" : userBean.getDptName());
         if (ChatHelper.isGroupChat(userBean.getChatType())) {
             holder.ivHeader.setDrawText(
-                MucInfo.selectMucUserNick(ContextHelper.getContext(), userBean.getUserId()));
+                MucInfo.selectMucUserNickList(ContextHelper.getContext(), userBean.getUserId()));
         } else {
             holder.ivHeader.setChatType(true);
             ImageHelper.loadAvatarPrivate(userBean.getAvatarUrl(), holder.ivHeader);
@@ -137,39 +161,60 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
                 ////如果添加群成员的话，需要判断是否已经在群中
                 if (null != groupUsers && groupUsers.contains(userBean.getUserId())) {
                     holder.cb.setEnabled(false);
-                    holder.cb.setChecked(true);
+                    holder.setCheck(true);
                     holder.friendRoot.setEnabled(false);
                 } else {
                     holder.cb.setEnabled(true);
                     holder.friendRoot.setEnabled(true);
-                    holder.cb.setChecked(selectUsers.contains(userBean) ? true : false);
+                    holder.setCheck(selectUsers.contains(userBean) ? true : false);
+                }
+                break;
+            case Constant.MODE_GROUP_ADD_MEMEBER://添加分组成员
+                if (alreadyInUsers != null && alreadyInUsers.contains(userBean)) {
+                    holder.cb.setImageResource(R.drawable.already_check_box);
+                } else {
+                    if (null != groupUsers && groupUsers.contains(userBean.getUserId())) {
+                        holder.cb.setEnabled(false);
+                        holder.setCheck(true);
+                        holder.friendRoot.setEnabled(false);
+                    } else {
+                        holder.cb.setEnabled(true);
+                        holder.friendRoot.setEnabled(true);
+                        holder.setCheck(selectUsers.contains(userBean) ? true : false);
+                    }
                 }
                 break;
             default:
                 holder.cb.setEnabled(true);
                 holder.friendRoot.setEnabled(true);
-                holder.cb.setChecked(selectUsers.contains(userBean) ? true : false);
+                holder.setCheck(selectUsers.contains(userBean) ? true : false);
                 break;
 
         }
         holder.friendRoot.setOnClickListener((v) -> {
             //判断选择模式
             //单选
-            if (Constant.GROUP_SELECT_MODE_CHANGE_ROLE == selectMode) {
+            if (Constant.SECRETCHAT_ADD == selectMode) {
+                selectListener.startSecretChat(userBean);
+            } else if (Constant.GROUP_SELECT_MODE_CHANGE_ROLE == selectMode) {
                 selectUsers.clear();
                 selectUsers.add(userBean);
                 selectListener.showSelectedView(true, false);
                 notifyDataSetChanged();
             } else {
                 //选中或反选
-                if (selectUsers.contains(userBean)) {
-                    selectUsers.remove(userBean);
-                    holder.cb.setChecked(false);
-                    selectListener.showSelectedView(false, true);
+                if (alreadyInUsers != null && alreadyInUsers.contains(userBean)) {
+                    return;
                 } else {
-                    holder.cb.setChecked(true);
-                    selectUsers.add(userBean);
-                    selectListener.showSelectedView(false, false);
+                    if (selectUsers.contains(userBean)) {
+                        selectUsers.remove(userBean);
+                        holder.setCheck(false);
+                        selectListener.showSelectedView(false, true);
+                    } else {
+                        holder.setCheck(true);
+                        selectUsers.add(userBean);
+                        selectListener.showSelectedView(false, false);
+                    }
                 }
             }
         });
@@ -217,7 +262,7 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
         TextView tvIndex;
         AvatarImageView ivHeader;
         TextView tvName;
-        CheckBox cb;
+        ImageView cb;
         TextView showCountTv;
         TextView tvWork;
         TextView tvDptName;
@@ -230,7 +275,7 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
             tvIndex = itemView.findViewById(R.id.tvIndex);
             ivHeader = itemView.findViewById(R.id.ivHeader);
             tvName = itemView.findViewById(R.id.tvName);
-            cb = itemView.findViewById(R.id.cb);
+            cb = itemView.findViewById(R.id.iv_cb);
             showCountTv = itemView.findViewById(R.id.show_count_tv);
             tvWork = itemView.findViewById(R.id.tv_work);
             tvDptName = itemView.findViewById(R.id.tv_dptName);
@@ -239,6 +284,15 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
         }
 
         public void bindData(UserBean bean) {
+
+        }
+
+        public void setCheck(boolean b) {
+            if (b) {
+                cb.setImageResource(R.drawable.click_check_box);
+            } else {
+                cb.setImageResource(R.drawable.check_box);
+            }
 
         }
     }
@@ -286,7 +340,7 @@ public class AdapterGroupSelectList extends AbstractRecyclerAdapter<UserBean> {
 
     private boolean hasMuc() {
         if (selectMode == Constant.GROUP_SELECT_MODE_CARD
-            || selectMode == Constant.MODE_TRANSFOR_MSG) {
+            || selectMode == Constant.MODE_TRANSFOR_MSG || selectMode == Constant.SECRETCHAT_ADD) {
             return true;
         } else {
             return false;

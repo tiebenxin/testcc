@@ -10,6 +10,7 @@ import java.lang.reflect.Type;
  * json工具JsonUtils.java类
  */
 public class JsonUtils {
+
     public static Gson gson = new Gson();
 
     public static String toJson(Object obj, Class<?> clazz) {
@@ -21,11 +22,21 @@ public class JsonUtils {
     }
 
     public static <T> T fromJson(String json, Class<T> clazz) {
-        return gson.fromJson(json, clazz);
+        try {
+            return gson.fromJson(json, clazz);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static <T> T fromJson(String json, Type objectType) {
-        return gson.fromJson(json, objectType);
+        try {
+            return gson.fromJson(json, objectType);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 //    /**
@@ -62,10 +73,6 @@ public class JsonUtils {
 
     /**
      * 通用解析 集合
-     *
-     * @param json
-     * @param clazz
-     * @return
      */
     public static BaseListBean formJsonListBean(String json, Class clazz) {
         Type objectType = type(BaseListBean.class, clazz);

@@ -21,7 +21,7 @@ public class ContainerFragment extends Fragment {
 
   public static ContainerFragment newInstance(String url, AnimationRect rect,
       LongImageBean longImageBean,
-      boolean animationIn, boolean firstOpenPage) {
+      boolean animationIn, boolean firstOpenPage,String collectInfo,int position) {
     ContainerFragment fragment = new ContainerFragment();
     Bundle bundle = new Bundle();
     bundle.putString("url", url);
@@ -29,6 +29,8 @@ public class ContainerFragment extends Fragment {
     bundle.putParcelable("longImage", longImageBean);
     bundle.putBoolean("animationIn", animationIn);
     bundle.putBoolean("firstOpenPage", firstOpenPage);
+    bundle.putString("collectInfo", collectInfo);
+      bundle.putInt("position", position);
     fragment.setArguments(bundle);
     return fragment;
   }
@@ -47,16 +49,19 @@ public class ContainerFragment extends Fragment {
 
     Bundle bundle = getArguments();
     String url = bundle.getString("url");
+    String collectInfo = bundle.getString("collectInfo");
+    int position = bundle.getInt("position");
+
     boolean animateIn = bundle.getBoolean("animationIn");
     bundle.putBoolean("animationIn", false);
 
-    displayPicture(url, animateIn);
+    displayPicture(url, animateIn,collectInfo,position);
 
     return view;
   }
 
 
-  private void displayPicture(String path, boolean animateIn) {
+  private void displayPicture(String path, boolean animateIn,String collectInfo,int position) {
     GalleryAnimationActivity activity = (GalleryAnimationActivity) getActivity();
 
     AnimationRect rect = getArguments().getParcelable("rect");
@@ -74,7 +79,7 @@ public class ContainerFragment extends Fragment {
     }
 
     Fragment fragment = null;
-    fragment = GeneralPictureFragment.newInstance(path, rect, longImageBean, animateIn);
+    fragment = GeneralPictureFragment.newInstance(path, rect, longImageBean, animateIn,collectInfo,position);
     getChildFragmentManager().beginTransaction().replace(R.id.child, fragment)
         .commitAllowingStateLoss();
 

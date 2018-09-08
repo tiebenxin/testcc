@@ -17,12 +17,14 @@ import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.google.gson.Gson;
 import com.lens.chatmodel.ChatEnum.EMessageType;
+import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.bean.UserBean;
+import com.lens.chatmodel.bean.body.BodyEntity;
+import com.lens.chatmodel.bean.message.RecentMessage;
+import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.interf.IChatRoomModel;
 import com.lens.chatmodel.manager.MessageManager;
 import com.lens.chatmodel.ui.group.Constant;
-import com.lensim.fingerchat.data.Http;
-import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.commons.base.BaseObserver;
 import com.lensim.fingerchat.commons.global.Route;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
@@ -35,13 +37,14 @@ import com.lensim.fingerchat.commons.utils.NoteStringUtils;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.commons.utils.TimeUtils;
+import com.lensim.fingerchat.data.Http;
+import com.lensim.fingerchat.data.RxSchedulers;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
-import com.lensim.fingerchat.data.response.ret.RetObjectResponse;
+import com.lensim.fingerchat.data.response.response.FGObjectResponse;
 import com.lensim.fingerchat.data.work_center.SignInJson;
 import com.lensim.fingerchat.data.work_center.sign.SPListResponse;
 import com.lensim.fingerchat.data.work_center.sign.SignInJsonAttachInfo;
 import com.lensim.fingerchat.data.work_center.sign.SignInPicture;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,7 +114,7 @@ public class ClockInPresenter extends BaseMvpPresenter<ClockInView> {
                 info.location = new LatLng(location.getLatitude(), location.getLongitude());
                 if (!StringUtils.isEmpty(mAddress) && isViewAttached()) {
                     getMvpView().afterLocation(mAddress);
-                    clickInDate = TimeUtils.getDateNoSeconds();
+                    clickInDate = TimeUtils.getDate();
                 }
                 if (isViewAttached()) {
                     getMvpView().drawMarker(info, mBaiduMap);
@@ -238,29 +241,28 @@ public class ClockInPresenter extends BaseMvpPresenter<ClockInView> {
         }
         mTpsignin = mTpsignin.substring(0, mTpsignin.lastIndexOf("@"));
 
-        signInJson.setToken(getEncodeStr(token));
-        signInJson.setEmpno(getEncodeStr(empno));
-        signInJson.setImuser(getEncodeStr(imuser));
-        signInJson.setSignIP(getEncodeStr(DeviceUtils.getIp(ContextHelper.getContext())));
+        signInJson.setDeviceToken(getEncodeStr(token));
+        signInJson.setEmployeeNo(getEncodeStr(empno));
+        signInJson.setImUser(getEncodeStr(imuser));
+        signInJson.setSignIp(getEncodeStr(DeviceUtils.getIp(ContextHelper.getContext())));
         signInJson.setSignTime(getEncodeStr(time));
-        signInJson.setMobiletype(getEncodeStr("Android"));
-        signInJson.setMobilename(getEncodeStr(DeviceUtils.getManufacturer()));
-        signInJson.setMobileVer(DeviceUtils.getSDKVersion() + "");
-        signInJson.setUuid(DeviceUtils.getAndroidID());
-        signInJson.setImver(DeviceUtils.getVersionCode());
-        signInJson.setLocationtype(getEncodeStr(locationtype));
-        signInJson.setLocationdata(getEncodeStr(locationdata));
-        signInJson.setTPSignIn(getEncodeStr(mTpsignin));
+        signInJson.setClientType(getEncodeStr("Android"));
+        signInJson.setClientName(getEncodeStr(DeviceUtils.getManufacturer()));
+        signInJson.setClientVersion(getEncodeStr(DeviceUtils.getSDKVersion() + ""));
+        signInJson.setLocationType(getEncodeStr(locationtype));
+        signInJson.setLocationData(getEncodeStr(locationdata));
+        signInJson.setLocationPhoto(getEncodeStr(mTpsignin));
         signInJson.setRemark(getEncodeStr(remark));
-        signInJson.setForReport(getEncodeStr(peopleList));
-        signInJson.setForReportNick(getEncodeStr(peopleListNick));
+        signInJson.setReporter(getEncodeStr(peopleList));
+        signInJson.setReporterNickname(getEncodeStr(peopleListNick));
+        signInJson.setIsValid(1);
         Http.signIn(signInJson)
             .compose(RxSchedulers.compose())
-            .subscribe(new BaseObserver<RetObjectResponse<String>>() {
+            .subscribe(new BaseObserver<FGObjectResponse<String>>() {
                 @Override
-                public void onNext(RetObjectResponse<String> response) {
+                public void onNext(FGObjectResponse<String> response) {
                     lastTime = System.currentTimeMillis();
-                    if (1 == response.retCode) {//成功
+                    if (12 == response.code) {//成功
                         isClockedAlready = true;
                         if (isViewAttached()) {
                             getMvpView().showClockInDialog(true, mAddress);
@@ -268,19 +270,25 @@ public class ClockInPresenter extends BaseMvpPresenter<ClockInView> {
                         sendMessage(remark);
                     } else {//失败
                         if (isViewAttached()) {
-                            getMvpView().showClockInDialog(false, response.retMsg);
+                            getMvpView().showClockInDialog(false, response.message);
                         }
                     }
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    super.onError(e);
+                    T.show("签到失败");
                 }
             });
     }
 
 
     private static String getEncodeStr(String str) {
-        String encodeParam = null;
+        String encodeParam = "";
         try {
-            encodeParam = CyptoUtils.encrypt(str.trim());
-            encodeParam = URLEncoder.encode(encodeParam, "utf-8");
+            encodeParam = CyptoUtils.encodeSignIn(str.trim());
+//            encodeParam = URLEncoder.encode(encodeParam, "utf-8");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -366,20 +374,45 @@ public class ClockInPresenter extends BaseMvpPresenter<ClockInView> {
         for (int i = 0, len = resultChoosePeople.size(); i < len; i++) {
             String account = "";
             boolean isGroup = false;
-            if (resultChoosePeople.get(i).getType() == 0) {//如果是个人
-                account = resultChoosePeople.get(i).getUserId();
+            UserBean bean = resultChoosePeople.get(i);
+            if (bean == null) {
+                return;
+            }
+            if (bean.getType() == 0) {//如果是个人
+                account = resultChoosePeople.get(i).getUserId();//接收者
                 isGroup = false;
-            } else if (resultChoosePeople.get(i).getType() == 1) {//如果是群
-                account = resultChoosePeople.get(i).getMucId();
+            } else if (bean.getType() == 1) {//如果是群
+                account = bean.getMucId();
                 isGroup = true;
+            }
+            BodyEntity entity;
+            if (isGroup) {
+                entity = MessageManager.getInstance()
+                    .createBody(toJson, false, EMessageType.CARD, UserInfoRepository.getImage(),
+                        UserInfoRepository.getUsernick(), bean.getMucName());
+            } else {
+                entity = MessageManager.getInstance()
+                    .createBody(toJson, false, EMessageType.CARD, UserInfoRepository.getUsernick());
             }
 
             IChatRoomModel chatRoomModel = MessageManager.getInstance()
-                .createTransforMessage(account, UserInfoRepository.getUserName(), toJson,
-                    UserInfoRepository.getUsernick(), UserInfoRepository.getImage(), isGroup, false,
+                .createTransforMessage(UserInfoRepository.getUserName(), account,
+                    BodyEntity.toJson(entity), UserInfoRepository.getUsernick(),
+                    UserInfoRepository.getImage(), isGroup, false,
                     false, EMessageType.CARD);
+            RecentMessage recentMessage = ProviderChat
+                .selectSingeRecent(ContextHelper.getContext(), chatRoomModel.getTo());
+            if (recentMessage != null) {
+                MessageManager.getInstance()
+                    .saveMessage(chatRoomModel, bean.getAvatarUrl(), bean.getUserNick(),
+                        recentMessage.getNotDisturb(), recentMessage.getBackgroundId(),
+                        recentMessage.getTopFlag());
+            } else {
+                MessageManager.getInstance()
+                    .saveMessage(chatRoomModel, bean.getAvatarUrl(), bean.getUserNick(),
+                        ESureType.NO.ordinal(), 0, ESureType.NO.ordinal());
+            }
             MessageManager.getInstance().sendMessage(chatRoomModel);
-
         }
     }
 

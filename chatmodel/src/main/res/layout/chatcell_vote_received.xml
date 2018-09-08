@@ -103,7 +103,7 @@
                                         android:gravity="center_vertical"
                                         android:maxLines="1"
                                         android:maxWidth="220dp"
-                                        android:text="陈小小"
+                                        android:text="option1"
                                         android:textColor="@color/gray_normal"
                                         android:textSize="@dimen/dimen_14_sp"/>
                                 </LinearLayout>
@@ -128,7 +128,7 @@
                                         android:gravity="center_vertical"
                                         android:maxLines="1"
                                         android:maxWidth="220dp"
-                                        android:text="陈小小"
+                                        android:text="option2"
                                         android:textColor="@color/gray_normal"
                                         android:textSize="@dimen/dimen_14_sp"/>
                                 </LinearLayout>

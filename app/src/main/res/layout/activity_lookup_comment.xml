@@ -10,7 +10,7 @@
 
         <com.lensim.fingerchat.commons.toolbar.FGToolbar
             android:id="@+id/toolbar"
-            style="@style/FGToolbarStyle"/>
+            style="@style/FGToolbarStyleWithNoOverflow"/>
 
         <RelativeLayout
             android:id="@+id/bodyLayout_comment"

@@ -12,21 +12,16 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.fingerchat.api.message.MucActionMessage;
 import com.fingerchat.api.protocol.Command;
 import com.fingerchat.api.push.MessageContext;
 import com.fingerchat.proto.message.Muc;
 import com.fingerchat.proto.message.Muc.MOption;
-import com.fingerchat.proto.message.Muc.MucAction;
 import com.fingerchat.proto.message.Muc.MucItem;
-import com.fingerchat.proto.message.Muc.MucMemberItem;
 import com.fingerchat.proto.message.Resp;
-import com.lens.chatmodel.ChatEnum.EActionType;
-import com.lens.chatmodel.ChatEnum.EChatBgId;
-import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.base.BaseUserInfoActivity;
 import com.lens.chatmodel.bean.UserBean;
@@ -38,16 +33,14 @@ import com.lens.chatmodel.eventbus.ResponseEvent;
 import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.helper.MucHelper;
 import com.lens.chatmodel.im_service.FingerIM;
-import com.lens.chatmodel.interf.IChatRoomModel;
-import com.lens.chatmodel.manager.MessageManager;
 import com.lens.chatmodel.manager.MucManager;
 import com.lens.chatmodel.ui.contacts.GroupsDetailActivity;
 import com.lens.chatmodel.ui.contacts.UserAvatarAdapter;
+import com.lens.chatmodel.ui.message.ChatActivity;
 import com.lens.chatmodel.utils.Cn2Spell;
 import com.lens.chatmodel.utils.SortUtils;
 import com.lens.chatmodel.view.QuickIndexBar;
 import com.lensim.fingerchat.commons.app.AppConfig;
-import com.lensim.fingerchat.commons.base.FGActivity;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.IChatUser;
 import com.lensim.fingerchat.commons.interf.IEventProduct;
@@ -55,10 +48,8 @@ import com.lensim.fingerchat.commons.toolbar.FGToolbar;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.components.widget.HAvatarsRecyclerView;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -89,6 +80,8 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
     private String mucId;
     private Bundle bundle;
     private MucItem currentMucItem;
+    private LinearLayout llRosterSearch;
+    private int mucOperationCode;
 
     @Override
     public void initView() {
@@ -107,6 +100,7 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
         mLayouManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mAvatarList.setLayoutManager(mLayouManager);
         etSearch = findViewById(R.id.group_et_search);
+        llRosterSearch = findViewById(R.id.llRosterSearch);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         grouPrvContacts.setLayoutManager(layoutManager);
@@ -199,13 +193,24 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                 finish();
                 return;
             }
+
+            //个人名片
+            if (Constant.ROLE_USER_MODE == operation) {
+                ArrayList<UserBean> selectUsers = adapterSelectList.getSelectUsers();
+                Intent intent = new Intent();
+                intent.putParcelableArrayListExtra(Constant.KEY_SELECT_USER,
+                    selectUsers);
+                setResult(RESULT_OK, intent);
+                finish();
+                return;
+            }
             //多选操作
             ArrayList<String> selectUserIds = new ArrayList<>();
             for (UserBean userBean : adapterSelectList.getSelectUsers()) {
                 selectUserIds.add(userBean.getUserId());
             }
             switch (operation) {
-                case Constant.GROUP_SELECT_MODE_CREATE:
+                case Constant.GROUP_SELECT_MODE_CREATE://创建群聊
                     Bundle bundle = new Bundle();
                     //添加组名称
                     bundle.putInt("operationType", SetOperationNameActivty.ADD_GROUP_NAME);
@@ -220,9 +225,9 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                     startActivity(intent);
                     finish();
                     break;
-                case Constant.MODE_TRANSFOR_MSG:
-                    ArrayList<UserBean> selectBeans = adapterSelectList.getSelectUsers();
-                    if (selectBeans != null && selectBeans.size() > 0) {
+                case Constant.MODE_GROUP_ADD_MEMEBER:
+                    ArrayList<UserBean> addBeans = adapterSelectList.getSelectUsers();
+                    if (addBeans != null && addBeans.size() > 0) {
                         Intent result = new Intent();
                         result.putExtra(Constant.KEY_SELECT_USER,
                             adapterSelectList.getSelectUsers());
@@ -231,6 +236,31 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                         setResult(RESULT_CANCELED);
                     }
                     finish();
+                    break;
+                case Constant.MODE_GROUP_DELE_MEMEBER:
+                    ArrayList<UserBean> deleBeans = adapterSelectList.getSelectUsers();
+                    if (deleBeans != null && deleBeans.size() > 0) {
+                        Intent result = new Intent();
+                        result.putExtra(Constant.KEY_SELECT_USER,
+                            adapterSelectList.getSelectUsers());
+                        setResult(RESULT_OK, result);
+                    } else {
+                        setResult(RESULT_CANCELED);
+                    }
+                    finish();
+                    break;
+                case Constant.MODE_TRANSFOR_MSG:
+                    ArrayList<UserBean> selectBeans = adapterSelectList.getSelectUsers();
+
+                    if (selectBeans != null && selectBeans.size() > 0) {
+                        createMuc(selectBeans);
+                    } else {
+                        setResult(RESULT_CANCELED);
+                        finish();
+                    }
+                    break;
+                case Constant.SECRETCHAT_ADD:
+                    T.show("确定");
                     break;
                 default:
                     //拉人 踢人
@@ -250,7 +280,7 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                             .selectMucInfoSingle(ContextHelper.getContext(), mucId);
                     }
                     if (opetion == MOption.Invite && ChatHelper
-                        .isNeedConfirm(currentMucItem)) {//当前群开启了群邀请确认
+                        .isNeedConfirm(currentMucItem, getUserId())) {//当前群开启了群邀请确认
                         setResult(RESULT_OK);
                         finish();
                     }
@@ -292,6 +322,17 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                 showSelectedView(false, true);
                 bildUserBeans(false);
                 break;
+            case Constant.ROLE_USER_MODE:
+                toolbar.setTitleText("选择联系人");
+                ArrayList<UserBean> users = bundle
+                    .getParcelableArrayList(Constant.KEY_SELECT_USER);
+                if (null == users) {
+                    users = new ArrayList<>();
+                }
+                adapterSelectList.setSelectUsers(users);
+                showSelectedView(false, true);
+                bildUserBeans(false);
+                break;
             case Constant.GROUP_SELECT_MODE_ADD:
                 toolbar.setTitleText("邀请好友");
                 //设置群成员
@@ -313,12 +354,11 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                 break;
             case Constant.MODE_GROUP_CREATE:
                 toolbar.setTitleText("选择联系人");
-                List<IChatUser> createGroup = ProviderUser
-                    .getAllNoGroupUser(getApplicationContext());
+                List<UserBean> createGroup = ProviderUser
+                    .getValidFriendList();
                 if (createGroup != null) {
                     friendUserBeans = new ArrayList<>();
-                    for (IChatUser chatUser : createGroup) {
-                        UserBean userBean = (UserBean) chatUser;
+                    for (UserBean userBean : createGroup) {
                         userBean.setFirstChar(TextUtils.isEmpty(userBean.getFirstChar()) ? "#"
                             : (!StringUtils.matchAllLetter(userBean.getFirstChar()) ? "#"
                                 : userBean.getFirstChar()));
@@ -328,8 +368,54 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                     adapterSelectList.setData(friendUserBeans);
                 }
                 break;
+            case Constant.MODE_GROUP_ADD_MEMEBER:
+                toolbar.setTitleText("选择联系人");
+                List<UserBean> addGroup = ProviderUser.getValidFriendList();
+                if (addGroup != null) {
+                    friendUserBeans = new ArrayList<>();
+                    for (UserBean userBean : addGroup) {
+                        userBean.setFirstChar(TextUtils.isEmpty(userBean.getFirstChar()) ? "#"
+                            : (!StringUtils.matchAllLetter(userBean.getFirstChar()) ? "#"
+                                : userBean.getFirstChar()));
+                        friendUserBeans.add(userBean);
+                    }
+                    SortUtils.sortContacts(friendUserBeans);
+                    adapterSelectList.setData(friendUserBeans);
+                    ArrayList<UserBean> alreadyInGroup = bundle.getParcelableArrayList("alreadyin");
+                    if (alreadyInGroup != null) {
+                        adapterSelectList.setAlreadyInUsers(alreadyInGroup);
+                    }
+                    ArrayList<UserBean> selectGroup = bundle.getParcelableArrayList("group_member");
+                    if (selectGroup != null) {
+                        adapterSelectList.setSelectUsers(selectGroup);
+                    }
+                }
+
+                break;
+            case Constant.MODE_GROUP_DELE_MEMEBER:
+                toolbar.setTitleText("选择联系人");
+                ArrayList<UserBean> deleGroup = bundle.getParcelableArrayList("group_member");
+                if (deleGroup != null) {
+                    friendUserBeans = new ArrayList<>();
+                    for (IChatUser chatUser : deleGroup) {
+                        UserBean userBean = (UserBean) chatUser;
+                        userBean.setFirstChar(TextUtils.isEmpty(userBean.getFirstChar()) ? "#"
+                            : (!StringUtils.matchAllLetter(userBean.getFirstChar()) ? "#"
+                                : userBean.getFirstChar()));
+                        friendUserBeans.add(userBean);
+                    }
+                    SortUtils.sortContacts(friendUserBeans);
+                    adapterSelectList.setData(friendUserBeans);
+                }
+
+                break;
             case Constant.MODE_TRANSFOR_MSG:
                 toolbar.setTitleText("选择联系人");
+                bildUserBeans(false);
+                break;
+            case Constant.SECRETCHAT_ADD:
+                toolbar.setTitleText("选择密聊对象");
+                llRosterSearch.setVisibility(View.GONE);
                 bildUserBeans(false);
                 break;
 
@@ -367,7 +453,7 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
                 adapterSelectList.setData(friendUserBeans);
             }
         } else {
-            List<UserBean> temp1 = ProviderUser.selectRosterAll(getApplicationContext());
+            List<UserBean> temp1 = ProviderUser.getValidFriendList();
             if (temp1 != null) {
                 friendUserBeans = new ArrayList<>();
                 for (UserBean userBean : temp1) {
@@ -414,7 +500,19 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
         if (event != null && event instanceof MucActionMessageEvent) {
             MucActionMessage mucActionMessage = ((MucActionMessageEvent) event).getPacket();
             //是否为当前界面Action请求
-            if ((Muc.MOption.Invite == mucActionMessage.action.getAction()
+            if (MOption.Create == mucActionMessage.action.getAction()) {
+                MucItem mucItem = MucManager.createMucItem(mucActionMessage.action);
+                if (mucItem != null) {
+                    UserBean groupUserBean = new UserBean(mucItem.getMucid(), mucItem.getMucname(),
+                        Constant.ROLE_GROUP_MODE);
+                    ArrayList<UserBean> selectUsers = new ArrayList<>();
+                    selectUsers.add(groupUserBean);
+                    Intent intent = new Intent();
+                    intent.putParcelableArrayListExtra(Constant.KEY_SELECT_USER, selectUsers);
+                    setResult(RESULT_OK, intent);
+                }
+                finish();
+            } else if ((Muc.MOption.Invite == mucActionMessage.action.getAction()
                 || Muc.MOption.Kick == mucActionMessage.action.getAction())) {
                 //邀请 踢出 刷新
                 EventBus.getDefault().post(MucRefreshEvent
@@ -487,8 +585,47 @@ public class GroupSelectListActivity extends BaseUserInfoActivity implements Gro
     }
 
     @Override
+    public void createSecretMuc() {
+        Intent intent = new Intent(this, GroupSelectListActivity.class);
+        intent.putExtra(Constant.KEY_OPERATION, Constant.GROUP_SELECT_MODE_CREATE);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void startSecretChat(UserBean userBean) {
+        Intent intent = ChatActivity
+            .createChatIntent(this, userBean);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
     public void backPressed() {
         setResult(RESULT_CANCELED);
         finish();
+    }
+
+    //创建群聊
+    public void createMuc(ArrayList<UserBean> selectUser) {
+        int len = selectUser.size();
+        ArrayList<String> selectUserIds = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        builder.append(getUserNick());
+        for (int i = 0; i < len; i++) {
+            UserBean bean = selectUser.get(i);
+            selectUserIds.add(bean.getUserId());
+            int bLen = builder.length();
+            if (bLen < 20) {
+                String name = bean.getUserNick();
+                if (!TextUtils.isEmpty(name)) {
+                    int length = name.length();
+                    if (bLen + length < 20) {
+                        builder.append(",").append(name);
+                    }
+                }
+            }
+        }
+        mucOperationCode = MucManager.getInstance().createMuc(selectUserIds, builder.toString());
     }
 }

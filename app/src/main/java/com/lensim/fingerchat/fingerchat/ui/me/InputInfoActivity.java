@@ -9,10 +9,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.fingerchat.proto.message.Resp.Message;
+import com.lens.chatmodel.base.BaseUserInfoActivity;
+import com.lens.chatmodel.eventbus.ResponseEvent;
+import com.lens.chatmodel.im_service.FingerIM;
+import com.lensim.fingerchat.commons.global.Common;
+import com.lensim.fingerchat.commons.interf.IEventProduct;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
 import com.lensim.fingerchat.commons.utils.StringUtils;
+import com.lensim.fingerchat.commons.utils.T;
+import com.lensim.fingerchat.data.login.PasswordRespository;
 import com.lensim.fingerchat.fingerchat.R;
-import com.lens.chatmodel.base.BaseUserInfoActivity;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Created by LY309313 on 2016/8/17.
@@ -35,6 +44,7 @@ public class InputInfoActivity extends BaseUserInfoActivity {
     private LinearLayout mInputInfoContainer;
     private FGToolbar toolbar;
     private String name;
+    private String newPwd;
 
     @Override
     public void initView() {
@@ -75,11 +85,15 @@ public class InputInfoActivity extends BaseUserInfoActivity {
             public void onClick(View view) {
                 switch (intExtra) {
                     case REQUEST_NICK:
-                        String result = mInputInfoOther.getText().toString();
+                        String result = mInputInfoOther.getText().toString().trim();
                         if (result.length() > 10) {
                             showToast("不能超过十个字符");
                             return;
                         }
+//                        if (StringUtils.isContainSpecailChar(result)) {
+//                            T.show("昵称不能包含特殊字符");
+//                            return;
+//                        }
                         if (!StringUtils.isEmpty(result)) {
                             Intent intent = new Intent();
                             intent.putExtra(INPUT_RESULT, result);
@@ -94,42 +108,27 @@ public class InputInfoActivity extends BaseUserInfoActivity {
                         break;
                     case REQUEST_SIGN:
                         String str = mInputInfo.getText().toString();
-//                        if (!StringUtils.isEmpty(str)) {
-//                            String pwd = LensImUtil.getUserPwd();
-//                            if (!pwd.equals(str)) {
-//                                showToast("旧密码输入不正确");
-//                            } else {
-//                                String newPwd = mInputInfoNewPwd.getText().toString();
-//                                String newPwdComfrim = mInputInfoNewPwdComfrim.getText().toString();
-//                                if (newPwd.length() < 6) {
-//                                    showToast("新密码太短");
-//                                } else if (StringUtils.isEmpty(newPwd) || StringUtils
-//                                    .isEmpty(newPwdComfrim)) {
-//                                    showToast("密码含无效字符");
-//                                } else if (!newPwd.equals(newPwdComfrim)) {
-//                                    showToast("两次输入不一致");
-//                                } else {
-//                                    AppConfig.getAppConfig(mContext).SaveUserPwd(pwd);
-//                                    // loginUser.setPwd(pwd);
-//                                    //  mUserInfoSign.setText(pwd);
-//                                    LensImUtil.updateUserPwd(LensImUtil.getUserName(), pwd);
-//                                    try {
-//                                        AccountManager am = AccountManager.getInstance(
-//                                            NetworkUtils.getInstance().getConnectionThread()
-//                                                .getXmppConnection());
-//                                        am.changePassword(newPwd);
-//                                        MyApplication.getInstance().requestToClose();
-//                                        T.showShort(mContext, "密码修改成功");
-//                                        finish();
-//                                    } catch (Exception e) {
-//                                        e.printStackTrace();
-//                                        T.showShort(mContext, "密码修改失败");
-//                                    }
-//                                }
-//                            }
-//                        } else {
-//                            showToast("请先输入旧密码");
-//                        }
+                        if (!StringUtils.isEmpty(str)) {
+                            String pwd = PasswordRespository.getPassword();
+                            if (!pwd.equals(str)) {
+                                showToast("旧密码输入不正确");
+                            } else {
+                                newPwd = mInputInfoNewPwd.getText().toString();
+                                String newPwdComfrim = mInputInfoNewPwdComfrim.getText().toString();
+                                if (newPwd.length() < 6) {
+                                    showToast("新密码太短");
+                                } else if (StringUtils.isEmpty(newPwd) || StringUtils
+                                    .isEmpty(newPwdComfrim)) {
+                                    showToast("密码含无效字符");
+                                } else if (!newPwd.equals(newPwdComfrim)) {
+                                    showToast("两次输入不一致");
+                                } else {
+                                    FingerIM.I.changePassword(getUserId(), pwd, newPwd, false);
+                                }
+                            }
+                        } else {
+                            showToast("请先输入旧密码");
+                        }
                         break;
                 }
 
@@ -147,7 +146,6 @@ public class InputInfoActivity extends BaseUserInfoActivity {
             case REQUEST_NICK:
                 toolbar.setTitleText("更改名字");
                 mInputInfoOther.setHint(name);
-
                 break;
             case REQUEST_ADDRESS:
                 toolbar.setTitleText("更改地址");
@@ -163,4 +161,37 @@ public class InputInfoActivity extends BaseUserInfoActivity {
                 break;
         }
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onEventMain(IEventProduct event) {
+        if (event != null) {
+            dealWithRequest(event);
+        }
+    }
+
+    private void dealWithRequest(IEventProduct event) {
+        if (event instanceof ResponseEvent) {
+            ResponseEvent response = (ResponseEvent) event;
+            if (response.getPacket() != null && response.getPacket().response != null) {
+                Message msg = response.getPacket().response;
+                if (msg.getCode() == Common.UPDATE_SUCCESS) {//更新密码成功
+                    T.show("修改成功");
+                    switch (intExtra) {
+                        case REQUEST_SIGN:
+                            PasswordRespository.setPassword(newPwd);
+                            break;
+                    }
+                    this.finish();
+                } else if (msg.getCode() == Common.UPDATE_FAILURE) {
+                    T.show("修改失败");
+                } else if (msg.getCode() == Common.PHONE_INVALID
+                    || msg.getCode() == Common.OBTAIN_CODE_EXIST
+                    || msg.getCode() == Common.USERNAME_INVALIDE) {
+                    T.show("获取验证码失败");
+                }
+            }
+        }
+    }
+
+
 }

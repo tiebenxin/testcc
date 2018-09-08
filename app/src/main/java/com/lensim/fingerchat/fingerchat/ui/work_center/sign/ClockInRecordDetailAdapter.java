@@ -62,20 +62,24 @@ public class ClockInRecordDetailAdapter extends BaseListAdapter<String> {
 
         holder.imageView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ImagePagerOptActivity.class);
-            intent.putStringArrayListExtra(ImagePagerOptActivity.INTENT_IMGURLS, new ArrayList<>(items));
+            intent.putStringArrayListExtra(ImagePagerOptActivity.INTENT_IMGURLS,
+                new ArrayList<>(items));
             intent.putExtra(ImagePagerOptActivity.INTENT_POSITION, position);
             intent.putExtra(ImagePagerOptActivity.INTENT_HAS_BUTTON, true);
             context.startActivityForResult(intent, REQUEST_IMGS);
         });
+        holder.iv_delete.setVisibility(View.GONE);
         return convertView;
     }
 
     static class ViewHolder {
 
         ImageView imageView;
+        ImageView iv_delete;
 
         public ViewHolder(View v) {
             imageView = v.findViewById(R.id.statu_img);
+            iv_delete = v.findViewById(R.id.ib_delete);
         }
     }
 

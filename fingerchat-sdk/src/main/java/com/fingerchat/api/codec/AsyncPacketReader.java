@@ -59,7 +59,11 @@ public final class AsyncPacketReader implements PacketReader, Runnable  {
                 decodePacket(in);
                 in.compact();
             }
-        } finally {
+        } catch (Exception e){
+            e.printStackTrace();
+            logger.w("read an error, do reconnect!!!");
+//            connection.reconnect();
+        }finally {
             logger.w("read an error, do reconnect!!!");
             connection.reconnect();
         }

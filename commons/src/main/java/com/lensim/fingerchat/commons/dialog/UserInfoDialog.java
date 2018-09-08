@@ -1,6 +1,7 @@
 package com.lensim.fingerchat.commons.dialog;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -61,11 +62,8 @@ public class UserInfoDialog extends BaseDialog implements ICreateListener {
     @Override
     public void initdata() {
         environment = (FGEnvironment) FGEnvironment.getInstance();
-        AppManager.getInstance()
-            .initAcode(user, avatarUrl, this);//初始化个人二维码
-        mTvName
-            .setText(!TextUtils.isEmpty(userNick) ? userNick
-                : user);
+        AppManager.getInstance().initAcode(user, avatarUrl, this);//初始化个人二维码
+        mTvName.setText(!TextUtils.isEmpty(userNick) ? userNick : user);
         ImageLoader.loadAvatarPrivate(avatarUrl, mIvHead);
 
 
@@ -91,11 +89,12 @@ public class UserInfoDialog extends BaseDialog implements ICreateListener {
     }
 
     @Override
-    public void createCode() {
+    public void createCode(Bitmap bitmap) {
         if (environment == null) {
             return;
         }
-        ImageLoader.loadImage(environment.getAcodePath(user), mIvCode);
+//        ImageLoader.loadImage(environment.getAcodePath(user), mIvCode);
+        mIvCode.setImageBitmap(bitmap);
         showACode(true);
     }
 }

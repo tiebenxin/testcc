@@ -16,7 +16,6 @@ import com.bumptech.glide.load.resource.bitmap.TransformationUtils;
 import com.lens.chatmodel.interf.IBooleanListener;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.utils.DensityUtil;
-import java.util.HashMap;
 
 /**
  * Created by LL130386 on 2017/9/1.
@@ -31,7 +30,8 @@ public class CustomShapeTransformation extends BitmapTransformation {
     private boolean isVideo;
     private final int DEFAULT_BIG = DensityUtil.dip2px(ContextHelper.getContext(), 160);
     private final int DEFAULT_SMALL = DensityUtil.dip2px(ContextHelper.getContext(), 120);
-    private IBooleanListener mLongImageListener;
+    private boolean isLongImage;
+
 
     public CustomShapeTransformation(Context context, int shapeRes, boolean isVideo) {
         super(context);
@@ -52,7 +52,6 @@ public class CustomShapeTransformation extends BitmapTransformation {
         mPaint = new Paint();
         mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         this.isVideo = isVideo;
-        mLongImageListener = longImageListener;
     }
 
 
@@ -79,12 +78,10 @@ public class CustomShapeTransformation extends BitmapTransformation {
         } else {
             if (height != 0) {
                 scale = (width * 1.00) / height;
-                if (mLongImageListener != null) {
-                    if (scale < 0.2) {
-                        mLongImageListener.onResult(true);
-                    } else {
-                        mLongImageListener.onResult(false);
-                    }
+                if (scale < 0.2) {
+                    isLongImage = true;
+                } else {
+                    isLongImage = false;
                 }
                 if (width >= height) {
                     width = getBitmapWidth();
@@ -150,6 +147,10 @@ public class CustomShapeTransformation extends BitmapTransformation {
             .getSystemService(Context.WINDOW_SERVICE);
         Display display = manager.getDefaultDisplay();
         return display.getHeight();
+    }
+
+    public boolean getIsLongImage() {
+        return isLongImage;
     }
 
 }

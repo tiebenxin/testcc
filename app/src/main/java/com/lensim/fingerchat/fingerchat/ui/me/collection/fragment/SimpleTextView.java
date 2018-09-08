@@ -18,6 +18,8 @@ import com.lensim.fingerchat.data.repository.SPSaveHelper;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.SearchNoteActivity;
 import com.lensim.fingerchat.fingerchat.ui.me.collection.type.Content;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * date on 2018/3/14
@@ -73,8 +75,18 @@ public class SimpleTextView implements AbsContentView {
         if (TextUtils.isEmpty(text)) {
             return;
         }
+        String textContent = null;
+        try {
+            JSONObject jsonObject = new JSONObject(text);
+            if (jsonObject.has("content")){
+                textContent = jsonObject.getString("content");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         int textSize = SPSaveHelper.getIntValue("font_size", 1) * 4 + 12;
-        Spannable span = SpannableUtil.getAtText(SmileUtils.getSmiledText(mContext, text,
+        Spannable span = SpannableUtil.getAtText(SmileUtils.getSmiledText(mContext, TextUtils.isEmpty(textContent) ? text :textContent,
                 (int) TDevice.dpToPixel(textSize + 10)));
 
         simpleText.setText(span);

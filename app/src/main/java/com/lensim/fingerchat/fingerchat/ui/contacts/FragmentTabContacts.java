@@ -22,6 +22,7 @@ import com.lens.chatmodel.ChatEnum.ESureType;
 import com.lens.chatmodel.adapter.AbstractRecyclerAdapter.OnItemClickListener;
 import com.lens.chatmodel.base.BaseUserInfoActivity;
 import com.lens.chatmodel.bean.UserBean;
+import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.eventbus.EventEnum;
 import com.lens.chatmodel.eventbus.EventFactory;
@@ -35,6 +36,7 @@ import com.lens.chatmodel.interf.IContactListener;
 import com.lens.chatmodel.interf.ISearchClickListener;
 import com.lens.chatmodel.manager.RosterManager;
 import com.lens.chatmodel.ui.contacts.ActivityNewFriends;
+import com.lens.chatmodel.ui.contacts.FriendAliasActivity;
 import com.lens.chatmodel.ui.contacts.GroupsActivity;
 import com.lens.chatmodel.ui.group.GroupListActivity;
 import com.lens.chatmodel.ui.profile.FriendDetailActivity;
@@ -46,11 +48,13 @@ import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.IChatUser;
 import com.lensim.fingerchat.commons.interf.IContactDialogListener;
 import com.lensim.fingerchat.commons.interf.IEventProduct;
+import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.SPHelper;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.fingerchat.R;
+import com.lensim.fingerchat.fingerchat.ui.MainActivity;
 import com.lensim.fingerchat.fingerchat.ui.search.ControllerSearch;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -343,7 +347,6 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
     protected void initData() {
         super.initData();
         loadAllUser();
-        getRosters();
     }
 
 
@@ -393,10 +396,6 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
         ViewPagerHelper.bind(magicIndicator, viewPager);
     }
 
-
-    private void getRosters() {
-        FingerIM.I.getRosters();
-    }
 
     private void loadAllUser() {
         Observable.just(0)
@@ -477,19 +476,28 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
                 saveRosters(newRoster);
                 fragments.get(mCurrentPager).notifyResumeData();
                 notifyContactCountUpdate();
+            } else if (code == Common.DELETE_SUCCESS) {//其他端删除
+                L.d("删除成功");
+                List<RosterItem> rosters = message.message.getItemList();
+                List<UserBean> newRoster = RosterManager.getInstance()
+                    .createChatUserFromList(rosters, ERelationStatus.RECEIVE,
+                        System.currentTimeMillis(), ESureType.NO.ordinal(),
+                        ESureType.YES.ordinal());
+                deleRosters(newRoster);
+                fragments.get(mCurrentPager).notifyResumeData();
             }
 
         } else if (event instanceof ResponseEvent) {//删除成功
             RespMessage message = ((ResponseEvent) event).getPacket();
             int code = message.response.getCode();
             if (code == Common.DELETE_SUCCESS) {
+                T.showShort(getActivity(), "删除成功");
                 if (selectedUser != null) {
                     deleUser(selectedUser.getUserId());
-                } else {
-                    getRosters();
                 }
             } else if (code == Common.USER_NOT_IN_ROSTER || code == Common.USER_NOT_FOUND) {//好友不存在
-                T.showShort(getActivity(), "用户或者好友不存在");
+                deleUser(selectedUser.getUserId());
+//                T.showShort(getActivity(), "用户或者好友不存在");
             } else if (code == Common.DELETE_FAILURE) {//删除失败
                 T.showShort(getActivity(), "删除失败");
             } else if (code == Common.ALREADY_SUB) {//已是好友
@@ -530,7 +538,6 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
             initUserIds(mAllRosters);
         }
         fragments.get(mCurrentPager).notifyResumeData();
-
     }
 
     public ArrayList<UserBean> getAllRosters() {
@@ -554,6 +561,30 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
         }
     }
 
+    public void deleRosters(List<UserBean> rosters) {
+        for (int i = 0; i < rosters.size(); i++) {
+            UserBean roster = rosters.get(i);
+            if (roster != null) {
+                String userId = roster.getUserId();
+                if (TextUtils.isEmpty(userId) || userIds == null || mAllRosters == null) {
+                    ProviderUser.deleRoster(getActivity(), userId);
+                } else {
+                    int position = userIds.indexOf(userId);
+                    if (position >= 0 && position < mAllRosters.size()) {
+                        if (position >= 0 && position < mAllRosters.size()) {
+                            mAllRosters.remove(position);
+                            userIds.remove(position);
+                            ProviderUser.deleRoster(getActivity(), userId);
+                            ProviderChat.deleChat(ContextHelper.getContext(), userId);//删除聊天记录
+                            notifyResumeData();
+                            ((MainActivity) getActivity()).initUnreadCounts();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void refreshData(int index) {
         if (fragments != null && index < fragments.size()) {
             fragments.get(index).notifyResumeData();
@@ -561,18 +592,6 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
         }
     }
 
-//    public void refreshData(int index) {
-//        if (index < fragments.size()) {
-//            Bundle bundle = new Bundle();
-//            bundle.putParcelableArrayList("data", getAllRosters());
-//            fragments.get(index).setArguments(bundle);
-//            mCurrentPager = index;
-//            fragments.get(index).notifyResumeData();
-//            System.out.println(
-//                FragmentTabContacts.class.getSimpleName() + "--refreshData" + ":" + getAllRosters()
-//                    .size() + "index =" + index);
-//        }
-//    }
 
     @Override
     public void notifyResumeData() {
@@ -599,7 +618,7 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
     @Override
     public void onGroupOrTagName(IChatUser user) {
         Intent intent = FriendAliasActivity
-            .newIntent(getActivity(), user.getUserNick(), user.getUserId());
+            .newIntent(getActivity(), user.getRemarkName(), user.getUserId(), user.getGroup());
         getActivity().startActivity(intent);
 
     }
@@ -635,10 +654,10 @@ public class FragmentTabContacts extends BaseFragment implements IContactDialogL
         if (position >= 0 && position < mAllRosters.size()) {
             mAllRosters.remove(position);
             userIds.remove(position);
-            ProviderUser.updateFirendStatus(userId, ERelationStatus.RECEIVE.ordinal());
+            ProviderUser.deleRoster(getActivity(), userId);
+            ProviderChat.deleChat(ContextHelper.getContext(), userId);//删除聊天记录
             notifyResumeData();
+            ((MainActivity) getActivity()).initUnreadCounts();
         }
     }
-
-
 }

@@ -30,6 +30,9 @@ public enum Command {
     CHANGE_PASS(24), //修改密码
     GATEWAY_PUSH(25), //内部使用
     FIRST_HELLO(26), //好友成功招呼
+    PACKET(27),
+    EXCUTE(28), //提供后台服务处理
+    READED(29), //已读消息指令
     UNKNOWN(-1);//未知标号
     public final byte cmd;
 

@@ -26,5 +26,8 @@
             android:name=".ui.video.CameraActivity"
             android:screenOrientation="portrait"/>
         <activity android:name=".ui.message.AttachMessageActivity"/>
+        <activity android:name=".ui.contacts.CreateGroupActivity"/>
+        <activity android:name=".ui.image.PhotoEditClipActivity"/>
+        <activity android:name=".ui.message.MessageDetailActivity"/>
     </application>
 </manifest>

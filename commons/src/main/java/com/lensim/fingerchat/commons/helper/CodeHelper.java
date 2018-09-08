@@ -11,15 +11,16 @@ import java.lang.annotation.RetentionPolicy;
 
 public class CodeHelper {
 
-    public static final int TYPE_NET = 1;
-    public static final int TYPE_PRIVATE = 2;
-    public static final int TYPE_MUC = 3;
+    public static final int TYPE_NET = 1;//url
+    public static final int TYPE_PRIVATE = 2;//私聊
+    public static final int TYPE_MUC = 3;//群聊
+    public static final int TYPE_LOGIN = 4;//第三方登录
 
     public static final String DEFAULT_CONTENT = "abcdefghijklmnopqrstuvwxyz&abcdefghijklmnopqrstuvwxyz";
     //    public static final String DEFAULT_CONTENT = "finger";
     public static final String DEFAULT_SPLIT = "::";
 
-    @IntDef({TYPE_NET, TYPE_PRIVATE, TYPE_MUC})
+    @IntDef({TYPE_NET, TYPE_PRIVATE, TYPE_MUC, TYPE_LOGIN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ECodeType {
 

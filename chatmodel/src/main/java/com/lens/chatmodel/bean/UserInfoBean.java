@@ -28,6 +28,7 @@ public class UserInfoBean implements IChatUser, Parcelable {
     private long time;
     private int relationStatus = -1;
     private int hasReaded;
+    private String remarkName;
 
     protected UserInfoBean(Parcel in) {
         company = in.readString();
@@ -46,6 +47,7 @@ public class UserInfoBean implements IChatUser, Parcelable {
         time = in.readLong();
         relationStatus = in.readInt();
         hasReaded = in.readInt();
+        remarkName = in.readString();
     }
 
     public static final Creator<UserInfoBean> CREATOR = new Creator<UserInfoBean>() {
@@ -112,12 +114,12 @@ public class UserInfoBean implements IChatUser, Parcelable {
 
     @Override
     public void setRemarkName(String name) {
-
+        remarkName = name;
     }
 
     @Override
     public String getRemarkName() {
-        return null;
+        return remarkName;
     }
 
     @Override
@@ -318,6 +320,7 @@ public class UserInfoBean implements IChatUser, Parcelable {
         dest.writeLong(time);
         dest.writeInt(relationStatus);
         dest.writeInt(hasReaded);
+        dest.writeString(remarkName);
     }
 
     public void setRelationStatus(int relationStatus) {

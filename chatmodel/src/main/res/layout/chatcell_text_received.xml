@@ -74,7 +74,7 @@
                         android:background="@drawable/finger_chatfrom_bg"
                         android:gravity="center_vertical|left"
                         android:lineSpacingExtra="2dp"
-                        android:maxWidth="260dp"
+                        android:maxWidth="220dp"
                         android:minHeight="36dp"
                         android:textColor="#333333"
                         android:textSize="@dimen/dimen_14_sp"/>
@@ -106,7 +106,17 @@
                         android:visibility="visible"/>
                 </LinearLayout>
             </LinearLayout>
-
+            <com.lens.chatmodel.view.TimeTextView
+                android:id="@+id/textReadStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30's"
+                android:layout_toRightOf="@+id/tv_name"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="2dp"
+                android:textColor="#666666"
+                android:layout_below="@id/ll_root"
+                android:visibility="gone"/>
             <ImageView
                 android:id="@+id/iv_status"
                 android:layout_width="wrap_content"

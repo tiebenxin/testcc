@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -31,9 +30,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.base.ChatEnvironment;
+import com.lens.chatmodel.ui.video.CameraActivity;
 import com.lensim.fingerchat.commons.app.AppManager;
 import com.lensim.fingerchat.commons.permission.EPermission;
-import com.lensim.fingerchat.commons.utils.FileUtil;
 import com.lensim.fingerchat.commons.utils.TDevice;
 import com.lensim.fingerchat.data.bean.FolderBean;
 import com.lensim.fingerchat.data.bean.ImageBean;
@@ -316,7 +315,7 @@ public class MultiImageSelectorFragment extends Fragment {
      */
     private void showCameraAction() {
         // 跳转到系统照相机
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+       /* Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             // 设置系统相机拍照后的输出路径
             // 创建临时文件
@@ -329,7 +328,8 @@ public class MultiImageSelectorFragment extends Fragment {
             }
         } else {
             Toast.makeText(getActivity(), R.string.msg_no_camera, Toast.LENGTH_SHORT).show();
-        }
+        }*/
+        CameraActivity.start(getActivity(),REQUEST_PREVIEW,CameraActivity.BUTTON_STATE_ONLY_CAPTURE);
     }
 
     /**
@@ -441,11 +441,13 @@ public class MultiImageSelectorFragment extends Fragment {
                     }
                 }
             } else {
-                File file = new File(mTmpImageBean.path);
-                while (file != null && file.exists()) {
-                    boolean success = file.delete();
-                    if (success) {
-                        mTmpImageBean = null;
+                if (mTmpImageBean != null) {
+                    File file = new File(mTmpImageBean.path);
+                    while (file != null && file.exists()) {
+                        boolean success = file.delete();
+                        if (success) {
+                            mTmpImageBean = null;
+                        }
                     }
                 }
             }

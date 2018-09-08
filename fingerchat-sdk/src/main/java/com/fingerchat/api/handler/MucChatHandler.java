@@ -31,7 +31,8 @@ public class MucChatHandler extends BaseMessageHandler<MucChatMessage> {
         AckMessage ackMessage = AckMessage.from(message);
         BaseChat.SysAck.Builder builder = BaseChat.SysAck.newBuilder();
         builder.addId(message.message.getId());
-//        System.out.println(MucChatMessage.class.getSimpleName() + "--" + message.message.getId());
+        System.out
+            .println(MucChatMessage.class.getSimpleName() + "  群聊回执消息Id " + message.message.getId());
         ackMessage.setAck(builder.build());
         ackMessage.sendRaw();
         ClientListener listener = ClientConfig.I.getClientListener();

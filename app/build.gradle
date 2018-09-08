@@ -9,7 +9,7 @@ android {
             props.load(new FileInputStream(signingFile))
 
             if (props.containsKey("keyStore") && props.containsKey("keyStorePassword") &&
-                    props.containsKey("keyAlias") && props.containsKey("keyAliasPassword")) {
+                props.containsKey("keyAlias") && props.containsKey("keyAliasPassword")) {
                 release {
                     storeFile = file(props.keyStore)
                     storePassword = props.keyStorePassword
@@ -20,7 +20,7 @@ android {
         }
     }
 
-    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
+    compileSdkVersion 26
     buildToolsVersion rootProject.ext.android["buildToolsVersion"]
     defaultConfig {
         applicationId rootProject.ext.android["applicationId"]
@@ -50,10 +50,6 @@ android {
          */
         flavorDimensions "client"
         /**
-         * 默认dev环境
-         */
-        buildConfigField("String", "API_HOST", "\"${rootProject.ext.host_default}\"")
-        /**
          * common
          */
         resValue("string", "app_name", "飞鸽互联_Debug")
@@ -68,7 +64,8 @@ android {
             minifyEnabled false
             signingConfig signingConfigs.release
             buildConfigField("String", "CHANNEL", "\"debug\"")
-            manifestPlaceholders.put("LAUNCHER_ACTIVITY", "com.lensim.fingerchat.fingerchat.ui._SplashActivity")
+            manifestPlaceholders = [
+                "LAUNCHER_ACTIVITY" : "com.lensim.fingerchat.fingerchat.ui._SplashActivity"]
         }
         /**
          * beta
@@ -82,25 +79,25 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             resValue("string", "app_name", "飞鸽互联_Beta")
-            buildConfigField("String", "API_HOST", "\"${rootProject.ext.host_beta}\"")
             buildConfigField("String", "CHANNEL", "\"beta\"")
-            manifestPlaceholders.put("LAUNCHER_ACTIVITY", "com.lensim.fingerchat.fingerchat.ui._SplashActivity")
+            manifestPlaceholders = [
+                "LAUNCHER_ACTIVITY" : "com.lensim.fingerchat.fingerchat.ui._SplashActivity"]
         }
         /**
          * release
          * 面向正式用户
          */
         release {
-            debuggable false
+            debuggable true
             zipAlignEnabled false
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             resValue("string", "app_name", "飞鸽互联")
-            buildConfigField("String", "API_HOST", "\"${rootProject.ext.host_release}\"")
             buildConfigField("String", "CHANNEL", "\"\"")
-            manifestPlaceholders.put("LAUNCHER_ACTIVITY", "com.lensim.fingerchat.fingerchat.ui.SplashActivity")
+            manifestPlaceholders = [
+                "LAUNCHER_ACTIVITY" : "com.lensim.fingerchat.fingerchat.ui.SplashActivity"]
         }
     }
     productFlavors {
@@ -116,8 +113,8 @@ android {
     android.applicationVariants.all { variant ->
         variant.outputs.all {
             if (outputFile != null &&
-                    outputFile.name.endsWith('.apk') &&
-                    'release'.equals(variant.buildType.name)) {
+                outputFile.name.endsWith('.apk') &&
+                'release'.equals(variant.buildType.name)) {
                 outputFileName = "${variant.productFlavors[0].name}_v${variant.versionName}_${buildTime()}.apk"
             }
         }
@@ -157,9 +154,9 @@ dependencies {
     implementation project(path: ':db')
     implementation project(path: ':chatmodel')
     implementation project(path: ':WebView')
-    implementation project(path: ':annotation')
+    implementation project(path: ':librarys:annotation')
+    implementation project(path: ':hexmeet')
     implementation rootProject.ext.dependencies["design"]
-    implementation rootProject.ext.dependencies["appcompat-v7"]
     implementation rootProject.ext.dependencies["support-v4"]
     implementation rootProject.ext.dependencies["cardview-v7"]
     implementation rootProject.ext.dependencies["recyclerview"]
@@ -167,16 +164,7 @@ dependencies {
     implementation "com.android.support.constraint:constraint-layout:$rootProject.ext.constraintVersion"
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
     implementation "com.jakewharton:butterknife:$rootProject.ext.butterknifeVersion"
-    implementation "com.github.bumptech.glide:glide:$rootProject.ext.glideVersion"
-    implementation "org.greenrobot:eventbus:$rootProject.ext.eventbusVersion"
     implementation "com.github.hackware1993:MagicIndicator:$rootProject.ext.magicIndicatorVersion"
-    implementation "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofitVersion"
-    implementation "com.squareup.okhttp3:okhttp:$rootProject.ext.okhttpVersion"
-    implementation "io.reactivex.rxjava2:rxandroid:$rootProject.ext.rxandroidVersion"
-    implementation "io.reactivex.rxjava2:rxjava:$rootProject.ext.rxjavaVersion"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$rootProject.ext.retrofitVersion"
-    implementation 'com.google.code.gson:gson:2.8.2'
-    implementation "com.squareup.retrofit2:converter-gson:$rootProject.ext.retrofitVersion"
     implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
     implementation 'com.tencent.sonic:sdk:2.0.0'
     //图片裁剪
@@ -188,4 +176,6 @@ dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     // stetho
     debugImplementation 'com.facebook.stetho:stetho:1.5.0'
+    implementation "com.google.guava:guava:$rootProject.ext.guavaVersion"
+    api "com.google.guava:guava:$rootProject.ext.guavaVersion"
 }

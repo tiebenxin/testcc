@@ -13,31 +13,42 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.fingerchat.api.message.ExcuteResultMessage;
+import com.fingerchat.proto.message.Excute.ExcuteMessage;
+import com.fingerchat.proto.message.Excute.ExcuteType;
 import com.lens.chatmodel.R;
+import com.lens.chatmodel.bean.EmoBean;
 import com.lens.chatmodel.bean.body.ImageUploadEntity;
+import com.lens.chatmodel.eventbus.ExcuteEvent;
+import com.lens.chatmodel.im_service.FingerIM;
+import com.lens.chatmodel.manager.MessageManager;
+import com.lens.chatmodel.net.HttpUtils;
 import com.lens.chatmodel.ui.image.MultiImageSelectorActivity;
-import com.lensim.fingerchat.data.help_class.IUploadListener;
 import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.base.FGActivity;
+import com.lensim.fingerchat.commons.global.Common;
 import com.lensim.fingerchat.commons.global.CommonEnum.EUploadFileType;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
-import com.lensim.fingerchat.commons.helper.EmojiHelper;
+import com.lensim.fingerchat.commons.helper.GsonHelper;
+import com.lensim.fingerchat.commons.interf.IEventProduct;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
 import com.lensim.fingerchat.commons.utils.SPHelper;
-import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.data.bean.ImageBean;
-import com.lens.chatmodel.net.HttpUtils;
+import com.lensim.fingerchat.data.help_class.IUploadListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by LY309313 on 2017/6/15.
@@ -53,6 +64,8 @@ public class ExpressionActivity extends FGActivity {
     private List<String> strings;
     private boolean changed;
     private FGToolbar toolbar;
+    private String emoJson;
+    private List<EmoBean> emoBeans;
 
 
     @Override
@@ -73,66 +86,101 @@ public class ExpressionActivity extends FGActivity {
     private void initToolBar() {
         toolbar.setTitleText(ContextHelper.getString(R.string.emoji_manage));
         initBackButton(toolbar, true);
-        toolbar.setConfirmBt(ContextHelper.getString(R.string.manage), new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                doConfirm();
-            }
-        });
+        toolbar.setConfirmBt(ContextHelper.getString(R.string.manage), v -> doConfirm());
     }
 
 
     @Override
     public void initData(Bundle savedInstanceState) {
         String data = SPHelper.getString(AppConfig.EX_KEY, "");
-        if (!StringUtils.isEmpty(data)) {
-            String[] split = data.split(";");
-            strings = new ArrayList<>(Arrays.asList(split));
+        if (emoBeans == null) {
+            emoBeans = new ArrayList<>();
         } else {
+            emoBeans.clear();
+        }
+        if (strings == null) {
             strings = new ArrayList<>();
+        } else {
+            strings.clear();
+        }
+        try {
+            JSONArray array = new JSONArray(data);
+            if (array != null) {
+                int length = array.length();
+                for (int i = 0; i < length; i++) {
+                    String emoObj = array.getString(i);
+                    EmoBean bean = GsonHelper.getObject(emoObj, EmoBean.class);
+                    if (bean != null) {
+                        emoBeans.add(bean);
+                        strings.add(bean.getContent());
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
-        adapter = new ExAdapter(this, strings);
+        adapter = new ExAdapter(this, emoBeans);
         exList.setAdapter(adapter);
         exList.setItemAnimator(new DefaultItemAnimator());
         exList.addItemDecoration(new GridDivider(this));
     }
 
+
     public void initListener() {
         toFront.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                List<String> selectImages = adapter.getSelectImages();
+                List<EmoBean> selectImages = adapter.getSelectImages();
                 if (selectImages.isEmpty()) {
                     return;
                 }
-                strings.removeAll(selectImages);
-                strings.addAll(0, selectImages);
-                String data = EmojiHelper.listToString(strings);
-                SPHelper.saveValue(AppConfig.EX_KEY, data);
-                adapter.addImage(strings);
-                adapter.notifyDataSetChanged();
-                adapter.clearSelectImages();
-                changed = true;
+                int len = selectImages.size();
+                List<String> frontImages = new ArrayList<>();
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < len; i++) {
+                    EmoBean bean = selectImages.get(i);
+                    if (!frontImages.contains(bean.getKey())) {
+                        if (i == len - 1) {
+                            stringBuilder.append(bean.getKey());
+                        } else {
+                            stringBuilder.append(bean.getKey()).append(",");
+
+                        }
+                        frontImages.add(bean.getKey());
+                    }
+                }
+                frontEmoticon(stringBuilder.toString());
 
             }
+
 
         });
 
         exDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                List<String> selectImages = adapter.getSelectImages();
+                List<EmoBean> selectImages = adapter.getSelectImages();
                 if (selectImages.isEmpty()) {
                     return;
                 }
-                strings.removeAll(selectImages);
-                String data = EmojiHelper.listToString(strings);
-                SPHelper.saveValue(AppConfig.EX_KEY, data);
-                adapter.addImage(strings);
-                adapter.notifyDataSetChanged();
-                adapter.clearSelectImages();
-                changed = true;
+                int len = selectImages.size();
+                List<String> deleImages = new ArrayList<>();
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < len; i++) {
+                    EmoBean bean = selectImages.get(i);
+                    if (!deleImages.contains(bean.getKey())) {
+                        if (i == len - 1) {
+                            stringBuilder.append(bean.getKey());
+                        } else {
+                            stringBuilder.append(bean.getKey()).append(",");
+
+                        }
+                        deleImages.add(bean.getKey());
+                    }
+                }
+                deleEmoticon(stringBuilder.toString());
+
             }
         });
     }
@@ -175,11 +223,12 @@ public class ExpressionActivity extends FGActivity {
 
         private LayoutInflater inflater;
         private Context context;
-        private List<String> images;
-        private List<String> selectImages;
+        //        private List<String> images;
+        private List<EmoBean> images;
+        private List<EmoBean> selectImages;
         private boolean showChecked;
 
-        ExAdapter(Context context, List<String> images) {
+        ExAdapter(Context context, List<EmoBean> images) {
             inflater = LayoutInflater.from(context);
             this.context = context;
             this.images = images;
@@ -210,8 +259,11 @@ public class ExpressionActivity extends FGActivity {
                     }
                 });
             } else {
-                String json = images.get(position);
-                ImageUploadEntity entity = ImageUploadEntity.fromJson(json);
+                EmoBean bean = images.get(position);
+                if (bean == null) {
+                    return;
+                }
+                ImageUploadEntity entity = bean.getValue();
                 if (entity != null) {
                     Glide.with(context).load(entity.getOriginalUrl())
                         .placeholder(R.drawable.ease_default_expression)
@@ -222,8 +274,9 @@ public class ExpressionActivity extends FGActivity {
 
                 if (showChecked) {
                     viewHolder.checkBox.setVisibility(View.VISIBLE);
-                    final String path = images.get(position);
-                    if (selectImages.contains(path)) {
+//                    final String path = images.get(position);
+                    final EmoBean emoBean = images.get(position);
+                    if (selectImages.contains(emoBean)) {
                         viewHolder.checkBox.setImageResource(R.drawable.click_check_box);
                     } else {
                         viewHolder.checkBox.setImageResource(R.drawable.check_box);
@@ -231,12 +284,13 @@ public class ExpressionActivity extends FGActivity {
                     viewHolder.imageview.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            if (selectImages.contains(path)) {
-                                selectImages.remove(path);
+                            if (selectImages.contains(emoBean)) {
+                                selectImages.remove(emoBean);
                                 viewHolder.checkBox.setImageResource(R.drawable.check_box);
                             } else {
-                                selectImages.add(path);
-                                viewHolder.checkBox.setImageResource(R.drawable.click_check_box);
+                                selectImages.add(emoBean);
+                                viewHolder.checkBox
+                                    .setImageResource(R.drawable.click_check_box);
                             }
                         }
                     });
@@ -247,7 +301,7 @@ public class ExpressionActivity extends FGActivity {
         }
 
 
-        public List<String> getSelectImages() {
+        public List<EmoBean> getSelectImages() {
             return selectImages;
         }
 
@@ -262,8 +316,7 @@ public class ExpressionActivity extends FGActivity {
             return images.size() + 1;
         }
 
-        void addImage(List<String> images) {
-
+        void addImage(List<EmoBean> images) {
             this.images = images;
 
         }
@@ -300,7 +353,7 @@ public class ExpressionActivity extends FGActivity {
                 final List<ImageBean> path = bundle
                     .getParcelableArrayList(MultiImageSelectorActivity.EXTRA_RESULT);
                 //默认不使用原图
-                showProgress("正在设置", true);
+                showProgress("正在上传", true);
                 for (final ImageBean bean : path) {
                     if (bean == null) {
                         return;
@@ -316,7 +369,7 @@ public class ExpressionActivity extends FGActivity {
                                         if (result != null && result instanceof ImageUploadEntity) {
                                             ImageUploadEntity entity = (ImageUploadEntity) result;
                                             if (entity == null) {
-                                                resetProgressText("设置失败");
+                                                resetProgressText("上传失败");
                                                 dismissProgressDelay(1500);
                                                 return;
                                             }
@@ -325,14 +378,8 @@ public class ExpressionActivity extends FGActivity {
                                                 T.show("已经添加为表情");
                                                 return;
                                             }
-                                            strings.add(ImageUploadEntity.toJson(entity));
-                                            String data = EmojiHelper.listToString(strings);
-                                            if (!TextUtils.isEmpty(data)) {
-                                                SPHelper.saveValue(AppConfig.EX_KEY, data);
-                                            }
-                                            adapter.addImage(strings);
-                                            adapter.notifyDataSetChanged();
-                                            changed = true;
+                                            emoJson = ImageUploadEntity.toJson(entity);
+                                            addEmoticon(emoJson);
                                         }
                                     }
                                 });
@@ -340,7 +387,7 @@ public class ExpressionActivity extends FGActivity {
 
                             @Override
                             public void onFailed() {
-                                resetProgressText("设置失败");
+                                resetProgressText("上传失败");
                                 dismissProgressDelay(1500);
                             }
 
@@ -352,5 +399,102 @@ public class ExpressionActivity extends FGActivity {
                 }
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onEventMain(IEventProduct event) {
+        if (event != null) {
+            dealWithEvent(event);
+        }
+    }
+
+    private void dealWithEvent(IEventProduct event) {
+        if (event instanceof ExcuteEvent) {
+            ExcuteResultMessage message = ((ExcuteEvent) event).getPacket();
+            int code = message.message.getCode();
+            if (code == Common.EMOTICON_SAVE_SUCCESS) {
+                String result = message.message.getResult();
+                if (!TextUtils.isEmpty(result)) {
+                    saveEmoticon(result);
+                }
+            } else if (code == Common.EMOTICON_SAVE_ERROR) {
+                T.show("表情保存失败");
+            } else if (code == Common.EMOTICON_DEL_SUCCESS) {
+                String result = message.message.getResult();
+                if (!TextUtils.isEmpty(result)) {
+                    saveEmoticon(result);
+                }
+            } else if (code == Common.EMOTICON_DEL_ERROR) {
+                T.show("表情删除失败");
+            } else if (code == Common.EMOTICON_TOFIRST_SUCCESS) {
+                String result = message.message.getResult();
+                if (!TextUtils.isEmpty(result)) {
+                    saveEmoticon(result);
+                }
+            } else if (code == Common.EMOTICON_PARAM_INVALID) {
+                T.show("参数错误,操作失败");
+            } else if (code == Common.EMOTICON_NO_LONGIN) {
+                T.show("未登录,操作失败");
+            }
+        }
+    }
+
+    private void addEmoticon(String json) {
+        ExcuteMessage message = MessageManager.getInstance()
+            .createExcuteBody(ExcuteType.EMOTICON_SAVE, json);
+        if (message != null) {
+            FingerIM.I.excute(message);
+        }
+    }
+
+    public void deleEmoticon(String emoIds) {
+        if (TextUtils.isEmpty(emoIds)) {
+            return;
+        }
+        ExcuteMessage message = MessageManager.getInstance()
+            .createExcuteBody(ExcuteType.EMOTICON_DELETE, emoIds);
+        if (message != null) {
+            FingerIM.I.excute(message);
+        }
+    }
+
+    public void frontEmoticon(String emoIds) {
+        if (TextUtils.isEmpty(emoIds)) {
+            return;
+        }
+        ExcuteMessage message = MessageManager.getInstance()
+            .createExcuteBody(ExcuteType.EMOTICON_TOFIRST, emoIds);
+        if (message != null) {
+            FingerIM.I.excute(message);
+        }
+    }
+
+    private void saveEmoticon(String json) {
+        SPHelper.remove(AppConfig.EX_KEY);
+        SPHelper.saveValue(AppConfig.EX_KEY, json);
+        try {
+            JSONArray array = new JSONArray(json);
+            if (emoBeans != null) {
+                emoBeans.clear();
+            } else {
+                emoBeans = new ArrayList<>();
+            }
+            int len = array.length();
+            if (len > 0) {
+                for (int i = 0; i < len; i++) {
+                    JSONObject object = array.getJSONObject(i);
+                    EmoBean bean = GsonHelper.getObject(object.toString(), EmoBean.class);
+                    if (bean != null) {
+                        emoBeans.add(bean);
+                    }
+                }
+            }
+            adapter.addImage(emoBeans);
+            adapter.notifyDataSetChanged();
+            changed = true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        adapter.clearSelectImages();
     }
 }

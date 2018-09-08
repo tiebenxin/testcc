@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -36,6 +35,7 @@ import com.lens.chatmodel.bean.message.RecentMessage;
 import com.lens.chatmodel.bean.transfor.BaseTransforEntity;
 import com.lens.chatmodel.bean.transfor.MultiMessageEntity;
 import com.lens.chatmodel.db.MucInfo;
+import com.lens.chatmodel.db.MucUser;
 import com.lens.chatmodel.db.ProviderChat;
 import com.lens.chatmodel.db.ProviderUser;
 import com.lens.chatmodel.eventbus.EventEnum;
@@ -44,6 +44,8 @@ import com.lens.chatmodel.eventbus.RefreshEntity;
 import com.lens.chatmodel.eventbus.RefreshEvent;
 import com.lens.chatmodel.helper.ChatHelper;
 import com.lens.chatmodel.interf.IChatRoomModel;
+import com.lens.chatmodel.interf.IEventClickListener;
+import com.lens.chatmodel.manager.MessageManager;
 import com.lens.chatmodel.ui.contacts.RecentTalkAdapter;
 import com.lens.chatmodel.ui.contacts.UserAvatarAdapter;
 import com.lens.chatmodel.ui.group.Constant;
@@ -56,9 +58,6 @@ import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.components.widget.CustomDocaration;
 import com.lensim.fingerchat.components.widget.HAvatarsRecyclerView;
-import com.lens.chatmodel.interf.IEventClickListener;
-import com.lens.chatmodel.manager.MessageManager;
-
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
@@ -72,9 +71,6 @@ import java.util.Map;
 import org.greenrobot.eventbus.EventBus;
 
 
-/**
- * 因为已经不用这个作为创建群聊的页面，故改为作为转发用
- */
 public class TransforMsgActivity extends BaseUserInfoActivity implements IEventClickListener,
     AckListener {
 
@@ -328,7 +324,7 @@ public class TransforMsgActivity extends BaseUserInfoActivity implements IEventC
 
     private int getOptionType() {
         if (type == ETransforType.CARD_MSG.ordinal()) {
-            return Constant.GROUP_SELECT_MODE_CARD;
+            return Constant.ROLE_USER_MODE;
         } else {
             return Constant.MODE_TRANSFOR_MSG;
         }
@@ -402,18 +398,31 @@ public class TransforMsgActivity extends BaseUserInfoActivity implements IEventC
                                 List<UserBean> userlist = new ArrayList<>();
 
                                 for (UserBean bean : contactList) {
-                                    if (bean.getPinYin() != null && bean.getPinYin()
-                                        .startsWith(s)) {
-                                        userlist.add(bean);
-                                    } else if (bean.getFirstChar() != null
-                                        && bean.getFirstChar().startsWith(s)) {
-                                        userlist.add(bean);
-                                    } else if (bean.getUserId() != null
-                                        && bean.getUserId().contains(s)) {
-                                        userlist.add(bean);
-                                    } else if (bean.getUserNick() != null
-                                        && bean.getUserNick().contains(s)) {
-                                        userlist.add(bean);
+                                    if (bean.getChatType() == EChatType.GROUP.ordinal()) {
+                                        if (bean.getMucName() != null && bean.getMucName()
+                                            .startsWith(s)) {
+                                            userlist.add(bean);
+                                        } else if (bean.getMucId() != null && bean.getMucId()
+                                            .startsWith(s)) {
+                                            userlist.add(bean);
+                                        }
+                                    } else {
+                                        if (bean.getPinYin() != null && bean.getPinYin()
+                                            .startsWith(s)) {
+                                            userlist.add(bean);
+                                        } else if (bean.getFirstChar() != null
+                                            && bean.getFirstChar().startsWith(s)) {
+                                            userlist.add(bean);
+                                        } else if (bean.getUserId() != null
+                                            && bean.getUserId().contains(s)) {
+                                            userlist.add(bean);
+                                        } else if (bean.getUserNick() != null
+                                            && bean.getUserNick().contains(s)) {
+                                            userlist.add(bean);
+                                        } else if (bean.getRemarkName() != null
+                                            && bean.getRemarkName().contains(s)) {
+                                            userlist.add(bean);
+                                        }
                                     }
                                 }
                                 return userlist;
@@ -584,11 +593,19 @@ public class TransforMsgActivity extends BaseUserInfoActivity implements IEventC
 
         for (int j = 0; j < userLen; j++) {
             UserBean bean = users.get(j);
+            if (bean.getChatType() == EChatType.GROUP.ordinal()) {
+                entity.setSenderAvatar(getUserAvatar());
+                entity.setMucNickName(MucUser
+                    .getMucUserNick(ContextHelper.getContext(), bean.getUserId(), getUserId()));
+                entity.setGroupName(bean.getMucName());
+            } else {
+                entity.setSenderAvatar(getUserAvatar());
+                entity.setMucNickName(getUserNick());
+            }
             IChatRoomModel model = MessageManager.getInstance()
                 .createTransforMessage(accout, bean.getUserId(), entity.toJson(entity),
-                    getUserNick(),
-                    getUserAvatar(), ChatHelper.isGroupChat(bean.getChatType()), false, false,
-                    EMessageType.MULTIPLE);
+                    getUserNick(), getUserAvatar(), ChatHelper.isGroupChat(bean.getChatType()),
+                    false, false, EMessageType.MULTIPLE);
             sendQuery.add(model);
             sendUser.put(model.getMsgId(), bean);
         }
@@ -764,17 +781,33 @@ public class TransforMsgActivity extends BaseUserInfoActivity implements IEventC
 
     private void sendEditMessage() {
         int index = 0;
-        if (selectBeans != null && selectBeans.size() > 0) {
-            int len = selectBeans.size();
-            index = len;
-            for (int i = 0; i < len; i++) {
-                UserBean bean = selectBeans.get(i);
-                IChatRoomModel model = MessageManager.getInstance()
-                    .createTransforMessage(getUserId(), bean.getUserId(), editMessage,
-                        getUserNick(), getUserAvatar(), ChatHelper.isGroupChat(bean.getChatType()),
-                        false, false, EMessageType.TEXT);
-                sendQuery.add(model);
-                sendUser.put(model.getMsgId(), bean);
+        if (type == ETransforType.CARD_MSG.ordinal()) {
+            int len = 1;
+            IChatRoomModel model = MessageManager.getInstance()
+                .createTransforMessage(getUserId(), user, editMessage,
+                    getUserNick(), getUserAvatar(),
+                    ChatHelper.isGroupChat(chatType),
+                    false, false, EMessageType.TEXT);
+            UserBean bean;
+            if (chatType == EChatType.GROUP.ordinal()) {
+                bean = new UserBean();
+                bean.setUserId(user);
+                bean.setUserNick(nick);
+                RecentMessage recentMessage = ProviderChat
+                    .selectSingeRecent(ContextHelper.getContext(), model.getTo());
+                if (recentMessage != null) {
+                    MessageManager.getInstance()
+                        .saveMessage(model, "", "",
+                            recentMessage.getNotDisturb(), recentMessage.getBackgroundId(),
+                            recentMessage.getTopFlag());
+                } else {
+                    MessageManager.getInstance()
+                        .saveMessage(model, "", "",
+                            ESureType.NO.ordinal(), backGroundId, ESureType.NO.ordinal());
+                }
+            } else {
+                bean = (UserBean) ProviderUser
+                    .selectRosterSingle(ContextHelper.getContext(), user);
                 RecentMessage recentMessage = ProviderChat
                     .selectSingeRecent(ContextHelper.getContext(), model.getTo());
                 if (recentMessage != null) {
@@ -787,17 +820,59 @@ public class TransforMsgActivity extends BaseUserInfoActivity implements IEventC
                         .saveMessage(model, bean.getAvatarUrl(), bean.getUserNick(),
                             ESureType.NO.ordinal(), backGroundId, ESureType.NO.ordinal());
                 }
-                if (len == 1) {
-                    clearEditMessage();
-                } else {
-                    index--;
-                }
-                MessageManager.getInstance().sendMessage(model);
+
             }
+            sendQuery.add(model);
+            sendUser.put(model.getMsgId(), bean);
+
+            if (len == 1) {
+                clearEditMessage();
+            } else {
+                index--;
+            }
+            MessageManager.getInstance().sendMessage(model);
             if (index == 0) {
                 clearEditMessage();
             }
+        } else {
+            if (selectBeans != null && selectBeans.size() > 0) {
+                int len = selectBeans.size();
+                index = len;
+                for (int i = 0; i < len; i++) {
+                    UserBean bean = selectBeans.get(i);
+                    IChatRoomModel model = MessageManager.getInstance()
+                        .createTransforMessage(getUserId(), bean.getUserId(), editMessage,
+                            getUserNick(), getUserAvatar(),
+                            ChatHelper.isGroupChat(bean.getChatType()),
+                            false, false, EMessageType.TEXT);
+                    sendQuery.add(model);
+                    sendUser.put(model.getMsgId(), bean);
+                    RecentMessage recentMessage = ProviderChat
+                        .selectSingeRecent(ContextHelper.getContext(), model.getTo());
+                    if (recentMessage != null) {
+                        MessageManager.getInstance()
+                            .saveMessage(model, bean.getAvatarUrl(), bean.getUserNick(),
+                                recentMessage.getNotDisturb(), recentMessage.getBackgroundId(),
+                                recentMessage.getTopFlag());
+                    } else {
+                        MessageManager.getInstance()
+                            .saveMessage(model, bean.getAvatarUrl(), bean.getUserNick(),
+                                ESureType.NO.ordinal(), backGroundId, ESureType.NO.ordinal());
+                    }
+                    if (len == 1) {
+                        clearEditMessage();
+                    } else {
+                        index--;
+                    }
+                    MessageManager.getInstance().sendMessage(model);
+                }
+                if (index == 0) {
+                    clearEditMessage();
+                }
+            }
         }
+
+
     }
 
     private void clearEditMessage() {

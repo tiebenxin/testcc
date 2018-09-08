@@ -14,6 +14,7 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.lens.chatmodel.ChatEnum.EMessageType;
 import com.lens.chatmodel.interf.IChatRoomModel;
 import com.lens.chatmodel.manager.MessageManager;
@@ -43,6 +44,7 @@ import com.lensim.fingerchat.hexmeet.utils.NetworkUtil;
 import com.lensim.fingerchat.hexmeet.utils.Utils;
 import com.lensim.fingerchat.hexmeet.widget.MenuItem;
 import com.lensim.fingerchat.hexmeet.widget.PopupMenuBottom;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -381,10 +383,10 @@ public class MeetingDetailActivity extends BaseActivity {
 
         for (int i = 0, size = mJidList.size(); i < size; i++) {
 
-            IChatRoomModel chatRoomModel = MessageManager.getInstance()
-                .createMessage(mJidList.get(i), UserInfoRepository.getUserName(), toJson,
-                    UserInfoRepository.getUsernick(), false, EMessageType.TEXT);
-            MessageManager.getInstance().sendMessage(chatRoomModel);
+//            IChatRoomModel chatRoomModel = MessageManager.getInstance()
+//                .createMessage(mJidList.get(i), UserInfoRepository.getUserName(), toJson,
+//                    UserInfoRepository.getUsernick(), false, EMessageType.TEXT);
+//            MessageManager.getInstance().sendMessage(chatRoomModel);
 
         }
     }
@@ -394,13 +396,16 @@ public class MeetingDetailActivity extends BaseActivity {
         String ssoToken = SSOTokenRepository.getToken();
         String userName = SSOTokenRepository.getUserName();
         Http.getHexMeetingList(ssoToken, "2", userName, "10", "0")
-            .compose(RxSchedulers.<RetArrayResponse<VideoMeeting>>compose())
-            .subscribe(new BaseObserver<RetArrayResponse<VideoMeeting>>() {
+            .compose(RxSchedulers.<RetObjectResponse<String>>compose())
+            .subscribe(new BaseObserver<RetObjectResponse<String>>() {
                 @Override
-                public void onNext(RetArrayResponse<VideoMeeting> response) {
+                public void onNext(RetObjectResponse<String> response) {
+                    Gson gson = new Gson();
                     if (1 == response.retCode) {
-                        for (int i = 0; i < response.retData.size(); i++) {
-                            VideoMeeting meetingEntity = response.retData.get(i);
+                        Type type = new TypeToken<List<VideoMeeting>>() {}.getType();
+                        List<VideoMeeting> items = gson.fromJson(response.retData, type);
+                        for (int i = 0; i < items.size(); i++) {
+                            VideoMeeting meetingEntity = items.get(i);
                             if (meetingEntity.getMeetingSIP().equals(meeting.getNumericId() + "")) {
                                 mFGMeetingID = meetingEntity.getMeetingId();
                                 break;

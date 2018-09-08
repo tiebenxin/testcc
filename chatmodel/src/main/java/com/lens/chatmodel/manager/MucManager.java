@@ -14,6 +14,7 @@ import com.fingerchat.proto.message.Muc.MOption;
 import com.fingerchat.proto.message.Muc.MucAction;
 import com.fingerchat.proto.message.Muc.MucItem;
 import com.fingerchat.proto.message.Muc.MucMemberItem;
+import com.fingerchat.proto.message.Muc.Role;
 import com.lens.chatmodel.ChatEnum;
 import com.lens.chatmodel.ChatEnum.EActivityNum;
 import com.lens.chatmodel.ChatEnum.ESureType;
@@ -36,6 +37,7 @@ import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.global.Common;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.interf.IChatUser;
+import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.data.login.UserInfo;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.db.DBHelper;
@@ -246,14 +248,15 @@ public class MucManager implements MucListener {
      */
     public void clearLocalMucInfo(String mucId, boolean isProvider) {
         //删组
-        MucInfo.delGroupUser(mContext, mucId);
+        MucInfo.delMucInfo(mContext, mucId);
         //离开或者解散群聊都没必要清除本地群信息
         if (isProvider) {
-//            ProviderChat.deleChat(mContext, mucId);
-            //删除群成员
-//            MucUser.delGroupUser(mContext, mucId);
+            ProviderChat.deleChat(mContext, mucId);
+//            删除群成员
+            MucUser.delGroupUser(mContext, mucId);
         }
     }
+
 
     /**
      * 刷新聊天界面
@@ -270,11 +273,21 @@ public class MucManager implements MucListener {
      * 群操作Action保存
      */
     public void saveMessage(Muc.MucAction action, String resultContent) {
-        if (action.getAction() == MOption.Create) {//create消息不在此处保存
-            return;
-        }
+//        if (action.getAction() == MOption.Create) {//create消息不在此处保存
+//            return;
+//        }
         if (TextUtils.isEmpty(resultContent)) {
             return;
+        }
+        if (action.getAction() == MOption.Destory) {
+            if (action.getFrom().getUsername().equalsIgnoreCase(UserInfoRepository.getUserId())) {
+                return;//自己destroy，不保存
+            }
+
+        } else if (action.getAction() == MOption.Leave) {
+            if (action.getFrom().getUsername().equalsIgnoreCase(UserInfoRepository.getUserId())) {
+                return;//自己离开，不保存
+            }
         }
         EventBus.getDefault().post
             (MucRefreshEvent.createMucRefreshEvent(MucRefreshEvent.MucRefreshEnum.MUC_OPTION));
@@ -295,6 +308,7 @@ public class MucManager implements MucListener {
             }
         }
     }
+
 
     /**
      * 群主转让操作
@@ -317,6 +331,20 @@ public class MucManager implements MucListener {
         MucUser.updateById(mContext, mucId, ownerId, DBHelper.GROUP_ROLE, Muc.Role.Owner_VALUE);
     }
 
+    /**
+     * 群主转让操作
+     *
+     * @param mucId 群id
+     */
+    public void changerMucOwner(String mucId, MucAction action) {
+        String ownerId = action.getUsernames(0).getUsername();
+        String creator = action.getCreator();
+        MucInfo.updateById(mContext, mucId, DBHelper.CREATOR, creator);
+        //修改mucUser
+        MucUser.updateById(mContext, mucId, "", DBHelper.GROUP_ROLE, Muc.Role.Member_VALUE);
+        MucUser.updateById(mContext, mucId, ownerId, DBHelper.GROUP_ROLE, Muc.Role.Owner_VALUE);
+    }
+
     @Override
     public void onMucAction(MucActionMessage actionMessage) {
         //解析action
@@ -325,6 +353,8 @@ public class MucManager implements MucListener {
         boolean mySelf = AppConfig.INSTANCE.get(AppConfig.ACCOUT).toLowerCase()
             .equals(action.getFrom().getUsername().toLowerCase());
         actionOperation(action);
+        //创建action消息，并保存数据库
+        saveMessage(action, MucHelper.getActionText(mContext, action));
         if (mySelf || action.getAction().ordinal() == MOption.Invite_VALUE) {
             //post Message
             if (mucActionMessageEvent == null) {
@@ -357,8 +387,15 @@ public class MucManager implements MucListener {
                         .createMucRefreshEvent(MucRefreshEnum.GROUP_LIST_REFRESH));
                 } else if (Common.MUC_QUERY_ROOM_BY_ID_OK == mucMessage.message
                     .getCode()) {//查询单个群成员成功
-                    MucInfo.insertMucInfo(mContext, mucMessage.message.getItem(0),
+                    MucItem mucItem = mucMessage.message.getItem(0);
+                    boolean flag = MucInfo.updateMucInfo(mContext, mucItem.getMucid(), mucItem,
                         UserInfoRepository.getUserId());
+                    MucUser.updateMultipleGroupUser(mContext, mucItem.getMembersList(),
+                        mucItem.getMucid(), mucItem.getCreator());
+                    if (!flag) {
+                        MucInfo.insertMucInfo(mContext, mucItem,
+                            UserInfoRepository.getUserId());
+                    }
                 }
             }
         } catch (Exception e) {
@@ -387,39 +424,44 @@ public class MucManager implements MucListener {
                     //添加加入的成员 取群成员更新数据库
                     MucInfo.insertMucInfo(ContextHelper.getContext(), createMucItem(action),
                         UserInfoRepository.getUserId());
-                    MucUser.insertMultipleGroupUser(mContext, action.getUsernamesList(),
-                        mucId);
-                } else {
+                    List<MucMemberItem> memberItems = new ArrayList<>();
+                    memberItems.addAll(action.getUsernamesList());
+                    MucMemberItem itemCreator = createMucCreator();//创建群主信息
+                    if (itemCreator != null) {
+                        memberItems.add(itemCreator);
+                    }
+                    L.d(MucManager.class.getSimpleName() + "--member size =" + memberItems.size());
+                    MucUser
+                        .updateMultipleGroupUser(mContext, memberItems, mucId, action.getCreator());
+                } else {//第一次邀请入群  //join
                     //请求群聊信息 查询单个群信息
                     actionOneRoomCode = MucManager.getInstance()
                         .qRoomInfo(Muc.QueryType.QRoomById, mucId);
+                    //添加加入的成员 取群成员更新数据库
+                    MucInfo.insertMucInfo(ContextHelper.getContext(), createMucItem(action),
+                        UserInfoRepository.getUserId());
+                    //添加加入的成员 取群成员更新数据库
+                    MucUser.updateMultipleGroupUser(mContext, action.getUsernamesList(),
+                        mucId, action.getCreator());
                 }
-
             } else {
                 switch (action.getAction().ordinal()) {
                     //邀请
                     case Muc.MOption.Invite_VALUE:
                         //添加加入的成员 取群成员更新数据库
-                        MucUser.insertMultipleGroupUser(mContext, action.getUsernamesList(),
-                            mucId);
+                        MucUser.updateMultipleGroupUser(mContext, action.getUsernamesList(),
+                            mucId, action.getCreator());
                         break;
                     //加入
                     case Muc.MOption.Join_VALUE:
                         //添加加入的成员 取群成员更新数据库
-                        MucUser.insertMultipleGroupUser(mContext, action.getUsernamesList(),
-                            mucId);
+                        MucUser.updateMultipleGroupUser(mContext, action.getUsernamesList(),
+                            mucId, action.getCreator());
                         break;
                     //踢人
                     case Muc.MOption.Kick_VALUE:
                         //删除成员 取群成员更新数据库
                         for (Muc.MucMemberItem item : action.getUsernamesList()) {
-                            //剔除的为自己
-                            if (item.getUsername().toLowerCase().equals
-                                (mySelfId)) {
-                                //删除本地群及群成员信息？
-                                clearLocalMucInfo(mucId, false);
-                                break;
-                            }
                             MucUser.delGroupUserByUserId(mContext, mucId, item.getUsername());
                         }
                         break;
@@ -436,13 +478,16 @@ public class MucManager implements MucListener {
                         break;
                     //改变角色
                     case Muc.MOption.ChangeRole_VALUE:
-                        changerMucOwner(mucId, action.getFrom().getUsername(),
-                            action.getUsernames(0).getUsername());
+                        changerMucOwner(mucId, action);
                         break;
                     //销毁
                     case Muc.MOption.Destory_VALUE:
                         //操作的对象为自己离开
-                        clearLocalMucInfo(mucId, mySelfId.equals(fromUserName));
+                        if (mySelfId.equals(fromUserName)) {//自己销毁
+                            clearLocalMucInfo(mucId, true);
+                        } else {//接收到别人销毁信息
+                            MucUser.deleteMemberUser(mucId, UserInfoRepository.getUserId());
+                        }
                         break;
                     //更新
                     case Muc.MOption.UpdateConfig_VALUE:
@@ -482,25 +527,36 @@ public class MucManager implements MucListener {
                         break;
                 }
             }
-            //创建action消息，并保存数据库
-            saveMessage(action, MucHelper.getActionText(mContext, action));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+
+    /*
+    * 创建MucItem，默认群主确认为关闭
+    * */
     public static MucItem createMucItem(MucAction action) {
         Muc.MucItem.Builder mucItem = Muc.MucItem.newBuilder();
         mucItem.setMucid(action.getMucid()).
             setMucname(action.getMucname()).
-            setSubject("0").
-            setNeedConfirm(ESureType.YES.ordinal()).
-            setMemberCount(action.getUsernamesCount());
+            setSubject("").
+            setNeedConfirm(ESureType.NO.ordinal())
+            .setCreator(action.getCreator());
         Muc.PersonalConfig.Builder persional = Muc.PersonalConfig.newBuilder();
-        persional.setRoleValue(action.getFrom().getRoleValue()).
-            setNoDisturb(ESureType.NO.ordinal()).
-            setChatBg("0").
-            setMucusernick(userInfo.getUsernick());
+        if (action.getAction() == MOption.Create) {//create消息是群主才能收到
+            persional.setRoleValue(action.getFrom().getRoleValue());
+            mucItem.setMemberCount(action.getUsernamesCount() + 1);
+        } else {//非群主，invite
+            persional.setRoleValue(Role.Member.ordinal());
+            mucItem.setMemberCount(action.getUsernamesCount());
+
+        }
+        persional.setNoDisturb(ESureType.NO.ordinal()).
+            setChatBg("0");
+        if (userInfo != null) {
+            persional.setMucusernick(userInfo.getUsernick());
+        }
         mucItem.setPConfig(persional.build());
         return mucItem.build();
 
@@ -528,5 +584,22 @@ public class MucManager implements MucListener {
             memberItems.add(createMemberItemFromUser(users.get(i)));
         }
         return memberItems;
+    }
+
+    /*
+    * 创建群主member
+    * */
+    public static MucMemberItem createMucCreator() {
+        UserInfo user = userInfo;
+        if (user == null) {
+            return null;
+        }
+        MucMemberItem.Builder builder = MucMemberItem.newBuilder();
+        builder.setAvatar(user.getImage());
+        builder.setUsername(user.getUserid());
+        builder.setMucusernick(user.getUsernick());
+        builder.setInviter(UserInfoRepository.getUserName());
+        builder.setRole(Role.Owner);
+        return builder.build();
     }
 }

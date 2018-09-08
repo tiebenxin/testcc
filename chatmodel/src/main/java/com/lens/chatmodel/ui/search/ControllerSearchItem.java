@@ -66,7 +66,7 @@ public class ControllerSearchItem {
                 String nameMuc = StringUtils.getUserNick(bean.getNick(), bean.getUserId());
                 tv_name.setText(getSpan(nameMuc, condition));
                 iv_avatar.setDrawText(
-                    MucInfo.selectMucUserNick(ContextHelper.getContext(), bean.getUserId()));
+                    MucInfo.selectMucUserNickList(ContextHelper.getContext(), bean.getUserId()));
                 tv_content.setVisibility(View.GONE);
                 break;
             case RECORD:
@@ -75,7 +75,7 @@ public class ControllerSearchItem {
                         .getMucName(ContextHelper.getContext(), bean.getUserId());
                     tv_name.setText(StringUtils.getUserNick(mucName, bean.getUserId()));
                     iv_avatar.setDrawText(
-                        MucInfo.selectMucUserNick(ContextHelper.getContext(), bean.getUserId()));
+                        MucInfo.selectMucUserNickList(ContextHelper.getContext(), bean.getUserId()));
                     tv_content.setText(bean.getMessage());
                 } else {
                     UserBean userBean = MessageManager.getInstance()

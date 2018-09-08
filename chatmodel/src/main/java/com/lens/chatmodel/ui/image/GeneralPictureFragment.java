@@ -25,6 +25,7 @@ import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.lens.chatmodel.ChatEnum.EMessageType;
+import com.lens.chatmodel.ChatEnum.EPlayType;
 import com.lens.chatmodel.R;
 import com.lens.chatmodel.bean.body.BodyEntity;
 import com.lens.chatmodel.bean.body.ImageUploadEntity;
@@ -39,6 +40,7 @@ import com.lens.chatmodel.ui.message.TransforMsgActivity;
 import com.lens.chatmodel.view.photoview.PhotoViewAttacher;
 import com.lens.chatmodel.view.photoview.ZoomImageView;
 import com.lensim.fingerchat.commons.authority.AuthorityManager;
+import com.lensim.fingerchat.commons.global.CommonEnum.ELogType;
 import com.lensim.fingerchat.commons.helper.AnimationRect;
 import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.utils.AnimationUtility;
@@ -49,11 +51,14 @@ import com.lensim.fingerchat.commons.utils.TDevice;
 import com.lensim.fingerchat.commons.utils.ThreadUtils;
 import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.data.bean.LongImageBean;
+import com.lensim.fingerchat.data.help_class.IDataRequestListener;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.data.me.content.CollectionManager;
 import com.lensim.fingerchat.data.me.content.FavJson;
 import com.lensim.fingerchat.data.me.content.StoreManager;
 import java.io.File;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class GeneralPictureFragment extends Fragment {
 
@@ -67,16 +72,21 @@ public class GeneralPictureFragment extends Fragment {
     private boolean compress;
     private boolean isLocal = false;
     private ImageUploadEntity entity;
+    private int playStatus;
+    private String collectInfo;
+    private int position;
 
     public static GeneralPictureFragment newInstance(String path, AnimationRect rect,
         LongImageBean longImageBean,
-        boolean animationIn) {
+        boolean animationIn, String collectInfo, int position) {
         GeneralPictureFragment fragment = new GeneralPictureFragment();
         Bundle bundle = new Bundle();
         bundle.putString("path", path);
         bundle.putParcelable("rect", rect);
         bundle.putParcelable("longImage", longImageBean);
         bundle.putBoolean("animationIn", animationIn);
+        bundle.putString("collectInfo", collectInfo);
+        bundle.putInt("position", position);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -89,24 +99,22 @@ public class GeneralPictureFragment extends Fragment {
 
         photoView = (ZoomImageView) view.findViewById(R.id.animation);
         lookOrigin = (TextView) view.findViewById(R.id.lookOrigin);
-
         photoView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
             @Override
             public void onViewTap(View view, float x, float y) {
                 getActivity().onBackPressed();
-
             }
         });
 
-        setLongClick();
 
         String path = getArguments().getString("path");
+        collectInfo = getArguments().getString("collectInfo");
+        position = getArguments().getInt("position");
         if (path.startsWith("http://")) {
             entity = ImageUploadEntity.createEntity(path);
         } else {
             entity = ImageUploadEntity.fromJson(path);
         }
-
         L.i("GeneralPictureFragment", "图片地址" + path);
         animateIn = getArguments().getBoolean("animationIn");
         final AnimationRect rect = getArguments().getParcelable("rect");
@@ -115,12 +123,22 @@ public class GeneralPictureFragment extends Fragment {
             mMsgId = rect.getMsgId();
         }
 
+        setLongClick();
+
         if (longImageBean != null && longImageBean.isLongImage()) {//长图不压缩
             compress = false;
         } else {
             compress = true;
         }
-        loadImage(entity, compress);
+        playStatus = 0;
+        if (!TextUtils.isEmpty(mMsgId)) {
+            playStatus = ProviderChat.getPlayStatus(getActivity(), mMsgId);
+        }
+        if (playStatus == EPlayType.PALYED.ordinal()) {
+            loadOriginImage(entity.getOriginalUrl());
+        } else {
+            loadImage(entity, compress);
+        }
 
         final Runnable endAction = new Runnable() {
             @Override
@@ -326,97 +344,60 @@ public class GeneralPictureFragment extends Fragment {
     }
 
     private void initLookOrigin() {
-        if (fileSize > 0) {
-            lookOrigin.setVisibility(View.VISIBLE);
-            lookOrigin.setText("原图(" + Formatter.formatFileSize(getActivity(), fileSize) + ")");
+        if (!TextUtils.isEmpty(mMsgId)) {
+            if (fileSize > 0 && playStatus != EPlayType.PALYED.ordinal()) {
+                lookOrigin.setVisibility(View.VISIBLE);
+                lookOrigin.setText("原图(" + Formatter.formatFileSize(getActivity(), fileSize) + ")");
 
-            lookOrigin.setOnClickListener(v -> {
-                if (entity == null) {
-                    return;
-                }
-                final String text = lookOrigin.getText().toString();
-                final String originpath = entity.getOriginalUrl();
-                lookOrigin.setText("正在加载...");
-                Glide.with(ContextHelper.getContext())
-                    .load(originpath)
-                    .asBitmap()
-                    .into(new SimpleTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(Bitmap resource,
-                            GlideAnimation<? super Bitmap> glideAnimation) {
-                            lookOrigin.setVisibility(View.GONE);
-                            photoView.setIsOrigin(true);
-                            photoView.setImageBitmap(resource);
-                            System.out.println("Glide加载onResourceReady");
-                        }
-                    });
-//                Glide.with(ContextHelper.getContext())
-//                    .load(originpath)
-//                    .asBitmap()
-//                    .into(new Target<Bitmap>() {
-//                        @Override
-//                        public void onLoadStarted(Drawable placeholder) {
-//                            lookOrigin.setText("正在加载...");
-//
-//                        }
-//
-//                        @Override
-//                        public void onLoadFailed(Exception e, Drawable errorDrawable) {
-//                            lookOrigin.setText(text);
-//                            System.out.println("Glide加载onLoadFailed");
-//                        }
-//
-//                        @Override
-//                        public void onResourceReady(Bitmap resource,
-//                            GlideAnimation<? super Bitmap> glideAnimation) {
-//                            lookOrigin.setVisibility(View.GONE);
-//                            photoView.setIsOrigin(true);
-//                            photoView.setImageBitmap(resource);
-//                            System.out.println("Glide加载onResourceReady");
-//                        }
-//
-//                        @Override
-//                        public void onLoadCleared(Drawable placeholder) {
-//                            lookOrigin.setText(text);
-//                            System.out.println("Glide加载onLoadCleared");
-//                        }
-//
-//                        @Override
-//                        public void getSize(SizeReadyCallback cb) {
-//                            System.out.println("Glide加载getSize");
-//                        }
-//
-//                        @Override
-//                        public void setRequest(Request request) {
-//                            System.out.println("Glide加载setRequest");
-//                        }
-//
-//                        @Override
-//                        public Request getRequest() {
-//                            System.out.println("Glide加载getRequest");
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public void onStart() {
-//                            System.out.println("Glide加载onStart");
-//                        }
-//
-//                        @Override
-//                        public void onStop() {
-//                            System.out.println("Glide加载onStop");
-//                        }
-//
-//                        @Override
-//                        public void onDestroy() {
-//                            System.out.println("Glide加载onDestroy");
-//                        }
-//                    });
-            });
+                lookOrigin.setOnClickListener(v -> {
+                    if (entity == null) {
+                        return;
+                    }
+                    final String text = lookOrigin.getText().toString();
+                    final String originpath = entity.getOriginalUrl();
+                    lookOrigin.setText("正在加载...");
+                    loadOriginImage(originpath);
+                });
+            } else {
+                lookOrigin.setVisibility(View.GONE);
+            }
         } else {
-            lookOrigin.setVisibility(View.GONE);
-        }
+            if (fileSize > 0) {
+                lookOrigin.setVisibility(View.VISIBLE);
+                lookOrigin.setText("原图(" + Formatter.formatFileSize(getActivity(), fileSize) + ")");
 
+                lookOrigin.setOnClickListener(v -> {
+                    if (entity == null) {
+                        return;
+                    }
+                    final String text = lookOrigin.getText().toString();
+                    final String originpath = entity.getOriginalUrl();
+                    lookOrigin.setText("正在加载...");
+                    loadOriginImage(originpath);
+                });
+            } else {
+                lookOrigin.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void loadOriginImage(String originUrl) {
+        Glide.with(ContextHelper.getContext())
+            .load(originUrl)
+            .asBitmap()
+            .into(new SimpleTarget<Bitmap>() {
+                @Override
+                public void onResourceReady(Bitmap resource,
+                    GlideAnimation<? super Bitmap> glideAnimation) {
+                    lookOrigin.setVisibility(View.GONE);
+                    photoView.setIsOrigin(true);
+                    photoView.setImageBitmap(resource);
+                    if (!TextUtils.isEmpty(mMsgId)) {
+                        ProviderChat.updatePlayStatus(getActivity(), mMsgId,
+                            EPlayType.PALYED);
+                    }
+                }
+            });
     }
 
 
@@ -429,13 +410,6 @@ public class GeneralPictureFragment extends Fragment {
         }
         if (ContextHelper.isGif(entity.getOriginalUrl())) {
             photoView.setIsGif(true);
-//            Glide.with(ContextHelper.getContext())
-//                .load(entity.getOriginalUrl())
-//                .placeholder(R.drawable.default_error)
-//                .fitCenter()// 会拉伸使图片适应imageview的尺寸
-//                .error(R.drawable.default_error)
-//                .diskCacheStrategy(DiskCacheStrategy.SOURCE)//原型
-//                .into(photoView);
             ImageHelper.loadGif(entity.getOriginalUrl(), photoView);
         } else {
             photoView.setIsGif(false);
@@ -509,6 +483,18 @@ public class GeneralPictureFragment extends Fragment {
     private void setLongClick() {
         final String[] menus = new String[]{getString(R.string.dialog_menu_send_to_friend),
             getString(R.string.pop_menu_collect), getString(R.string.pop_menu_copy_to_local)};
+        boolean isSecret = false;//密聊不能转发
+        IChatRoomModel model = null;
+        if (!TextUtils.isEmpty(mMsgId)) {
+            model = ProviderChat.selectMsgSingle(ContextHelper.getContext(), mMsgId);
+            if (model.isSecret()) {
+                isSecret = true;
+            }
+        }
+        if (isSecret) {
+            return;
+        }
+        IChatRoomModel finalModel = model;
         photoView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -526,28 +512,68 @@ public class GeneralPictureFragment extends Fragment {
                             switch (which) {
                                 case 0://发送给好友
                                     String body;
-                                    if (!TextUtils.isEmpty(mMsgId)) {
-                                        IChatRoomModel model = ProviderChat
-                                            .selectMsgSingle(ContextHelper.getContext(), mMsgId);
-                                        body = MessageManager.getInstance()
-                                            .getMessageBodyJson(model);
+                                    boolean isSecret = false;//密聊不能转发
+                                    if (finalModel != null) {
+                                        if (isSecret) {
+                                            body = null;
+                                        } else {
+                                            body = MessageManager.getInstance()
+                                                .getMessageBodyJson(finalModel);
+                                        }
                                     } else {
-                                        BodyEntity bodyEntity = MessageManager.getInstance().createBody(ImageUploadEntity.toJson(entity),false,EMessageType.IMAGE);
+                                        BodyEntity bodyEntity = MessageManager.getInstance()
+                                            .createBody(ImageUploadEntity.toJson(entity), false,
+                                                EMessageType.IMAGE,
+                                                UserInfoRepository.getUsernick());
                                         body = BodyEntity.toJson(bodyEntity);
                                     }
-
-                                    Intent intent = TransforMsgActivity
-                                        .newPureIntent(getActivity(), body, EMessageType.IMAGE.value, 1, "");
-                                    getActivity().startActivity(intent);
-
+                                    if (isSecret) {
+                                        T.show("密聊图片不能转发");
+                                    } else {
+                                        Intent intent = TransforMsgActivity
+                                            .newPureIntent(getActivity(), body,
+                                                EMessageType.IMAGE.value, 1, "");
+                                        getActivity().startActivity(intent);
+                                    }
                                     break;
                                 case 1://收藏
-//                                    StoreManager.getInstance()
-//                                        .storeFromGallery(mMsgId, entity.getOriginalUrl());
-                                    IChatRoomModel store = ProviderChat
-                                        .selectMsgSingle(ContextHelper.getContext(), mMsgId);
-                                    if (store != null) {
-                                        collectMessage(store);
+                                    if (!TextUtils.isEmpty(collectInfo)) {
+                                        FavJson store = new FavJson();
+                                        String[] collectInfos = collectInfo.split("&");
+                                        if (collectInfos.length < 5) {
+                                            return;
+                                        }
+                                        JSONObject jsonObject = new JSONObject();
+                                        try {
+                                            jsonObject.put("OriginalSzie", "");
+                                            jsonObject.put("userHeadImageStr", collectInfos[3]);
+                                            jsonObject.put("OriginalUrl", entity.getOriginalUrl());
+                                            jsonObject.put("signContent", "");
+                                            jsonObject.put("messageType", "2");
+                                            jsonObject.put("type", "0");
+                                            jsonObject.put("ThumbnailUrl", "");
+                                            jsonObject.put("ThumbnailSize", "");
+                                            jsonObject.put("recordTime", TimeUtils.getDate());
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                        store.setFavCreater(UserInfoRepository.getUserId());
+                                        store.setProviderJid(collectInfos[1]);
+                                        store.setProviderNick(collectInfos[2]);
+                                        store.setFavContent(jsonObject.toString());
+                                        store.setFavMsgId(collectInfos[0] + ":" + position);
+                                        store.setFavType("2");
+                                        store.setFavId(System.currentTimeMillis());
+                                        StoreManager.getInstance().upload(store);
+                                        StoreManager.getInstance()
+                                            .storeFromGallery(mMsgId, entity.getOriginalUrl());
+                                        //T.show(ContextHelper.getString(R.string.no_surport_function));
+                                    } else {
+                                        IChatRoomModel store = ProviderChat
+                                            .selectMsgSingle(ContextHelper.getContext(), mMsgId);
+                                        if (store != null) {
+                                            collectMessage(store);
+                                        }
                                     }
                                     break;
                                 case 2://复制
@@ -560,21 +586,18 @@ public class GeneralPictureFragment extends Fragment {
                                             String copyText = FileUtil
                                                 .uploadUserOption(entity.getOriginalUrl(), "",
                                                     "a_save_pic");
-//                        LensImUtil.uploadLog(getActivity(), copyText,
-//                            new IDataRequestListener() {
-//                              @Override
-//                              public void loadFailure(String reason) {
-//                                L.i("上传失败:失败码" + reason);
-//                              }
-//
-//                              @Override
-//                              public void loadSuccess(Object object) {
-//                                if (object instanceof String) {
-//                                  L.i("上传成功:" + (String) object);
-//                                }
-//                              }
-//                            });
+                                            HttpUtils.getInstance().uploadLogger(copyText,
+                                                ELogType.COPY, new IDataRequestListener() {
+                                                    @Override
+                                                    public void loadFailure(String reason) {
+                                                        L.d("上传失败");
+                                                    }
 
+                                                    @Override
+                                                    public void loadSuccess(Object object) {
+                                                        L.d("上传成功");
+                                                    }
+                                                });
                                         } else {
                                             T.showShort(getActivity(), "保存失败");
                                         }
@@ -633,6 +656,7 @@ public class GeneralPictureFragment extends Fragment {
             store.setFavCreater(UserInfoRepository.getUserName());
             store.setFavTime(TimeUtils.getDate());
             store.setFavDes("");
+            store.setFavId(System.currentTimeMillis());
             StoreManager.getInstance().upload(store);
         } else {
             T.show("已收藏，请勿重复");

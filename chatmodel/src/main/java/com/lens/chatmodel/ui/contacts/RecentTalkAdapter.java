@@ -169,7 +169,7 @@ public class RecentTalkAdapter extends RecyclerView.Adapter<RecentTalkAdapter.Rc
 
         int type = getItemViewType(position);
         if (type == TYPE_WITH_HEAD) {
-            holder.mSingleView.setText("更多联系人");
+            holder.mSingleView.setText("创建新聊天");
 //			bindHead(holder);
             return;
         }
@@ -198,7 +198,8 @@ public class RecentTalkAdapter extends RecyclerView.Adapter<RecentTalkAdapter.Rc
         UIHelper.setTextSize(10, holder.headerView, holder.mSummary);
         UIHelper.setTextSize(14, holder.nameView);
         String username =
-            StringUtils.isEmpty(user.getUserNick()) ? user.getUserId() : user.getUserNick();
+            ChatHelper
+                .getUserRemarkName(user.getRemarkName(), user.getUserNick(), user.getUserId());
 //		if(user.getUserJid().contains("@" + ConnectionItem.DEFAULT_SERVER_MUC)){
 //			AbstractChat chat = MessageManager.getInstance().getChat(AccountManager.getInstance().getUserjid(), user.getUserJid());
 //			if(chat!= null && chat instanceof RoomChat){
@@ -238,7 +239,7 @@ public class RecentTalkAdapter extends RecyclerView.Adapter<RecentTalkAdapter.Rc
         L.i("NewMsgAdapter", "消息列表重绘");
         if (ChatHelper.isGroupChat(user.getChatType())) {//是群聊
             holder.avatarView.setDrawText(
-                MucInfo.selectMucUserNick(ContextHelper.getContext(), user.getUserId()));
+                MucInfo.selectMucUserNickList(ContextHelper.getContext(), user.getUserId()));
             holder.nameView.setText(user.getMucName());
         } else {
             ImageHelper.loadAvatarPrivate(user.getAvatarUrl(), holder.avatarView);
@@ -332,8 +333,4 @@ public class RecentTalkAdapter extends RecyclerView.Adapter<RecentTalkAdapter.Rc
 
         void onItemClick(View view, UserBean bean);
     }
-
-//	public void setTransforType(int transforType) {
-//		this.transforType = transforType;
-//	}
 }

@@ -31,20 +31,14 @@ import com.lensim.fingerchat.commons.helper.ContextHelper;
 
 public class ChatCellVideo extends ChatCellBase {
 
-
     private ImageView iv_play;
     private ImageView override;
-
-
     private VideoUploadEntity entity;
-    private final Context mContext;
     private String videoPath;
 
-    protected ChatCellVideo(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int postion) {
-        super(context, cellLayout, listener, adapter, postion);
-        mContext = context;
+    protected ChatCellVideo(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int postion) {
+        super(cellLayout, listener, adapter, postion);
         loadControls();
     }
 
@@ -56,14 +50,17 @@ public class ChatCellVideo extends ChatCellBase {
 
     @Override
     public void onBubbleClick() {
+        if (entity == null) {
+            return;
+        }
         if (mChatRoomModel.isIncoming()
             && mChatRoomModel.getPlayStatus() == EPlayType.NOT_DOWNLOADED) {
             if (TextUtils.isEmpty(videoPath)) {
                 videoPath = FileCache.getInstance().getVideoPath(entity.getVideoUrl());
             }
-            if (!TextUtils.isEmpty(videoPath)) {//转发的消息是统一路径，已经下载过了
+            if (!TextUtils.isEmpty(videoPath)) {//转发的消息是同一路径，已经下载过了
                 mChatRoomModel.setPlayStatus(EPlayType.NOT_PALYED);
-                ProviderChat.updatePlayStatus(mContext, mChatRoomModel.getMsgId(),
+                ProviderChat.updatePlayStatus(ContextHelper.getContext(), mChatRoomModel.getMsgId(),
                     EPlayType.NOT_PALYED);
                 if (mAdapter instanceof MessageAdapter) {
                     mAdapter.notifyDataSetChanged();
@@ -71,7 +68,7 @@ public class ChatCellVideo extends ChatCellBase {
                 AnimationRect rect = AnimationRect.buildFromImageView(override);
                 mEventListener
                     .onEvent(ECellEventType.VIDEO_CLICK, mChatRoomModel,
-                        new VideoEventBean(rect, videoPath));
+                        new VideoEventBean(rect, videoPath, entity.getImageSize()));
             } else {
                 download();
             }
@@ -86,7 +83,7 @@ public class ChatCellVideo extends ChatCellBase {
             if (!TextUtils.isEmpty(videoPath)) {
                 mEventListener
                     .onEvent(ECellEventType.VIDEO_CLICK, mChatRoomModel,
-                        new VideoEventBean(rect, videoPath));
+                        new VideoEventBean(rect, videoPath, entity.getImageSize()));
             }
 
         }
@@ -98,8 +95,9 @@ public class ChatCellVideo extends ChatCellBase {
                 @Override
                 public void onSuccess(byte[] bytes) {
                     mChatRoomModel.setPlayStatus(EPlayType.NOT_PALYED);
-                    ProviderChat.updatePlayStatus(mContext, mChatRoomModel.getMsgId(),
-                        EPlayType.NOT_PALYED);
+                    ProviderChat
+                        .updatePlayStatus(ContextHelper.getContext(), mChatRoomModel.getMsgId(),
+                            EPlayType.NOT_PALYED);
                     if (mAdapter instanceof MessageAdapter) {
                         mAdapter.notifyDataSetChanged();
                     }

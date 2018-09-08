@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.lensim.fingerchat.commons.toolbar.FGToolbar
+            android:id="@+id/toolbar"
+            style="@style/FGToolbarStyleWithNoOverflow"/>
+
+        <com.lens.chatmodel.view.TagCloudView
+            android:id="@+id/GroupsTop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            app:tcvShowEdit="true"
+            app:tcvSingleLine="false"
+            app:tcvTextColor="@color/primary"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/custom_divider_color"/>
+        <TextView
+            android:id="@+id/tv_all_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:text="@string/all_labels"
+            android:textSize="12sp"/>
+        <com.lens.chatmodel.view.TagCloudView
+            android:id="@+id/GroupsAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tcvSingleLine="false"
+            app:tcvTextColor="@color/primary"/>
+
+    </LinearLayout>
+</layout>

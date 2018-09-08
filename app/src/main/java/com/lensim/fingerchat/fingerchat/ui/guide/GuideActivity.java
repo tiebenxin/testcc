@@ -21,8 +21,8 @@ public class GuideActivity extends FGActivity {
 
     private ViewPager viewPager;
     private TextView tv_botton;
-    private int[] drawableIds = new int[]{R.drawable.ic_guide_1, R.drawable.ic_guide_2,
-        R.drawable.ic_guide_3};
+    private int[] drawableIds = new int[]{R.drawable.guide_page, R.drawable.guide_page,
+        R.drawable.guide_page};
 
     @Override
     public void initView() {

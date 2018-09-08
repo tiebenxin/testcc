@@ -7,7 +7,6 @@ import com.lens.chatmodel.ChatEnum.ECellEventType;
  */
 
 public interface IChatEventListener {
-
     void onEvent(ECellEventType type, Object o1, Object o2);
 
 }

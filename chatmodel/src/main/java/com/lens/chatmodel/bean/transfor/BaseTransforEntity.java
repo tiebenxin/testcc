@@ -154,11 +154,13 @@ public class BaseTransforEntity extends BaseJsonEntity implements Parcelable {
                 String uploadUrl = model.getUploadUrl();
                 if (!TextUtils.isEmpty(uploadUrl)) {
                     VoiceUploadEntity voice = VoiceUploadEntity.fromJson(uploadUrl);
-                    VoiceBody body = new VoiceBody();
-                    body.setBody(voice.getVoiceUrl());
-                    body.setTimeLength(voice.getTimeLength());
-                    entity.setBody(body.toJson());
-                }else {
+                    if (entity != null) {
+                        VoiceBody body = new VoiceBody();
+                        body.setBody(voice.getVoiceUrl());
+                        body.setTimeLength(voice.getTimeLength());
+                        entity.setBody(body.toJson());
+                    }
+                } else {
                     entity.setBody(model.getBody());
                 }
             } else {
@@ -166,10 +168,12 @@ public class BaseTransforEntity extends BaseJsonEntity implements Parcelable {
             }
         } else {
             if (!model.isIncoming() && (model.getMsgType() == EMessageType.IMAGE
+                || model.getMsgType() == EMessageType.FACE
                 || model.getMsgType() == EMessageType.VIDEO)) {
-                if (!TextUtils.isEmpty(model.getUploadUrl())) {//经过一次转发的消息，虽然是incoming，但是uploadUrl并没有数据
+                if (!TextUtils
+                    .isEmpty(model.getUploadUrl())) {//经过一次转发的消息，虽然是incoming，但是uploadUrl并没有数据
                     entity.setBody(model.getUploadUrl());
-                }else {
+                } else {
                     entity.setBody(model.getContent());
                 }
             } else {
@@ -179,6 +183,14 @@ public class BaseTransforEntity extends BaseJsonEntity implements Parcelable {
         if (model.isGroupChat()) {
             entity.setSenderUserid(model.getFrom());
             entity.setSenderUserName(ChatHelper.getUserNick(model.getNick(), model.getFrom()));
+            if (!TextUtils.isEmpty(model.getAvatarUrl())) {
+                entity.setFriendHeader(model.getAvatarUrl());
+            } else {
+                if (model.getBodyEntity() != null) {
+                    entity.setFriendHeader(model.getBodyEntity().getSenderAvatar());
+                }
+            }
+
         } else {
             if (model.isIncoming()) {
                 entity.setSenderUserid(model.getTo());
@@ -229,6 +241,8 @@ public class BaseTransforEntity extends BaseJsonEntity implements Parcelable {
             case CONTACT:
                 layout = EMultiCellLayout.BUSINESS_CARD;
                 break;
+            default:
+                layout = EMultiCellLayout.TEXT;
         }
         return layout;
 

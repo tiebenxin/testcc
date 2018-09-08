@@ -97,14 +97,23 @@
                         android:layout_toLeftOf="@id/ll_root"
                         android:src="@drawable/unread_icon"
                         android:visibility="gone"/>
+
+                    <TextView
+                        android:id="@+id/tv_read"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="5dp"
+                        android:text="未读"
+                        android:textColor="@color/blue"
+                        android:textSize="@dimen/dimen_14_sp"
+                        android:visibility="gone"/>
                 </FrameLayout>
 
                 <RelativeLayout
                     android:id="@+id/bubble"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/dimen_5"
-                    >
+                    android:layout_marginRight="@dimen/dimen_5">
 
                     <TextView
                         android:id="@+id/tv_msg"
@@ -118,7 +127,7 @@
                         android:background="@drawable/finger_chatto_bg"
                         android:gravity="center|left"
                         android:lineSpacingExtra="2dp"
-                        android:maxWidth="260dp"
+                        android:maxWidth="220dp"
                         android:minHeight="36dp"
                         android:textColor="@color/white"
                         android:textSize="@dimen/dimen_14_sp"/>
@@ -132,7 +141,17 @@
                     android:background="@android:color/transparent"/>
 
             </LinearLayout>
-
+            <com.lens.chatmodel.view.TimeTextView
+                android:id="@+id/textReadStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginRight="53dp"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/ll_root"
+                android:text="未读"
+                android:textColor="#666666"
+                android:visibility="gone"/>
             <TextView
                 android:id="@+id/tv_name"
                 style="@style/chat_text_name_style"

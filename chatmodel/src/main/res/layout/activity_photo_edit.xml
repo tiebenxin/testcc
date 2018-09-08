@@ -9,13 +9,10 @@
         android:id="@+id/sv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-    <!--<include-->
-    <!--android:id="@+id/mPhotoEditToolbar"-->
-    <!--layout="@layout/fg_toolbar"/>-->
 
     <com.lensim.fingerchat.commons.toolbar.FGToolbar
         android:id="@+id/viewTitleBar"
-        style="@style/FGToolbarStyle"/>
+        style="@style/FGToolbarStyleWithNoOverflow"/>
 
     <LinearLayout
         android:id="@+id/mNavBar"

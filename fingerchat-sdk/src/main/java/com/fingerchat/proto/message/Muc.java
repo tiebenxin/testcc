@@ -3471,6 +3471,24 @@ public final class Muc {
      * <code>int32 needConfirm = 10;</code>
      */
     int getNeedConfirm();
+
+    /**
+     * <pre>
+     *群主
+     * </pre>
+     *
+     * <code>string creator = 11;</code>
+     */
+    String getCreator();
+    /**
+     * <pre>
+     *群主
+     * </pre>
+     *
+     * <code>string creator = 11;</code>
+     */
+    com.google.protobuf.ByteString
+        getCreatorBytes();
   }
   /**
    * Protobuf type {@code MucAction}
@@ -3494,6 +3512,7 @@ public final class Muc {
       mucname_ = "";
       subject_ = "";
       needConfirm_ = 0;
+      creator_ = "";
     }
 
     @Override
@@ -3593,6 +3612,12 @@ public final class Muc {
             case 80: {
 
               needConfirm_ = input.readInt32();
+              break;
+            }
+            case 90: {
+              String s = input.readStringRequireUtf8();
+
+              creator_ = s;
               break;
             }
           }
@@ -3953,6 +3978,48 @@ public final class Muc {
       return needConfirm_;
     }
 
+    public static final int CREATOR_FIELD_NUMBER = 11;
+    private volatile Object creator_;
+    /**
+     * <pre>
+     *群主
+     * </pre>
+     *
+     * <code>string creator = 11;</code>
+     */
+    public String getCreator() {
+      Object ref = creator_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        creator_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *群主
+     * </pre>
+     *
+     * <code>string creator = 11;</code>
+     */
+    public com.google.protobuf.ByteString
+        getCreatorBytes() {
+      Object ref = creator_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        creator_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -3994,6 +4061,9 @@ public final class Muc {
       }
       if (needConfirm_ != 0) {
         output.writeInt32(10, needConfirm_);
+      }
+      if (!getCreatorBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 11, creator_);
       }
       unknownFields.writeTo(output);
     }
@@ -4039,6 +4109,9 @@ public final class Muc {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(10, needConfirm_);
       }
+      if (!getCreatorBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, creator_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -4076,6 +4149,8 @@ public final class Muc {
           .equals(other.getSubject());
       result = result && (getNeedConfirm()
           == other.getNeedConfirm());
+      result = result && getCreator()
+          .equals(other.getCreator());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -4112,6 +4187,8 @@ public final class Muc {
       hash = (53 * hash) + getSubject().hashCode();
       hash = (37 * hash) + NEEDCONFIRM_FIELD_NUMBER;
       hash = (53 * hash) + getNeedConfirm();
+      hash = (37 * hash) + CREATOR_FIELD_NUMBER;
+      hash = (53 * hash) + getCreator().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4270,6 +4347,8 @@ public final class Muc {
 
         needConfirm_ = 0;
 
+        creator_ = "";
+
         return this;
       }
 
@@ -4316,6 +4395,7 @@ public final class Muc {
         result.mucname_ = mucname_;
         result.subject_ = subject_;
         result.needConfirm_ = needConfirm_;
+        result.creator_ = creator_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4414,6 +4494,10 @@ public final class Muc {
         }
         if (other.getNeedConfirm() != 0) {
           setNeedConfirm(other.getNeedConfirm());
+        }
+        if (!other.getCreator().isEmpty()) {
+          creator_ = other.creator_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -5464,6 +5548,95 @@ public final class Muc {
       public Builder clearNeedConfirm() {
         
         needConfirm_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private Object creator_ = "";
+      /**
+       * <pre>
+       *群主
+       * </pre>
+       *
+       * <code>string creator = 11;</code>
+       */
+      public String getCreator() {
+        Object ref = creator_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          creator_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *群主
+       * </pre>
+       *
+       * <code>string creator = 11;</code>
+       */
+      public com.google.protobuf.ByteString
+          getCreatorBytes() {
+        Object ref = creator_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          creator_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *群主
+       * </pre>
+       *
+       * <code>string creator = 11;</code>
+       */
+      public Builder setCreator(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        creator_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *群主
+       * </pre>
+       *
+       * <code>string creator = 11;</code>
+       */
+      public Builder clearCreator() {
+        
+        creator_ = getDefaultInstance().getCreator();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *群主
+       * </pre>
+       *
+       * <code>string creator = 11;</code>
+       */
+      public Builder setCreatorBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        creator_ = value;
         onChanged();
         return this;
       }
@@ -10654,37 +10827,38 @@ public final class Muc {
       "em\022\035\n\tqueryType\030\006 \001(\0162\n.QueryType\022#\n\014upd" +
       "ateOption\030\007 \001(\0162\r.UpdateOption\022\020\n\010operat" +
       "or\030\010 \001(\t\"2\n\nMucMessage\022\014\n\004code\030\001 \001(\005\022\026\n\004" +
-      "item\030\002 \003(\0132\010.MucItem\"\353\001\n\tMucAction\022\030\n\006ac" +
+      "item\030\002 \003(\0132\010.MucItem\"\374\001\n\tMucAction\022\030\n\006ac" +
       "tion\030\001 \001(\0162\010.MOption\022!\n\tusernames\030\002 \003(\0132" +
       "\016.MucMemberItem\022\034\n\004from\030\003 \001(\0132\016.MucMembe" +
       "rItem\022\r\n\005mucid\030\004 \001(\t\022#\n\014updateOption\030\005 \001" +
       "(\0162\r.UpdateOption\022\014\n\004time\030\006 \001(\003\022\n\n\002id\030\007 " +
       "\001(\t\022\017\n\007mucname\030\010 \001(\t\022\017\n\007subject\030\t \001(\t\022\023\n" +
-      "\013needConfirm\030\n \001(\005\">\n\020MucMemberMessage\022\014" +
-      "\n\004code\030\001 \001(\005\022\034\n\004item\030\002 \003(\0132\016.MucMemberIt" +
-      "em\"\216\001\n\rMucMemberItem\022\023\n\004role\030\001 \001(\0162\005.Rol" +
-      "e\022\020\n\010username\030\002 \001(\t\022\020\n\010usernick\030\003 \001(\t\022\023\n" +
-      "\013mucusernick\030\004 \001(\t\022\017\n\007inviter\030\005 \001(\t\022\016\n\006a" +
-      "vatar\030\006 \001(\t\022\016\n\006online\030\007 \001(\005\"\316\001\n\007MucItem\022" +
-      "\r\n\005mucid\030\001 \001(\t\022\017\n\007mucname\030\002 \001(\t\022\017\n\007subje" +
-      "ct\030\003 \001(\t\022\023\n\013needConfirm\030\004 \001(\005\022\023\n\013memberC" +
-      "ount\030\005 \001(\005\022\037\n\007members\030\006 \003(\0132\016.MucMemberI" +
-      "tem\022 \n\007pConfig\030\007 \001(\0132\017.PersonalConfig\022\024\n" +
-      "\014creationTime\030\010 \001(\003\022\017\n\007creator\030\t \001(\t\"]\n\016" +
-      "PersonalConfig\022\023\n\004role\030\001 \001(\0162\005.Role\022\021\n\tn" +
-      "oDisturb\030\002 \001(\005\022\016\n\006chatBg\030\003 \001(\t\022\023\n\013mucuse" +
-      "rnick\030\004 \001(\t*\224\001\n\007MOption\022\n\n\006Create\020\000\022\n\n\006I" +
-      "nvite\020\001\022\010\n\004Join\020\002\022\010\n\004Kick\020\003\022\t\n\005Leave\020\004\022\016" +
-      "\n\nChangeRole\020\005\022\013\n\007Destory\020\006\022\n\n\006MQuery\020\007\022" +
-      "\020\n\014UpdateConfig\020\010\022\013\n\007Confirm\020\t\022\n\n\006Revoke" +
-      "\020\n*k\n\tQueryType\022\014\n\010QDefault\020\000\022\023\n\017QAllRoo" +
-      "msOfUser\020\001\022\024\n\020QAllMemberInRoom\020\002\022\n\n\006QOwn" +
-      "er\020\003\022\n\n\006QAdmin\020\004\022\r\n\tQRoomById\020\005*q\n\014Updat" +
-      "eOption\022\014\n\010UDefault\020\000\022\t\n\005UName\020\001\022\014\n\010USub" +
-      "ject\020\002\022\016\n\nUAutoEnter\020\003\022\r\n\tUUsernick\020\004\022\013\n" +
-      "\007UChatBg\020\005\022\016\n\nUNoDisturb\020\006*(\n\004Role\022\n\n\006Me" +
-      "mber\020\000\022\t\n\005Admin\020\001\022\t\n\005Owner\020\002B#\n\034com.fing" +
-      "erchat.proto.messageB\003Mucb\006proto3"
+      "\013needConfirm\030\n \001(\005\022\017\n\007creator\030\013 \001(\t\">\n\020M" +
+      "ucMemberMessage\022\014\n\004code\030\001 \001(\005\022\034\n\004item\030\002 " +
+      "\003(\0132\016.MucMemberItem\"\216\001\n\rMucMemberItem\022\023\n" +
+      "\004role\030\001 \001(\0162\005.Role\022\020\n\010username\030\002 \001(\t\022\020\n\010" +
+      "usernick\030\003 \001(\t\022\023\n\013mucusernick\030\004 \001(\t\022\017\n\007i" +
+      "nviter\030\005 \001(\t\022\016\n\006avatar\030\006 \001(\t\022\016\n\006online\030\007" +
+      " \001(\005\"\316\001\n\007MucItem\022\r\n\005mucid\030\001 \001(\t\022\017\n\007mucna" +
+      "me\030\002 \001(\t\022\017\n\007subject\030\003 \001(\t\022\023\n\013needConfirm" +
+      "\030\004 \001(\005\022\023\n\013memberCount\030\005 \001(\005\022\037\n\007members\030\006" +
+      " \003(\0132\016.MucMemberItem\022 \n\007pConfig\030\007 \001(\0132\017." +
+      "PersonalConfig\022\024\n\014creationTime\030\010 \001(\003\022\017\n\007" +
+      "creator\030\t \001(\t\"]\n\016PersonalConfig\022\023\n\004role\030" +
+      "\001 \001(\0162\005.Role\022\021\n\tnoDisturb\030\002 \001(\005\022\016\n\006chatB" +
+      "g\030\003 \001(\t\022\023\n\013mucusernick\030\004 \001(\t*\224\001\n\007MOption" +
+      "\022\n\n\006Create\020\000\022\n\n\006Invite\020\001\022\010\n\004Join\020\002\022\010\n\004Ki" +
+      "ck\020\003\022\t\n\005Leave\020\004\022\016\n\nChangeRole\020\005\022\013\n\007Desto" +
+      "ry\020\006\022\n\n\006MQuery\020\007\022\020\n\014UpdateConfig\020\010\022\013\n\007Co" +
+      "nfirm\020\t\022\n\n\006Revoke\020\n*k\n\tQueryType\022\014\n\010QDef" +
+      "ault\020\000\022\023\n\017QAllRoomsOfUser\020\001\022\024\n\020QAllMembe" +
+      "rInRoom\020\002\022\n\n\006QOwner\020\003\022\n\n\006QAdmin\020\004\022\r\n\tQRo" +
+      "omById\020\005*q\n\014UpdateOption\022\014\n\010UDefault\020\000\022\t" +
+      "\n\005UName\020\001\022\014\n\010USubject\020\002\022\016\n\nUAutoEnter\020\003\022" +
+      "\r\n\tUUsernick\020\004\022\013\n\007UChatBg\020\005\022\016\n\nUNoDistur" +
+      "b\020\006*(\n\004Role\022\n\n\006Member\020\000\022\t\n\005Admin\020\001\022\t\n\005Ow" +
+      "ner\020\002B#\n\034com.fingerchat.proto.messageB\003M" +
+      "ucb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10715,7 +10889,7 @@ public final class Muc {
     internal_static_MucAction_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_MucAction_descriptor,
-        new String[] { "Action", "Usernames", "From", "Mucid", "UpdateOption", "Time", "Id", "Mucname", "Subject", "NeedConfirm", });
+        new String[] { "Action", "Usernames", "From", "Mucid", "UpdateOption", "Time", "Id", "Mucname", "Subject", "NeedConfirm", "Creator", });
     internal_static_MucMemberMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_MucMemberMessage_fieldAccessorTable = new

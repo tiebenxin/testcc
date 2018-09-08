@@ -24,9 +24,11 @@ import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Created by xhdl0002 on 2018/1/17.
+ * 群公告编辑页面
  */
 
 public class GroupNoticeActivity extends BaseUserInfoActivity {
+
     private EditText noticeContent;
     private FGToolbar fgToolbar;
     private Bundle bundle;
@@ -58,7 +60,9 @@ public class GroupNoticeActivity extends BaseUserInfoActivity {
                 Muc.MucItem.Builder config = Muc.MucItem.newBuilder();
                 Muc.MucOption.Builder builder = Muc.MucOption.newBuilder();
                 config.setSubject(etNameStr).setMucid(mucId);
-                builder.setConfig(config.build()).setMucid(mucId).setOption(Muc.MOption.UpdateConfig).setUpdateOption((Muc.UpdateOption.USubject));
+                builder.setConfig(config.build()).setMucid(mucId)
+                    .setOption(Muc.MOption.UpdateConfig)
+                    .setUpdateOption((Muc.UpdateOption.USubject));
                 MessageContext context = MessageContext.build(builder.build().toByteArray());
                 context.setTimeout(5000)
                     .setRetryCount(4);
@@ -78,10 +82,12 @@ public class GroupNoticeActivity extends BaseUserInfoActivity {
         //群操作返回
         if (eventProduct != null && eventProduct instanceof MucActionMessageEvent) {
             MucActionMessage mucActionMessage = ((MucActionMessageEvent) eventProduct).getPacket();
-            if ((Muc.MOption.UpdateConfig == mucActionMessage.action.getAction() && Muc.UpdateOption.USubject == mucActionMessage.action.getUpdateOption())) {
-                MucManager.getInstance().refreshUI(ChatEnum.EActivityNum.ATALL.ordinal());
+            if ((Muc.MOption.UpdateConfig == mucActionMessage.action.getAction()
+                && Muc.UpdateOption.USubject == mucActionMessage.action.getUpdateOption())) {
+//                MucManager.getInstance().refreshUI(ChatEnum.EActivityNum.ATALL.ordinal());
                 //刷新
-                EventBus.getDefault().post(MucRefreshEvent.createMucRefreshEvent(MucRefreshEvent.MucRefreshEnum.MUC_OPTION));
+                EventBus.getDefault().post(MucRefreshEvent
+                    .createMucRefreshEvent(MucRefreshEvent.MucRefreshEnum.MUC_OPTION));
                 finish();
             }
         }

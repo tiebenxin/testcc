@@ -42,7 +42,8 @@ public class AppConfig extends BaseConfig {
     public static final int REQUEST_CHANGE_CONFIG = 33;//更改聊天配置信息
     public static final int REQUEST_CHANGE_MEMBER = 34;//更改群成员
     public static final int REQUEST_MANAGE_MUC = 35;//群管理
-    public static final int REQUEST_CHANGE_MUC_NICK = 35;//修改群名称
+    public static final int REQUEST_CHANGE_MUC_NICK = 36;//修改群名称
+    public static final int REQUEST_PREVIEW_SECRET = 37;//修改群名称
 
     public static final int REGISTER_USER = 0;
     public static final int REGISTER_MUC = 1;
@@ -50,6 +51,9 @@ public class AppConfig extends BaseConfig {
     public final static String ACCOUT = "accout";
     public final static String PASSWORD = "password";
     public final static String LOGIN_STATUS = "login_status";
+    public final static String VERSION_REMIND = "version_remind";
+    public final static String VERSION_CODE = "version_code";
+    public final static String WORK_RESOURCE = "work_resource";//工作中心资源
 
 
     private final static String APP_CONFIG = "config";
@@ -126,6 +130,7 @@ public class AppConfig extends BaseConfig {
     public static final String PHONE = "phone";
 
     public static final String EX_KEY = "store_expression";
+    public static final String HEAD_IMAGE = "headimage";
 
 
     private Context mContext;

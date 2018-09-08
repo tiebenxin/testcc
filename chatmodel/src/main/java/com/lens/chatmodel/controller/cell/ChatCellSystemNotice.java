@@ -1,6 +1,5 @@
 package com.lens.chatmodel.controller.cell;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.widget.TextView;
 import com.lens.chatmodel.ChatEnum.EChatCellLayout;
@@ -18,17 +17,13 @@ import org.json.JSONObject;
 
 public class ChatCellSystemNotice extends ChatCellBase {
 
-
-    private final Context mContext;
     private TextView tv_title;
     private TextView tv_content;
 
 
-    protected ChatCellSystemNotice(Context context,
-        EChatCellLayout cellLayout, IChatEventListener listener, MessageAdapter adapter,
-        int position) {
-        super(context, cellLayout, listener, adapter, position);
-        mContext = context;
+    protected ChatCellSystemNotice(EChatCellLayout cellLayout, IChatEventListener listener,
+        MessageAdapter adapter, int position) {
+        super(cellLayout, listener, adapter, position);
         loadControls();
     }
 
@@ -46,9 +41,7 @@ public class ChatCellSystemNotice extends ChatCellBase {
             try {
                 JSONObject object = new JSONObject(json);
                 if (object != null) {
-                    String type = object.optString("type");
                     String sbody = object.optString("body");
-                    String from = object.optString("from");
                     if (!TextUtils.isEmpty(sbody) && sbody.contains("content")) {
                         JSONObject body = new JSONObject(sbody);
                         if (body != null) {

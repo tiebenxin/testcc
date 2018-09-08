@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#f5f5f5"
+    android:orientation="vertical">
+<include layout="@layout/activity_header"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:background="@color/white"
+        android:padding="10dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="11dp"
+            android:text="安全锁密码"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+
+        <com.lensim.fingerchat.fingerchat.ui.secretchat.widget.SlideSwitch
+            android:id="@+id/safeLock"
+            android:layout_width="55dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="11dp"
+            app:isOpen="true"
+            app:shape="circle"
+            app:themeColor="@color/primary" />
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="28dp"
+        android:text="将安全密码锁用于:"
+        android:textColor="#999999"
+        android:textSize="11sp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:background="@color/white"
+        android:padding="10dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="11dp"
+            android:text="开启密聊锁屏保护"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <com.lensim.fingerchat.fingerchat.ui.secretchat.widget.SlideSwitch
+            android:id="@+id/screenLock"
+            android:layout_width="55dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="11dp"
+            app:isOpen="true"
+            app:shape="circle"
+            app:themeColor="@color/primary" />
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="11dp"
+        android:layout_marginRight="11dp"
+        android:layout_marginTop="7dp"
+        android:padding="10dp"
+        android:text="当后台运行飞鸽超过30秒，程序自动锁定屏幕，打开时需要输入安全密码。"
+        android:textColor="#999999"
+        android:textSize="11sp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:background="@color/white"
+        android:padding="10dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="11dp"
+            android:text="开启指纹解锁"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <com.lensim.fingerchat.fingerchat.ui.secretchat.widget.SlideSwitch
+            android:id="@+id/fingerprintLock"
+            android:layout_width="55dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="11dp"
+            app:isOpen="true"
+            app:shape="circle"
+            app:themeColor="@color/primary" />
+    </RelativeLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="11dp"
+        android:layout_marginRight="11dp"
+        android:background="#f5f5f5" />
+    <RelativeLayout
+        android:id="@+id/rlChange"
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:background="@color/white"
+        android:padding="10dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="11dp"
+            android:text="更改安全密码"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/changeLock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="11dp"
+            android:src="@drawable/arrow" />
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="11dp"
+        android:layout_marginRight="11dp"
+        android:background="#f5f5f5" />
+
+    <RelativeLayout
+        android:id="@+id/rlForget"
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:background="@color/white"
+        android:padding="10dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="11dp"
+            android:text="忘记安全密码"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/forgetLock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="11dp"
+            android:src="@drawable/arrow" />
+    </RelativeLayout>
+</LinearLayout>

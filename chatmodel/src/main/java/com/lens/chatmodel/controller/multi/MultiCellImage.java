@@ -81,7 +81,7 @@ public class MultiCellImage extends MultiCellBase {
         ArrayList<String> urls = new ArrayList<>();
         urls.add(mEntity.getBody());
         Intent intent = GalleryAnimationActivity
-            .newIntent(urls, null, animationRectArrayList, null, 0);
+            .newIntent(urls, null, animationRectArrayList, null, 0,"");
         mContext.startActivity(intent);
     }
 }

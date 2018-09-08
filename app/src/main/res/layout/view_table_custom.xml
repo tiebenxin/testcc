@@ -12,24 +12,26 @@
         <ImageView
             android:id="@+id/iv_tab"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/tv_tab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@drawable/selector_tv_tab"
-            android:textSize="@dimen/dimen_12_sp" />
+            android:textSize="@dimen/dimen_12_sp"/>
     </LinearLayout>
 
     <TextView
         android:id="@+id/tv_point"
-        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dimen_22"
+        android:layout_marginLeft="30dp"
         android:background="@drawable/ease_unread_count_bg"
+        android:gravity="center"
+        android:maxLines="1"
         android:textColor="@color/white"
-        android:textSize="12sp" />
+        android:textSize="10sp"
+        android:visibility="invisible"/>
 
 </FrameLayout>

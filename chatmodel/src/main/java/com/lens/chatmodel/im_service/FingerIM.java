@@ -26,6 +26,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.Nullable;
 
+import android.util.Log;
 import com.fingerchat.api.ClientListener;
 import com.fingerchat.api.Constants;
 import com.fingerchat.api.IMClient;
@@ -33,8 +34,13 @@ import com.fingerchat.api.client.ClientConfig;
 import com.fingerchat.api.protocol.Command;
 import com.fingerchat.api.push.MessageContext;
 import com.fingerchat.api.util.DefaultLogger;
+import com.fingerchat.proto.message.Excute.ExcuteMessage;
+import com.fingerchat.proto.message.ReadAck.ReadedMessageList;
 import com.fingerchat.proto.message.Roster.RosterItem;
+import com.fingerchat.proto.message.Roster.RosterOption;
 import com.fingerchat.proto.message.User.BindMessage;
+import com.lens.chatmodel.ChatEnum.ENetStatus;
+import com.lens.chatmodel.net.network.NetworkUtils;
 import com.lensim.fingerchat.commons.utils.L;
 
 /**
@@ -109,6 +115,10 @@ public final class FingerIM {
      */
     public boolean hasRunning() {
         return client != null && client.isRunning();
+    }
+
+    public boolean isClientState() {
+        return client != null && client.isClientState();
     }
 
     /**
@@ -200,11 +210,30 @@ public final class FingerIM {
     }
 
     /*
+* 是否握手OK
+* */
+    public boolean isHandOk() {
+        if (hasStarted()) {
+            return client.isHandOk();
+        }
+        return false;
+    }
+
+    /*
     * 快速重连
     * */
     public void fastConnect() {
         if (hasStarted()) {
             client.fastConnect();
+        }
+    }
+
+    /**
+     * 手动重连
+     */
+    public void manualReconnect() {
+        if (hasStarted() && NetworkUtils.isNetAvaliale()) {
+            client.getConnection().manualReconnect();
         }
     }
 
@@ -248,10 +277,10 @@ public final class FingerIM {
         }
     }
 
-    public void register(String userid, String password, String phoneNumber, String verCode) {
+    public void register(String userid, String password, String userNick, String phoneNumber,
+        String verCode, String avatar) {
         if (hasStarted() && client.isRunning()) {
-
-            client.register(userid, password, phoneNumber, verCode);
+            client.register(userid, password, userNick, phoneNumber, verCode, avatar);
         }
     }
 
@@ -271,6 +300,18 @@ public final class FingerIM {
                 client.logout();
             } else {
                 clientConfig.setUserId(null);
+            }
+        }
+    }
+
+    /**
+     * isForget true 表示是忘记密码，重置参数var1为新密码，参数var2为手机验证码
+     * isForget false 表示是已知密码修改密码，重置参数var1为旧密码，参数var2为新密码
+     */
+    public void changePassword(String userId, String var1, String var2, boolean isForget) {
+        if (hasInit()) {
+            if (hasStarted() && client.isRunning()) {
+                client.changePassword(userId, var1, var2, isForget);
             }
         }
     }
@@ -344,6 +385,15 @@ public final class FingerIM {
     public void updateUserInfo(BindMessage message) {
         if (hasStarted() && client.isRunning()) {
             client.updateUserInfo(message);
+        }
+    }
+
+    /*
+    * 创建，删除，更新好友分组
+    * */
+    public void updateGroup(RosterOption option) {
+        if (hasStarted() && client.isRunning()) {
+            client.updateGroup(option);
         }
     }
 
@@ -425,16 +475,41 @@ public final class FingerIM {
         L.d(FingerIM.class.getSimpleName() + "--destroy");
     }
 
-    public boolean isLoginConflicted() {
+    public boolean isBannedAutoLogin() {
         if (clientConfig == null) {
             return false;
         }
-        return clientConfig.isLoginConflicted();
+        return clientConfig.isBannedAotoLogin();
     }
 
-    public void setLoginConflicted(boolean var) {
+    public void setBannedAutoLogin(boolean var) {
         if (clientConfig != null) {
-            clientConfig.setLoginConflicted(var);
+            clientConfig.setBannedAotoLogin(var);
+        }
+    }
+
+    /*
+   * 系统执行操作，目前可执行操作:
+    * 1.根据userId查询手机号
+   *  2.验证验证码
+   *  3.查询离线消息
+   * */
+    public void excute(ExcuteMessage message) {
+        if (hasStarted() && client.isRunning()) {
+            client.excute(message);
+        }
+    }
+
+    public IMClient getClient() {
+        return client;
+    }
+
+    /*
+    * 消息已读功能
+    * */
+    public void read(ReadedMessageList message) {
+        if (hasStarted() && client.isRunning()) {
+            client.read(message);
         }
     }
 }

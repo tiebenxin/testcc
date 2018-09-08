@@ -25,8 +25,64 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <LinearLayout
+            android:id="@+id/miliaoDes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:background="#e0e0e0"
+            android:orientation="vertical"
+            android:paddingBottom="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="4dp"
+            android:visibility="gone">
 
-        <com.lens.chatmodel.view.ChatMessageList
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="密聊"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:drawablePadding="4dp"
+                android:text="消息已读后自动销毁"
+                android:drawableLeft="@drawable/secretchat_gou"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:drawablePadding="4dp"
+                android:text="消息在各端不留痕迹"
+                android:drawableLeft="@drawable/secretchat_gou"
+                android:textSize="11sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:drawablePadding="4dp"
+                android:drawableLeft="@drawable/secretchat_gou"
+                android:text="消息禁止拷贝或转发"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:drawablePadding="4dp"
+                android:drawableLeft="@drawable/secretchat_gou"
+                android:text="头像名字打码防截屏"
+                android:textSize="11sp" />
+        </LinearLayout>
+        <com.lens.chatmodel.view.chat.ChatMessageList
             android:id="@+id/message_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>

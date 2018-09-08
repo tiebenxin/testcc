@@ -10,6 +10,7 @@ public enum EventEnum {
     CHAT_MESSAGE(2),//消息,包括群聊和私聊
     MUC_MESSAGE(3),//群聊消息，？
     MAIN_REFRESH(4),//activity main 中刷新消息
+    EXCUTE(5),//系统执行消息
 
     MUC_GROUP_MESSAGE(8),//群相关消息
     MUC_MEMBER_MESSAGE(9),//群成员

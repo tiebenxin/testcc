@@ -13,7 +13,7 @@ public class MapBody extends BaseJsonEntity {
 
     String senderAvatar;//发送者头像
     String mucNickName;//群聊备注名，非群聊则无
-    boolean secret;//是否密聊
+    int secret;//是否密聊
     int bubbleWidth;
     int bubbleHeight;
 
@@ -22,6 +22,8 @@ public class MapBody extends BaseJsonEntity {
     String locationName;
     double latitude;
     double longitude;
+
+    String groupName;
 
     public String getSenderAvatar() {
         return senderAvatar;
@@ -40,10 +42,10 @@ public class MapBody extends BaseJsonEntity {
     }
 
     public boolean isSecret() {
-        return secret;
+        return secret == 1;
     }
 
-    public void setSecret(boolean secret) {
+    public void setSecret(int secret) {
         this.secret = secret;
     }
 
@@ -96,6 +98,14 @@ public class MapBody extends BaseJsonEntity {
         this.longitude = longitude;
     }
 
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
     public String toJson() {
         JSONObject object = new JSONObject();
         try {
@@ -124,7 +134,9 @@ public class MapBody extends BaseJsonEntity {
             object.put("latitude", latitude);
             object.put("longitude", longitude);
 
-
+            if (!TextUtils.isEmpty(groupName)) {
+                object.put("groupName", groupName);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

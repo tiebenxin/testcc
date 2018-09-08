@@ -108,7 +108,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
-                    <!--<com.lens.chatmodel.view.VideoImageView-->
+                  <!--  <com.lens.chatmodel.view.chat.VideoImageView-->
                         <!--android:id="@+id/override_image"-->
                         <!--android:layout_width="wrap_content"-->
                         <!--android:layout_height="wrap_content"/>-->
@@ -129,8 +129,17 @@
                     android:background="@android:color/transparent"/>
 
             </LinearLayout>
-
-
+            <com.lens.chatmodel.view.TimeTextView
+                android:id="@+id/textReadStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="未读"
+                android:layout_below="@+id/ll_root"
+                android:layout_marginRight="53dp"
+                android:layout_alignParentRight="true"
+                android:textColor="#666666"
+                android:layout_marginTop="2dp"
+                android:visibility="gone"/>
             <TextView
                 android:id="@+id/tv_name"
                 style="@style/chat_text_name_style"
