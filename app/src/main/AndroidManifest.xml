@@ -136,7 +136,7 @@
         <activity android:name=".ui.settings.MessageSettingActivity" />
         <activity android:name=".ui.settings.AboutFGActivity" />
         <activity android:name=".ui.settings.AccoutAndSafeActivity" />
-        <activity android:name=".ui.settings.ChangePasswordActivity" />
+        <activity android:name=".ui.settings.ChangePassWordActivity" />
         <!--<activity android:name=".ui.settings.GeneralActivity"/>-->
         <activity android:name=".ui.settings.AdjustTextSizeActivity" />
         <activity android:name=".ui.settings.ViewHelpAndFeedbackActivity" />

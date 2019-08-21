@@ -44,7 +44,7 @@ public class AccoutAndSafeActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 //修改密码，不需要code
-                Intent intent = ChangePasswordActivity
+                Intent intent = ChangePassWordActivity
                     .newIntent(AccoutAndSafeActivity.this, 0, UserInfoRepository.getUserId(), "");
                 startActivityForResult(intent,0);
                 finish();

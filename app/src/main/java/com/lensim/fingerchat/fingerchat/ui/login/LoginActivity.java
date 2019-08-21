@@ -60,7 +60,7 @@ import com.lensim.fingerchat.fingerchat.ui.login.FragmentForgetPsw.IFragmentForg
 import com.lensim.fingerchat.fingerchat.ui.login.FragmentLogin.IFragmentLoginListener;
 import com.lensim.fingerchat.fingerchat.ui.login.FragmentOtherLogin.IFragmentLoginOtherListener;
 import com.lensim.fingerchat.fingerchat.ui.login.FragmentRegister.IFragmentRegisterListener;
-import com.lensim.fingerchat.fingerchat.ui.settings.ChangePasswordActivity;
+import com.lensim.fingerchat.fingerchat.ui.settings.ChangePassWordActivity;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -286,7 +286,7 @@ public class LoginActivity extends BaseMvpActivity<LoginContract.View, LoginPres
         fragment.setListener(new IFragmentForgetListener() {
             @Override
             public void clickIdentify(String accout, String identifyCode) {
-                Intent intent = ChangePasswordActivity
+                Intent intent = ChangePassWordActivity
                     .newIntent(LoginActivity.this, 1, accout, identifyCode);
                 startActivityForResult(intent, 1);
             }
@@ -682,7 +682,7 @@ public class LoginActivity extends BaseMvpActivity<LoginContract.View, LoginPres
                 @Override
                 public void onClick(View v) {
                     builder.dismiss();
-                    Intent intent = ChangePasswordActivity.newIntent(LoginActivity.this, 0,
+                    Intent intent = ChangePassWordActivity.newIntent(LoginActivity.this, 0,
                         AppConfig.INSTANCE.get(AppConfig.ACCOUT), "");
                     startActivity(intent);
                 }
@@ -702,7 +702,7 @@ public class LoginActivity extends BaseMvpActivity<LoginContract.View, LoginPres
                 @Override
                 public void onClick(View v) {
                     builder.dismiss();
-                    Intent intent = ChangePasswordActivity.newIntent(LoginActivity.this, 0,
+                    Intent intent = ChangePassWordActivity.newIntent(LoginActivity.this, 0,
                         AppConfig.INSTANCE.get(AppConfig.ACCOUT), "");
                     startActivity(intent);
                 }

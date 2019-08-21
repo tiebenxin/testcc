@@ -154,8 +154,10 @@ dependencies {
     implementation project(path: ':db')
     implementation project(path: ':chatmodel')
     implementation project(path: ':WebView')
-    implementation project(path: ':librarys:annotation')
-    implementation project(path: ':hexmeet')
+//    implementation project(path: ':librarys:annotation')
+    implementation project(path: ':annotation')
+
+//    implementation project(path: ':hexmeet')
     implementation rootProject.ext.dependencies["design"]
     implementation rootProject.ext.dependencies["support-v4"]
     implementation rootProject.ext.dependencies["cardview-v7"]

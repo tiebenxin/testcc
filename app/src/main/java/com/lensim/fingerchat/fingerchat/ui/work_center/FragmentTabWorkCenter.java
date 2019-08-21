@@ -15,14 +15,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.view.animation.CycleInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
@@ -44,26 +41,18 @@ import com.lensim.fingerchat.components.adapter.multitype.MultiTypeAdapter;
 import com.lensim.fingerchat.components.dialog.InputPasswordDialog;
 import com.lensim.fingerchat.components.dialog.nifty_dialog.Effectstype;
 import com.lensim.fingerchat.components.dialog.nifty_dialog.NiftyDialogBuilder;
-import com.lensim.fingerchat.data.help_class.TokenHelper;
 import com.lensim.fingerchat.data.login.PasswordRespository;
-import com.lensim.fingerchat.data.login.SSOTokenRepository;
 import com.lensim.fingerchat.data.login.UserInfo;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
-import com.lensim.fingerchat.data.work_center.OAToken;
-import com.lensim.fingerchat.data.work_center.OATokenRepository;
 import com.lensim.fingerchat.data.work_center.WorkItem;
 import com.lensim.fingerchat.fingerchat.R;
 import com.lensim.fingerchat.fingerchat.api.SystemApi;
-import com.lensim.fingerchat.fingerchat.api.UserApi;
 import com.lensim.fingerchat.fingerchat.databinding.FragmentWorkCenterBinding;
-import com.lensim.fingerchat.fingerchat.manager.SPManager;
-import com.lensim.fingerchat.fingerchat.model.result.NewOATokenResult;
 import com.lensim.fingerchat.fingerchat.model.result.UserPrivilegesResult;
 import com.lensim.fingerchat.fingerchat.ui.guide.ImageViewPagerAdapter;
 import com.lensim.fingerchat.fingerchat.ui.settings.IdentifyActivity;
-
 import com.lensim.fingerchat.fingerchat.ui.work_center.sign.ClockInActivity;
-import com.lensim.fingerchat.hexmeet.login.HexMeetLogin;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -453,8 +442,8 @@ public class FragmentTabWorkCenter extends BaseMVPFragment<WorkCenterView, WorkC
 
     @Override
     public void toHexMeetActivity() {
-        HexMeetLogin login = new HexMeetLogin(getActivity());
-        login.toHexMeetLogin();
+//        HexMeetLogin login = new HexMeetLogin(getActivity());
+//        login.toHexMeetLogin();
     }
 
     @Override

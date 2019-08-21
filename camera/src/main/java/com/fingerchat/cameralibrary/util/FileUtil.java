@@ -9,14 +9,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class FileUtil {
+
     private static final String TAG = "CJT";
+    public static String FG_FOLDER_NAME = "feige";
     private static final File parentPath = Environment.getExternalStorageDirectory();
     private static String storagePath = "";
+    private static String storageParentPath = parentPath + File.separator + FG_FOLDER_NAME;
     private static String DST_FOLDER_NAME = "JCamera";
 
     private static String initPath() {
+
         if (storagePath.equals("")) {
-            storagePath = parentPath.getAbsolutePath() + File.separator + DST_FOLDER_NAME;
+            File parent = new File(storageParentPath);
+            if (!parent.exists()){
+                parent.mkdir();
+            }
+
+            storagePath =
+                parentPath.getAbsolutePath() + File.separator + FG_FOLDER_NAME + File.separator
+                    + DST_FOLDER_NAME;
             File f = new File(storagePath);
             if (!f.exists()) {
                 f.mkdir();

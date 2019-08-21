@@ -1,11 +1,13 @@
 include ':app',
-        ':fingerchat-sdk',
-        ':db', ':commons',
-        ':data',
-        ':components',
-        ':chatmodel',
-        ':zxingSdk',
-        ':WebView',
-        ':annotation',
-        ':camera'
+    ':fingerchat-sdk',
+    ':db',
+    ':commons',
+    ':data',
+    ':components',
+    ':chatmodel',
+    ':zxingSdk',
+    ':WebView',
+    ':annotation',
+    ':lensCore',
+    ':camera'
 

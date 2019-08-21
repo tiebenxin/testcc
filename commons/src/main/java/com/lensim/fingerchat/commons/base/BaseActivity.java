@@ -2,7 +2,6 @@ package com.lensim.fingerchat.commons.base;
 
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -19,16 +18,17 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+
 import com.lensim.fingerchat.commons.authority.AuthorityManager;
 import com.lensim.fingerchat.commons.helper.AppManager;
 import com.lensim.fingerchat.commons.interf.IEventProduct;
 import com.lensim.fingerchat.commons.utils.L;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.lang.reflect.Method;
 
 /**
  * Created by LL130386 on 2017/11/14.

@@ -12,7 +12,6 @@ import android.widget.TextView;
 import com.fingerchat.api.message.RespMessage;
 import com.lens.chatmodel.eventbus.ResponseEvent;
 import com.lens.chatmodel.im_service.FingerIM;
-import com.lens.chatmodel.net.HttpUtils;
 import com.lensim.fingerchat.commons.app.AppConfig;
 import com.lensim.fingerchat.commons.base.BaseActivity;
 import com.lensim.fingerchat.commons.global.Common;
@@ -20,11 +19,6 @@ import com.lensim.fingerchat.commons.interf.IEventProduct;
 import com.lensim.fingerchat.commons.toolbar.FGToolbar;
 import com.lensim.fingerchat.commons.utils.StringUtils;
 import com.lensim.fingerchat.commons.utils.T;
-import com.lensim.fingerchat.data.RxSchedulers;
-import com.lensim.fingerchat.data.login.PasswordRespository;
-import com.lensim.fingerchat.data.login.UserInfoRepository;
-import com.lensim.fingerchat.data.observer.FGObserver;
-import com.lensim.fingerchat.data.response.ResponseObject;
 import com.lensim.fingerchat.fingerchat.R;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -33,7 +27,7 @@ import org.greenrobot.eventbus.ThreadMode;
  * Created by LY305512 on 2017/12/25.
  */
 
-public class ChangePasswordActivity extends BaseActivity {
+public class ChangePassWordActivity extends BaseActivity {
 
     private EditText mOldpwd;
     private EditText mNewpwd;
@@ -48,7 +42,7 @@ public class ChangePasswordActivity extends BaseActivity {
     * @type 0修改密码，1表示忘记密码
     * */
     public static Intent newIntent(Context context, int type, String userId, String code) {
-        Intent intent = new Intent(context, ChangePasswordActivity.class);
+        Intent intent = new Intent(context, ChangePassWordActivity.class);
         intent.putExtra("userId", userId);
         intent.putExtra("code", code);
         intent.putExtra("type", type);

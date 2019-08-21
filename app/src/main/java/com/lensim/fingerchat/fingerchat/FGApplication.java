@@ -1,8 +1,7 @@
 package com.lensim.fingerchat.fingerchat;
 
-import static com.lensim.fingerchat.commons.helper.ContextHelper.getApplication;
-
 import android.support.multidex.MultiDexApplication;
+
 import com.lens.chatmodel.base.ChatEnvironment;
 import com.lens.chatmodel.manager.NotifyManager;
 import com.lens.core.LensCore;
@@ -11,15 +10,16 @@ import com.lensim.fingerchat.commons.helper.ContextHelper;
 import com.lensim.fingerchat.commons.map.BaiduSDK;
 import com.lensim.fingerchat.commons.router.FGRouter;
 import com.lensim.fingerchat.commons.utils.FileUtil;
+import com.lensim.fingerchat.data.me.content.CollectionTable;
 import com.lensim.fingerchat.data.me.picture.CipherImageDecoder;
 import com.lensim.fingerchat.data.me.picture.CipherUnlimitedDiskCache;
 import com.lensim.fingerchat.fingerchat.component.carsh.CrashHandler;
-import com.lensim.fingerchat.hexmeet.App;
-import com.lensim.fingerchat.data.me.content.CollectionTable;
 import com.nostra13.universalimageloader.cache.disc.naming.HashCodeFileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import static com.lensim.fingerchat.commons.helper.ContextHelper.getApplication;
 
 /**
  * Created by LL130386 on 2017/11/14.
@@ -34,7 +34,7 @@ public class FGApplication extends MultiDexApplication {
     //        public static final String NORMAL_SERVER = LOCAL_SERVER;
 //    public static final String NORMAL_SERVER = TEST_SERVER;
 //    public static final String NORMAL_SERVER = BaseURL.BASE_IM_URL;
-    private App mHexMeet;
+//    private App mHexMeet;
 
     @Override
     public void onCreate() {
@@ -108,7 +108,7 @@ public class FGApplication extends MultiDexApplication {
     }
 
     private void initHexMeet() {
-        mHexMeet = new App();
-        mHexMeet.init();
+//        mHexMeet = new App();
+//        mHexMeet.init();
     }
 }

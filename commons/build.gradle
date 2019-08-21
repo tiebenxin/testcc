@@ -77,10 +77,10 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    api project(path: ':librarys:lensCore')
+    api project(path: ':lensCore')
     implementation project(path: ':fingerchat-sdk')
     implementation project(path: ':zxingSdk')
-    implementation project(':librarys:annotation')
+    implementation project(':annotation')
     implementation project(path: ':fingerchat-sdk')
     implementation rootProject.ext.dependencies["recyclerview"]
     implementation rootProject.ext.dependencies["support-annotations"]

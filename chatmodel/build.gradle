@@ -40,7 +40,8 @@ dependencies {
     implementation project(path: ':fingerchat-sdk')
     implementation project(path: ':components')
     implementation project(path: ':data')
-    implementation project(':librarys:camera')
+//    implementation project(':librarys:camera')
+    implementation project(path: ':camera')
     implementation project(path: ':db')
     implementation project(path: ':WebView')
     implementation rootProject.ext.dependencies["recyclerview"]

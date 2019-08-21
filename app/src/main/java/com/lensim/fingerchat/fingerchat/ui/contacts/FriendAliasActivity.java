@@ -232,10 +232,9 @@ public class FriendAliasActivity extends BaseUserInfoActivity {
         } else if (event instanceof ResponseEvent) {
             RespMessage message = ((ResponseEvent) event).getPacket();
             if (message != null && message.response != null) {
-                if (message.response.getCode() == Common.UPDATE_INFO_SUCCESS) {//更新成功
+                if (message.response.getCode() == Common.UPDATE_ROSTER_SUCCESS) {//更新成功
                     if (!TextUtils.isEmpty(userjid) && !TextUtils.isEmpty(resultName)) {
-                        ProviderUser
-                            .updateRosterNick(ContextHelper.getContext(), userjid, resultName);
+                        ProviderUser.updateRosterRemarkName(ContextHelper.getContext(), userjid, resultName);
                         finish();
                     }
                 } else {
