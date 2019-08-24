@@ -2,6 +2,7 @@ package com.lens.chatmodel.manager;
 
 import android.content.Context;
 import android.text.TextUtils;
+
 import com.fingerchat.api.client.ClientConfig;
 import com.fingerchat.api.listener.AckListener;
 import com.fingerchat.api.message.AckMessage;
@@ -69,6 +70,7 @@ import com.lensim.fingerchat.data.login.SSOTokenRepository;
 import com.lensim.fingerchat.data.login.UserInfo;
 import com.lensim.fingerchat.data.login.UserInfoRepository;
 import com.lensim.fingerchat.db.DaoManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -78,6 +80,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -179,6 +182,7 @@ public class MessageManager implements AckListener {
                 } else {
                     builder.setContent(bean.getBody());
                 }
+                System.out.println(MessageManager.class.getSimpleName() + "--" + bean.getContent());
                 context = MessageContext.build(builder.build().toByteArray());
                 if (context == null) {
                     return;
@@ -949,7 +953,7 @@ public class MessageManager implements AckListener {
 
     //保存私聊recent
     public void saveRecent(IChatRoomModel model, String avatar, String userNick, int noDisturb,
-        int backId, int topFlag, boolean isNew) {
+                           int backId, int topFlag, boolean isNew) {
         RecentMessage message = createRecentMessage(model, avatar, userNick, noDisturb, backId,
             topFlag, isNew);
         ProviderChat.updateRecentMessageAsyn(ContextHelper.getContext(), message);
@@ -957,7 +961,7 @@ public class MessageManager implements AckListener {
 
 
     public boolean saveRecentOfflineAsyn(IChatRoomModel model, String avatar, String userNick,
-        int noDisturb, int backId, int topFlag, boolean isNew, int unreadCount) {
+                                         int noDisturb, int backId, int topFlag, boolean isNew, int unreadCount) {
         RecentMessage message = createRecentMessage(model, avatar, userNick, noDisturb, backId,
             topFlag, isNew);
         return ProviderChat
@@ -969,7 +973,7 @@ public class MessageManager implements AckListener {
     * @param nick 对方昵称
     * */
     public void saveMessage(IChatRoomModel message, String avatar, String nick, int disturb,
-        int backId, int topFlag) {
+                            int backId, int topFlag) {
         boolean flag = ProviderChat.updateMessage(ContextHelper.getContext(), message);
         if (!flag) {
             ProviderChat.insertAndUpdateMessage(ContextHelper.getContext(), message);
@@ -983,7 +987,7 @@ public class MessageManager implements AckListener {
     * @param userNick 对方昵称
     * */
     public void saveMessage(IChatRoomModel message, String avatarUrl, String userNick, int backId,
-        boolean isNew) {
+                            boolean isNew) {
         boolean flag = ProviderChat.updateMessage(ContextHelper.getContext(), message);
         if (!flag) {
             ProviderChat.insertAndUpdateMessage(ContextHelper.getContext(), message);
@@ -1008,7 +1012,7 @@ public class MessageManager implements AckListener {
     * @param nick对方昵称
     * */
     public RecentMessage createRecentMessage(IChatRoomModel msg, String avatar, String userNick,
-        int noDisturb, int backId, int topFlag, boolean isNew) {
+                                             int noDisturb, int backId, int topFlag, boolean isNew) {
         RecentMessage message = new RecentMessage();
         message.setNotDisturb(noDisturb);
         message.setTime(msg.getTime());
@@ -1046,7 +1050,7 @@ public class MessageManager implements AckListener {
     * 名片消息
     * */
     public IChatRoomModel createCardMessage(String user, String nick,
-        UserBean userBean, int chatType) {
+                                            UserBean userBean, int chatType) {
         MessageBean bean = null;
         if (userBean == null) {
             return null;
@@ -1098,8 +1102,8 @@ public class MessageManager implements AckListener {
     * @param avatar 发送者头像
     * */
     public IChatRoomModel createTransforMessage(String account, String user, String content,
-        String nick, String avatar, boolean isGroupChat, boolean isSecret, boolean isInconming,
-        EMessageType type) {
+                                                String nick, String avatar, boolean isGroupChat, boolean isSecret, boolean isInconming,
+                                                EMessageType type) {
         MessageBean bean = new MessageBean();
         bean.setMsgId(UUID.randomUUID().toString());
         bean.setTo(user);
@@ -1168,7 +1172,7 @@ public class MessageManager implements AckListener {
     *
     * */
     public MessageBean createActionMessage(String creator, String nick, String chatId,
-        String groupName, EActionType type, String actionText, long time) {
+                                           String groupName, EActionType type, String actionText, long time) {
         MessageBean model = null;
         if (!TextUtils.isEmpty(creator) && !TextUtils.isEmpty(chatId) && type != null) {
             model = new MessageBean();
@@ -1198,7 +1202,7 @@ public class MessageManager implements AckListener {
     *
     * */
     public MessageBean createErrorMessage(String creator, String nick,
-        String chatId, String groupName, String noticeText, long time) {
+                                          String chatId, String groupName, String noticeText, long time) {
         MessageBean model = null;
         if (!TextUtils.isEmpty(creator) && !TextUtils.isEmpty(chatId)) {
             model = new MessageBean();
@@ -1226,7 +1230,7 @@ public class MessageManager implements AckListener {
 
 
     public void getAllImageMessage(Context context, String user, List<String> urls,
-        List<String> ids) {
+                                   List<String> ids) {
         ProviderChat.selectAllImageMessage(context, user, urls, ids);
     }
 
@@ -1236,7 +1240,7 @@ public class MessageManager implements AckListener {
 
     //私聊body
     public BodyEntity createBody(String content, boolean secret, EMessageType type,
-        String sendNick) {
+                                 String sendNick) {
         BodyEntity entity = new BodyEntity();
 
         switch (type) {
@@ -1273,7 +1277,7 @@ public class MessageManager implements AckListener {
 
     //群聊body
     public BodyEntity createBody(String content, boolean secret, EMessageType type, String avatar,
-        String nick, String mucName) {
+                                 String nick, String mucName) {
         BodyEntity entity = new BodyEntity();
 
         switch (type) {

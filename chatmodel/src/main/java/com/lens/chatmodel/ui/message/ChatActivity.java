@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -35,6 +36,7 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.example.webview.BrowserActivity;
 import com.fingerchat.api.client.ClientConfig;
 import com.fingerchat.api.listener.AckListener;
@@ -138,6 +140,7 @@ import com.lensim.fingerchat.commons.utils.L;
 import com.lensim.fingerchat.commons.utils.SPHelper;
 import com.lensim.fingerchat.commons.utils.T;
 import com.lensim.fingerchat.commons.utils.TDevice;
+import com.lensim.fingerchat.commons.utils.ThreadUtils;
 import com.lensim.fingerchat.commons.utils.TimeUtils;
 import com.lensim.fingerchat.components.pulltorefresh.XCPullToLoadMoreListView;
 import com.lensim.fingerchat.data.Api;
@@ -156,6 +159,7 @@ import com.lensim.fingerchat.data.response.ResponseObject;
 import com.lensim.fingerchat.data.work_center.OAToken;
 import com.lensim.fingerchat.data.work_center.OATokenRepository;
 import com.lensim.fingerchat.data.work_center.SignInJsonRet;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -167,6 +171,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -202,7 +207,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
     private int mCurrrentPage = 0;
 
     @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler() {
+    private Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == INPUT_AND_RECORDING) {
@@ -249,7 +254,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
     private boolean isInbottom = true;
 
     public static Intent createChatIntent(Context context, String user, String nick, int chatType,
-        int backId, int disturb, int top) {
+                                          int backId, int disturb, int top) {
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra("userId", user);
         intent.putExtra("nick", nick);
@@ -261,7 +266,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
     }
 
     public static Intent createChatIntent(Context context, String user, int backId, int disturb,
-        int top) {
+                                          int top) {
         Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra("userId", user);
         intent.putExtra("top_flag", top);
@@ -494,7 +499,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
-                int totalItemCount) {
+                                 int totalItemCount) {
                 System.out.println("firstVisibleItem=" + firstVisibleItem + "--visibleItemCount="
                     + visibleItemCount + "--totalItemCount=" + totalItemCount);
                 if (firstVisibleItem + visibleItemCount == totalItemCount) {
@@ -511,7 +516,34 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
                 if (mHandler != null) {
                     mHandler.removeMessages(INPUTTING);
                 }
-                sendTextMessage(content, EMessageType.TEXT);
+                if (content.startsWith("@000")) {
+                    String[] arr = content.split("#");
+                    int count = Integer.valueOf(arr[1]);
+                    int time;
+                    if (arr.length == 3 && !TextUtils.isEmpty(arr[2])) {
+                        time = Integer.valueOf(arr[2]);
+                    } else {
+                        time = 300;
+                    }
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (int i = 0; i < count; i++) {
+                                System.out.println("测试数据" + "--当前位置=" + i + "--总count=" + count);
+                                int position = i + 1;
+                                sendTextMessage("测试数据" + position, EMessageType.TEXT);
+                                try {
+                                    Thread.sleep(time);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }).start();
+
+                } else {
+                    sendTextMessage(content, EMessageType.TEXT);
+                }
                 //清空atUser
                 atUsers.clear();
             }
@@ -551,7 +583,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
             @Override
             public boolean onPressToSpeakBtnTouch(View v,
-                MotionEvent event) {//录音
+                                                  MotionEvent event) {//录音
                 return doRecording(v, event);
             }
 
@@ -2002,16 +2034,21 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
     }
 
     private void addMessage(IChatRoomModel message) {
-        if (message.getTo().equals(userBean.getUserId())) {
-            if (mAdapter != null) {
-                mAdapter.addMessage(message);
-                mAdapter.notifyDataSetChanged();
-                if (mListView.getLastVisiblePosition()
-                    == mAdapter.getTotalItemsCount() - 2) {
-                    scrollChat(ESCrollType.BOTTOM);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (message.getTo().equals(userBean.getUserId())) {
+                    if (mAdapter != null) {
+                        mAdapter.addMessage(message);
+                        mAdapter.notifyDataSetChanged();
+                        if (mListView.getLastVisiblePosition()
+                            == mAdapter.getTotalItemsCount() - 2) {
+                            scrollChat(ESCrollType.BOTTOM);
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     /*
@@ -2643,7 +2680,7 @@ public class ChatActivity extends BaseUserInfoActivity implements AckListener, I
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-        @NonNull int[] grantResults) {
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMARA_PERMISSON_REQUEST_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
