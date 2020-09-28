@@ -1,0 +1,16 @@
+{
+  "buildFiles": [
+    "D:\\develop\\project\\testcc\\commons\\CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "D:\\develop\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a --target clean"
+  ],
+  "libraries": {
+    "encrypt-lib-Debug-armeabi-v7a": {
+      "artifactName": "encrypt-lib",
+      "buildCommand": "D:\\develop\\Sdk\\cmake\\3.6.4111459\\bin\\cmake.exe --build D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a --target encrypt-lib",
+      "abi": "armeabi-v7a",
+      "output": "D:\\develop\\project\\testcc\\commons\\build\\intermediates\\cmake\\debug\\obj\\armeabi-v7a\\libencrypt-lib.so"
+    }
+  }
+}

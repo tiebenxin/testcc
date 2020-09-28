@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 public final class PacketDecoder {
 
 
-
     public static Packet decode(ByteBuffer in) {
         Packet hp = decodeHeartbeat(in);
         if (hp != null) return hp;
@@ -54,8 +53,30 @@ public final class PacketDecoder {
         Packet packet = new Packet(command);
         packet.flags = flags;
         packet.body = body;
+        System.out.println(PacketDecoder.class.getSimpleName() + "--解析数据--" + bytesToHex(body));
         packet.sessionId = sessionid;
         return packet;
+    }
+
+    /**
+     * 字节数组转16进制
+     *
+     * @param bytes 需要转换的byte数组
+     * @return 转换后的Hex字符串
+     */
+    public static String bytesToHex(byte[] bytes) {
+        if (bytes == null || bytes.length <= 0) {
+            return "";
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(bytes[i] & 0xFF);
+            if (hex.length() < 2) {
+                sb.append(0);
+            }
+            sb.append("" + hex + " ");
+        }
+        return sb.toString();
     }
 
 }

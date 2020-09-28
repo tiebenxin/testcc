@@ -1,0 +1,69 @@
+{
+  "variant": {
+    "module": {
+      "rootBuildGradleFolder": "D:\\develop\\project\\testcc",
+      "sdkFolder": "D:\\develop\\Sdk",
+      "isNativeCompilerSettingsCacheEnabled": false,
+      "isBuildOnlyTargetAbiEnabled": true,
+      "splitsAbiFilterSet": [],
+      "intermediatesFolder": "D:\\develop\\project\\testcc\\commons\\build\\intermediates",
+      "gradleModulePathName": ":commons",
+      "moduleRootFolder": "D:\\develop\\project\\testcc\\commons",
+      "makeFile": "D:\\develop\\project\\testcc\\commons\\CMakeLists.txt",
+      "buildSystem": "CMAKE",
+      "compilerSettingsCacheFolder": "D:\\develop\\project\\testcc\\.cxx",
+      "cxxFolder": "D:\\develop\\project\\testcc\\commons\\.cxx",
+      "ndkFolder": "D:\\android\\Sdk\\ndk-bundle",
+      "ndkVersion": "20.0.5594570",
+      "ndkSupportedAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "ndkDefaultAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "cmakeToolchainFile": "."
+    },
+    "buildSystemArgumentList": [],
+    "cFlagList": [],
+    "cppFlagsList": [
+      ""
+    ],
+    "variantName": "debug",
+    "soFolder": "D:\\develop\\project\\testcc\\commons\\build\\intermediates\\cmake\\debug\\lib",
+    "objFolder": "D:\\develop\\project\\testcc\\commons\\build\\intermediates\\cmake\\debug\\obj",
+    "jsonFolder": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug",
+    "gradleBuildOutputFolder": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug",
+    "isDebuggableEnabled": true,
+    "validAbiList": [
+      "ARMEABI_V7A"
+    ],
+    "buildTargetSet": []
+  },
+  "abi": "ARMEABI_V7A",
+  "abiPlatformVersion": 16,
+  "cxxBuildFolder": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a",
+  "jsonFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a\\android_gradle_build.json",
+  "gradleBuildOutputFolder": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a",
+  "objFolder": "D:\\develop\\project\\testcc\\commons\\build\\intermediates\\cmake\\debug\\obj\\armeabi-v7a",
+  "buildCommandFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a\\build_command.txt",
+  "buildOutputFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a\\build_output.txt",
+  "modelOutputFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a\\build_model.json",
+  "cmake": {
+    "cmakeListsWrapperFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a\\CMakeLists.txt",
+    "toolchainWrapperFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a\\android_gradle_build.toolchain.cmake",
+    "buildGenerationStateFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a\\build_generation_state.json",
+    "cacheKeyFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a\\compiler_cache_key.json",
+    "compilerCacheUseFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a\\compiler_cache_use.json",
+    "compilerCacheWriteFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a\\compiler_cache_write.json",
+    "toolchainSettingsFromCacheFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cxx\\debug\\armeabi-v7a\\compiler_settings_cache.cmake",
+    "cmakeWrappingBaseFolder": "."
+  },
+  "jsonGenerationLoggingRecordFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a\\json_generation_record.json",
+  "compileCommandsJsonFile": "D:\\develop\\project\\testcc\\commons\\.cxx\\cmake\\debug\\armeabi-v7a\\compile_commands.json"
+}

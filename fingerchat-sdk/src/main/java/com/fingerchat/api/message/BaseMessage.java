@@ -1,11 +1,14 @@
 package com.fingerchat.api.message;
 
 import com.fingerchat.api.IMessage;
+import com.fingerchat.api.codec.PacketDecoder;
 import com.fingerchat.api.connection.Connection;
 import com.fingerchat.api.connection.SessionContext;
 import com.fingerchat.api.protocol.Packet;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import sun.security.krb5.internal.PAData;
 
 /**
  * @author LY309313
@@ -25,9 +28,10 @@ public abstract class BaseMessage implements IMessage {
         this.connection = connection;
     }
 
-    public BaseMessage(Packet packet){
+    public BaseMessage(Packet packet) {
         this.packet = packet;
     }
+
     @Override
     public void decodeBody() {
         if ((status & STATUS_DECODED) != 0) return;
@@ -63,15 +67,7 @@ public abstract class BaseMessage implements IMessage {
 
         byte[] tmp = encode();
         if (tmp != null && tmp.length > 0) {
-            //1.压缩
-//            if (tmp.length > ClientConfig.I.getCompressLimit()) {
-//                byte[] result = IOUtils.compress(tmp);
-//                if (result.length > 0) {
-//                    tmp = result;
-//                    packet.addFlag(Packet.FLAG_COMPRESS);
-//                }
-//            }
-
+            System.out.println(PacketDecoder.class.getSimpleName() + "--发送数据--" + PacketDecoder.bytesToHex(tmp));
             //2.加密
             SessionContext context = connection.getSessionContext();
             if (context.cipher != null) {
@@ -140,8 +136,8 @@ public abstract class BaseMessage implements IMessage {
     @Override
     public String toString() {
         return "BaseMessage{" +
-                "packet=" + packet +
-                ", connection=" + connection +
-                '}';
+            "packet=" + packet +
+            ", connection=" + connection +
+            '}';
     }
 }
